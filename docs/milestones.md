@@ -10,3 +10,4 @@ Tag, nur ohne extra Git-Referenz.
 | Datum | Commit | Beschreibung |
 |---|---|---|
 | 2026-08-05 | `8296b27` | Mockup v2 "Unfold": Seiten-Modell statt Baumliste, Mehrspalten-Drilldown, warmer Akzent, durchgängige Animationen |
+| 2026-08-05 | `193a8d4` | Mockup v3: Listen/Aufgaben-Seiten als echtes Freitext-Dokument (contenteditable), Listen-Gruppen mit Drag&Drop, Auto-Vervollständigung, Lösch-Optionen |
