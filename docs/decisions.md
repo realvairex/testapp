@@ -426,3 +426,36 @@ Scrollbar mehr). Screenshot zur Kontrolle mitten in der Animation zeigt
 keine sichtbare Scrollbar.
 
 ---
+
+## 2026-08-05 — "Refresh"-Flackern von Aufgaben/Text beim Schließen eines Panels behoben
+
+**Kontext:** Nutzer meldete: manchmal sieht es beim Schließen eines
+Sidepanels so aus, als würden die Aufgaben und der Text kurz neu laden
+("refreshen").
+
+**Root Cause:** `renderColumns()` baut bei jedem Aufruf das komplette
+`innerHTML` aller sichtbaren Spalten neu aus dem Datenmodell auf
+(inklusive erneutem `mountEditors()` für die Freitext-Editoren) — auch
+für Spalten, die von der Aktion gar nicht betroffen sind. Der bisherige
+Schließen-Ablauf rief nach Ende der Animation `renderAll()` auf, was
+diesen kompletten Rebuild auslöste — auch für die überlebenden Spalten,
+deren Inhalt sich beim reinen Schließen eines Panels nie ändert (Schließen
+ist eine reine Ansichts-Aktion, keine Datenänderung). Das Zerstören und
+Neuerzeugen der DOM-Knoten (inkl. `contenteditable`-Inhalt) direkt im
+Moment, in dem die Schließ-Animation zur Ruhe kommt, erzeugte das
+gemeldete kurze Flackern/"Refresh".
+
+**Entscheidung:** Neue Funktion `closeColumnsFrom(fromColIndex)` ersetzt
+den `renderAll()`-Aufruf nach einer Schließ-Animation (Schließen-Button
+und Escape-Taste). Sie entfernt ausschließlich die DOM-Knoten der
+tatsächlich geschlossenen Spalte(n) und lässt die DOM der überlebenden
+Spalten (inkl. Editor-Zustand/Cursor) komplett unangetastet.
+
+**Verifikation:** Per Playwright mit einem Marker-Attribut auf einem
+Element in den überlebenden Spalten geprüft, dass exakt dieselben
+DOM-Knoten nach dem Schließen weiterhin existieren (kein Rebuild). Danach
+erneutes Öffnen eines anderen Panels aus einer überlebenden Spalte
+funktioniert weiterhin korrekt (Push-Animation, `prevPanelStack`-Buchhaltung
+sauber).
+
+---
