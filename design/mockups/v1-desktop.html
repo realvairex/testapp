@@ -138,11 +138,11 @@
   .drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
   .drop-into { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
 
-  .sidebar-actions { display: flex; flex-direction: column; margin-top: 10px; }
-  .new-list-btn { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: none; background: transparent; border-radius: 8px; font-size: 13.5px; color: var(--ink-faint); cursor: pointer; font-family: inherit; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
-  .new-list-btn:hover { background: var(--line-soft); color: var(--ink-soft); }
-  .new-list-btn:active { transform: scale(0.97); }
   .sidebar-spacer { flex: 1; }
+  .sidebar-bottom-actions { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px 2px; flex-shrink: 0; }
+  .icon-action-btn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
+  .icon-action-btn:hover { background: var(--line-soft); color: var(--ink); border-color: var(--ink-faint); }
+  .icon-action-btn:active { transform: scale(0.92); }
 
   /* --- Content: horizontal column stack --- */
   .content-area {
@@ -570,11 +570,11 @@
       if (!collapsed) { for (var k = 0; k < groupLists.length; k++) { html += listNavItem(groupLists[k], true); } }
     }
 
-    html += '<div class="sidebar-actions">';
-    html += '<button class="new-list-btn" id="newListBtn" type="button">' + svgPlus() + "Neue Liste</button>";
-    html += '<button class="new-list-btn" id="newGroupBtn" type="button">' + svgPlus() + "Neue Gruppe</button>";
-    html += "</div>";
     html += '<div class="sidebar-spacer"></div>';
+    html += '<div class="sidebar-bottom-actions">';
+    html += '<button class="icon-action-btn" id="newListBtn" type="button" title="Neue Liste" aria-label="Neue Liste">' + svgPlus() + "</button>";
+    html += '<button class="icon-action-btn" id="newGroupBtn" type="button" title="Neue Gruppe" aria-label="Neue Gruppe">' + svgPlus() + "</button>";
+    html += "</div>";
     el.innerHTML = html;
   }
 
