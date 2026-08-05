@@ -198,7 +198,6 @@
   .column.col-animating {
     transition: flex-basis 0.32s cubic-bezier(0.32, 0.72, 0, 1), transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   }
-  @media (prefers-reduced-motion: reduce) { .column.col-animating { transition: none; } }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
   .col-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -720,27 +719,39 @@
     el.innerHTML = html;
     mountEditors();
     sizeColumns();
+    el.scrollLeft = el.scrollWidth;
     animateColumnChange(el, beforeRects, newlyOpened);
     prevPanelStack = state.panelStack.slice();
   }
 
   function animateColumnChange(el, beforeRects, newlyOpened) {
-    if (prefersReducedMotion()) return;
+    var appWindow = document.getElementById("appWindow");
+    var appRight = appWindow.getBoundingClientRect().right;
     var newKeys = newlyOpened.map(function (id) { return "task:" + id; });
     var cols = el.querySelectorAll(".column[data-col-key]");
-    var plan = [];
 
+    // Pass 1: measure every column's final (already-rendered) position/size
+    // before mutating anything - mutating one column reflows its siblings,
+    // so measuring and mutating in the same pass gives wrong numbers.
+    var finals = [];
     for (var i = 0; i < cols.length; i++) {
-      var colEl = cols[i];
-      var key = colEl.getAttribute("data-col-key");
-      var isNew = newKeys.indexOf(key) !== -1;
-      var finalWidth = colEl.getBoundingClientRect().width;
+      var rect = cols[i].getBoundingClientRect();
+      finals.push({ el: cols[i], key: cols[i].getAttribute("data-col-key"), width: rect.width, left: rect.left });
+    }
+
+    // Pass 2: freeze each column at its "before" state now that all final
+    // values are safely captured.
+    var plan = [];
+    for (var j = 0; j < finals.length; j++) {
+      var f = finals[j];
+      var isNew = newKeys.indexOf(f.key) !== -1;
       if (isNew) {
-        colEl.style.transform = "translateX(100%)";
-        plan.push({ el: colEl, isNew: true });
-      } else if (beforeRects[key] !== undefined && Math.abs(beforeRects[key] - finalWidth) > 1) {
-        colEl.style.flex = "0 0 " + beforeRects[key] + "px";
-        plan.push({ el: colEl, isNew: false, targetWidth: finalWidth });
+        var startOffset = appRight - f.left;
+        f.el.style.transform = "translateX(" + startOffset + "px)";
+        plan.push({ el: f.el, isNew: true });
+      } else if (beforeRects[f.key] !== undefined && Math.abs(beforeRects[f.key] - f.width) > 1) {
+        f.el.style.flex = "0 0 " + beforeRects[f.key] + "px";
+        plan.push({ el: f.el, isNew: false, targetWidth: f.width });
       }
     }
 
@@ -846,13 +857,6 @@
     renderSidebar();
     document.getElementById("appWindow").classList.toggle("sidebar-collapsed", state.panelStack.length >= 2);
     renderColumns();
-  }
-
-  function scrollToEnd() {
-    requestAnimationFrame(function () {
-      var el = document.getElementById("contentArea");
-      el.scrollLeft = el.scrollWidth;
-    });
   }
 
   function prefersReducedMotion() {
@@ -981,7 +985,6 @@
       var j = parseInt(el.getAttribute("data-col-index"), 10);
       state.panelStack = state.panelStack.slice(0, j).concat([taskId]);
       renderAll();
-      scrollToEnd();
       return;
     }
 
@@ -1010,7 +1013,6 @@
       }
       state.panelStack = state.panelStack.slice(0, colIndex1).concat([t1.id]);
       renderAll();
-      scrollToEnd();
       return;
     }
 
