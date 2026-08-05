@@ -714,6 +714,18 @@
 
     el.innerHTML = html;
     mountEditors();
+    sizeColumns();
+  }
+
+  function sizeColumns() {
+    var el = document.getElementById("contentArea");
+    var cols = el.querySelectorAll(".column");
+    if (!cols.length) return;
+    var available = el.clientWidth;
+    var perColumn = Math.max(240, available / Math.min(cols.length, 3));
+    for (var i = 0; i < cols.length; i++) {
+      cols[i].style.flex = "0 0 " + perColumn + "px";
+    }
   }
 
   function renderSidebar() {
@@ -786,8 +798,8 @@
 
   function renderAll() {
     renderSidebar();
-    renderColumns();
     document.getElementById("appWindow").classList.toggle("sidebar-collapsed", state.panelStack.length >= 2);
+    renderColumns();
   }
 
   function scrollToEnd() {
