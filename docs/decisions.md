@@ -94,3 +94,30 @@ prägendsten/wichtigsten Merkmale von Superlist benannt bzw. als
 Kernprinzip von Xdo (Quick Capture) übernommen.
 
 ---
+
+## 2026-08-05 — Entwicklungs-Konventionen (Backup, CI, Tests, Secrets, Reviews)
+
+**Kontext:** Nutzer wünscht durchgängig professionelle, saubere
+Arbeitsweise, die typische Praktiken erfahrener/intensiver Nutzer
+übernimmt — automatisch, ohne dass jede einzelne Maßnahme extra
+eingefordert werden muss.
+
+**Entscheidung:** Folgende Konventionen gelten ab sofort verbindlich für
+das Projekt (Details in `CLAUDE.md` unter "Entwicklungs-Konventionen"):
+- Häufige, kleine Commits + Push statt seltener Mega-Commits (Backup-Zweck,
+  da die Session-Umgebung temporär ist, GitHub aber persistent).
+- GitHub-Actions-CI (Lint, Type-Check, Tests) sobald Code existiert.
+- Tests parallel zu Features, nicht nachträglich.
+- Striktes `.gitignore`, keine Secrets im Repo, zukünftige Keys nur über
+  Umgebungsvariablen.
+- Eigenständige, regelmäßige Code-Reviews vor Feature-Abschluss.
+- Session-Start-Hook einrichten, sobald das Projekt bau-/testbar ist.
+- `CLAUDE.md` bewusst schlank halten, Details in `docs/`.
+
+**Begründung:** Diese Punkte sind Standardpraxis professioneller/erfahrener
+Nutzer und senken bei geringer Programmiererfahrung des Nutzers das Risiko,
+Arbeit zu verlieren oder unbemerkt Fehler einzubauen — ohne den Einstieg
+durch Overengineering zu verkomplizieren (z.B. kein Multi-User-Backend nur
+für Backup-Zwecke, siehe Sharing-Entscheidung oben).
+
+---

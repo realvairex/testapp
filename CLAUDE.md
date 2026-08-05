@@ -18,6 +18,31 @@ Für dieses Projekt gilt durchgängig:
 - Ziel: Jede Entscheidung und jeder Arbeitsschritt soll im Nachhinein aus
   dem Repo (Docs + Git-Historie) nachvollziehbar sein, auch ohne Zugriff auf
   den ursprünglichen Chat.
+- Dies gilt automatisch, ohne dass der Nutzer danach fragen oder es
+  einfordern muss.
+
+## Entwicklungs-Konventionen
+
+- **Backup:** Regelmäßig committen und pushen (kleine, häufige Commits statt
+  eines großen am Ende) — GitHub ist der einzige dauerhafte Speicher, der
+  Session-Container ist temporär.
+- **CI:** Sobald eine lauffähige Codebasis existiert, GitHub-Actions-Pipeline
+  einrichten, die bei jedem Push Linting, Type-Checking und Tests laufen
+  lässt.
+- **Tests:** Parallel zu Features schreiben, nicht nachträglich. Kernlogik
+  (z.B. Task-Verschachtelung, Fortschrittsberechnung, Datumsfilter) hat
+  Priorität.
+- **Secrets:** Niemals ins Repo. `.gitignore` sauber halten (node_modules,
+  Build-Artefakte, `.env`). Zukünftige API-Keys etc. nur über
+  Umgebungsvariablen.
+- **Code-Reviews:** In sinnvollen Abständen selbstständig durchführen
+  (Code-Qualität, Sicherheit), bevor ein Feature als fertig gilt.
+- **Commit-Größe:** Kleine, thematisch klare Schritte statt Mega-Commits.
+- **Session-Start-Hook:** Einrichten, sobald das Projekt bau-/testbar ist,
+  damit jede Web-Session automatisch weiß, wie sie build/lint/test
+  ausführt.
+- **Diese Datei schlank halten:** Details gehören in `docs/`, nicht hier
+  rein.
 
 ## Status
 
