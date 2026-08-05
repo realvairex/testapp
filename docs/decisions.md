@@ -353,3 +353,38 @@ Session bereits mehrfach nicht mit dem tatsächlichen Nutzererlebnis
 übereinstimmten, steht die reale Bestätigung durch den Nutzer noch aus.
 
 ---
+
+## 2026-08-05 — Spurious Scrollbar bei genau 3 Spalten behoben (wirkte wie "Höhen-Skalierung")
+
+**Kontext:** Nutzer bestätigte, dass die Push-Animation jetzt funktioniert
+("geht ab"), meldete aber ein neues Problem: die Panels würden beim
+Öffnen/Schließen in der **Höhe** zu skalieren scheinen (nicht Breite).
+Zusätzlich der gezielte Hinweis, dass die horizontale Scrollbar unterhalb
+der Spalten schon bei genau 3 offenen Panels verschwinden sollte (nicht
+erst bei 4) — Scrollen soll nur nötig sein, wenn tatsächlich mehr als die
+maximal 3 gleichzeitig sichtbaren Spalten offen sind.
+
+**Root Cause:** `contentAreaWidth()` (siehe Eintrag oben) hat die
+verfügbare Breite über `appWindow.getBoundingClientRect().width`
+berechnet — das schließt die 1px-Border des App-Fensters auf beiden
+Seiten mit ein (1040px statt echter 1038px Innenbreite). Bei genau 3
+Spalten führte das dazu, dass die Summe der drei Spaltenbreiten die
+tatsächlich verfügbare Content-Area-Breite um ca. 2px überstieg → die
+Content-Area war horizontal minimal überlaufen → Browser zeigte eine
+Scrollbar an, obwohl nichts zu scrollen war. Da eine klassische (nicht
+overlay) Scrollbar Platz beansprucht, reduzierte ihr Erscheinen/
+Verschwinden nebenbei die verfügbare Höhe der Spalten um ihre eigene
+Dicke — das erklärt, warum es sich für den Nutzer wie ein Höhen-
+Skalierungs-Problem der Panels angefühlt hat, obwohl die eigentliche
+Ursache eine 2px-Breitenabweichung war.
+
+**Entscheidung:** `contentAreaWidth()` nutzt jetzt `appWindow.clientWidth`
+(schließt Border korrekt aus) statt `getBoundingClientRect().width`.
+
+**Verifikation:** Per Playwright geprüft: bei genau 3 offenen Spalten ist
+`contentArea.scrollWidth === contentArea.clientWidth` (kein Overflow,
+keine Scrollbar). Bei 4 offenen Spalten (Verschachtelungstiefe 3)
+überläuft die Content-Area korrekt (`scrollWidth` 1384px vs. `clientWidth`
+1038px) und die Scrollbar erscheint wie gewünscht erst dann.
+
+---
