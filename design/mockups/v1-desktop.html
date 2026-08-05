@@ -649,6 +649,7 @@
     var el = document.getElementById("contentArea");
     var html = "";
     var newlyOpened = state.panelStack.filter(function (id) { return prevPanelStack.indexOf(id) === -1; });
+    var oldScrollLeft = el.scrollLeft;
 
     var beforeRects = {};
     var prevCols = el.querySelectorAll(".column[data-col-key]");
@@ -719,12 +720,29 @@
     el.innerHTML = html;
     mountEditors();
     sizeColumns();
-    el.scrollLeft = el.scrollWidth;
-    animateColumnChange(el, beforeRects, newlyOpened);
+    var targetScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+    el.scrollLeft = oldScrollLeft;
+    animateColumnChange(el, beforeRects, newlyOpened, oldScrollLeft, targetScrollLeft);
     prevPanelStack = state.panelStack.slice();
   }
 
-  function animateColumnChange(el, beforeRects, newlyOpened) {
+  function appleEase(t) {
+    var x1 = 0.32, y1 = 0.72, x2 = 0, y2 = 1;
+    function A(a1, a2) { return 1 - 3 * a2 + 3 * a1; }
+    function B(a1, a2) { return 3 * a2 - 6 * a1; }
+    function C(a1) { return 3 * a1; }
+    function calcBezier(u, a1, a2) { return ((A(a1, a2) * u + B(a1, a2)) * u + C(a1)) * u; }
+    function getSlope(u, a1, a2) { return 3 * A(a1, a2) * u * u + 2 * B(a1, a2) * u + C(a1); }
+    var u = t;
+    for (var i = 0; i < 6; i++) {
+      var slope = getSlope(u, x1, x2);
+      if (slope === 0) break;
+      u -= (calcBezier(u, x1, x2) - t) / slope;
+    }
+    return calcBezier(u, y1, y2);
+  }
+
+  function animateColumnChange(el, beforeRects, newlyOpened, oldScrollLeft, targetScrollLeft) {
     var appWindow = document.getElementById("appWindow");
     var appRight = appWindow.getBoundingClientRect().right;
     var newKeys = newlyOpened.map(function (id) { return "task:" + id; });
@@ -755,7 +773,8 @@
       }
     }
 
-    if (!plan.length) return;
+    var scrollNeeded = Math.abs(oldScrollLeft - targetScrollLeft) > 1;
+    if (!plan.length && !scrollNeeded) return;
     void el.offsetWidth;
 
     requestAnimationFrame(function () {
@@ -765,6 +784,7 @@
         if (item.isNew) { item.el.style.transform = "translateX(0)"; }
         else { item.el.style.flex = "0 0 " + item.targetWidth + "px"; }
       }
+      if (scrollNeeded) { animateScrollLeft(el, oldScrollLeft, targetScrollLeft, 320); }
       setTimeout(function () {
         for (var q = 0; q < plan.length; q++) {
           plan[q].el.classList.remove("col-animating");
@@ -772,6 +792,18 @@
         }
       }, 340);
     });
+  }
+
+  function animateScrollLeft(el, from, to, duration) {
+    var start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var elapsed = ts - start;
+      var progress = Math.min(elapsed / duration, 1);
+      el.scrollLeft = from + (to - from) * appleEase(progress);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
   function sizeColumns() {
