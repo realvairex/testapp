@@ -204,6 +204,14 @@
   }
   .content-area::-webkit-scrollbar { height: 8px; }
   .content-area::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  /* Transformed elements (the FLIP translateX/scaleX below) count toward
+     their scrolling ancestor's scrollable-overflow area even though they
+     don't affect real layout - during the animation a column can briefly
+     report as "off to the right" and flash a scrollbar that has nothing
+     real to scroll to. The final scroll position is already committed
+     synchronously before the animation starts, so it's safe to just hide
+     the scrollbar chrome for the animation's duration. */
+  .content-area.anim-lock { overflow-x: hidden; }
 
   .column {
     flex: 1 1 0%;
@@ -759,6 +767,7 @@
   // no per-frame reflow during the animation itself, only compositing.
   function runFlip(el, plan, callback) {
     if (!plan.length) { if (callback) callback(); return; }
+    el.classList.add("anim-lock");
     for (var i = 0; i < plan.length; i++) {
       plan[i].column.style.transform = plan[i].fromCol;
       if (plan[i].colInner) plan[i].colInner.style.transform = plan[i].fromInner || "";
@@ -779,6 +788,7 @@
           plan[k].column.style.pointerEvents = "";
           if (plan[k].colInner) { plan[k].colInner.classList.remove("col-animating"); plan[k].colInner.style.transform = ""; }
         }
+        el.classList.remove("anim-lock");
         if (callback) callback();
       }, 460);
     });
