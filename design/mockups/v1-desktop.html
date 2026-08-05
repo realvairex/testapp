@@ -432,6 +432,7 @@
 
   function svgCheck() { return '<svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   function svgPlus() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'; }
+  function svgFolderPlus() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M1.5 4.2c0-.55.45-1 1-1h2.7l1.1 1.3H12c.55 0 1 .45 1 1V11c0 .55-.45 1-1 1H2.5c-.55 0-1-.45-1-1V4.2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><path d="M7.5 7v3.2M5.9 8.6h3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>'; }
   function svgImg() { return '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="6" r="1" fill="currentColor"/><path d="M2 11l3.5-3.5L8 10l2-2 3 3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>'; }
   function svgClose() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'; }
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
@@ -573,7 +574,7 @@
     html += '<div class="sidebar-spacer"></div>';
     html += '<div class="sidebar-bottom-actions">';
     html += '<button class="icon-action-btn" id="newListBtn" type="button" title="Neue Liste" aria-label="Neue Liste">' + svgPlus() + "</button>";
-    html += '<button class="icon-action-btn" id="newGroupBtn" type="button" title="Neue Gruppe" aria-label="Neue Gruppe">' + svgPlus() + "</button>";
+    html += '<button class="icon-action-btn" id="newGroupBtn" type="button" title="Neue Gruppe" aria-label="Neue Gruppe">' + svgFolderPlus() + "</button>";
     html += "</div>";
     el.innerHTML = html;
   }
