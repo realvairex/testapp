@@ -270,14 +270,22 @@
 
   .empty-state { text-align: center; padding: 40px 16px; color: var(--ink-faint); font-size: 13px; }
 
-  .theme-toggle { position: fixed; top: 20px; right: 20px; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: 100px; padding: 7px 13px; cursor: pointer; }
-  .theme-toggle:hover { color: var(--ink); }
+  .options-wrap { position: relative; }
+  .options-panel {
+    position: absolute; left: 0; bottom: calc(100% + 8px); width: 224px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.28); padding: 12px; z-index: 20;
+  }
+  .options-panel[hidden] { display: none; }
+  .options-title { font-size: 11px; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 2px 2px 8px; }
+  .theme-segmented { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; }
+  .theme-seg-btn { flex: 1; border: none; background: transparent; color: var(--ink-soft); font: inherit; font-size: 12px; font-weight: 600; padding: 6px 4px; border-radius: 7px; cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }
+  .theme-seg-btn.active { background: var(--accent); color: var(--accent-ink); }
+  .theme-seg-btn:not(.active):hover { background: var(--line-soft); color: var(--ink); }
 
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .page-editor:focus, .page-editor:focus-visible { outline: none; }
 </style>
-
-<button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
 
 <div class="page">
   <div class="window-frame">
@@ -363,7 +371,7 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {} };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, optionsOpen: false };
   var drag = { type: null, id: null, embedEl: null, embedOwnerId: null };
 
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
@@ -459,6 +467,7 @@
   function svgImg() { return '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="6" r="1" fill="currentColor"/><path d="M2 11l3.5-3.5L8 10l2-2 3 3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>'; }
   function svgClose() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'; }
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  function svgGearPath() { return '<path d="M7.5 5.3a2.2 2.2 0 100 4.4 2.2 2.2 0 000-4.4z" stroke="currentColor" stroke-width="1.1"/><path d="M7.5 1.5v1.3M7.5 12.2v1.3M13.5 7.5h-1.3M2.8 7.5H1.5M11.6 3.4l-.9.9M4.3 10.7l-.9.9M11.6 11.6l-.9-.9M4.3 4.3l-.9-.9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'; }
 
   function svgTrash() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M2.5 3.5h8M5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M3.5 3.5l.5 8a1 1 0 001 1h4a1 1 0 001-1l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
@@ -711,11 +720,28 @@
     }
 
     html += '<div class="sidebar-spacer"></div>';
+
+    var pref = currentThemePref();
+    html += '<div class="options-wrap">';
+    html += '<button class="nav-item" id="optionsBtn" type="button"><svg class="nav-icon" viewBox="0 0 15 15" fill="none">' + svgGearPath() + '</svg><span class="nav-name">Optionen</span></button>';
+    html += '<div class="options-panel" id="optionsPanel"' + (state.optionsOpen ? "" : " hidden") + '>';
+    html += '<div class="options-title">Darstellung</div>';
+    html += '<div class="theme-segmented">';
+    html += '<button class="theme-seg-btn' + (pref === "light" ? " active" : "") + '" data-set-theme="light">Hell</button>';
+    html += '<button class="theme-seg-btn' + (pref === "dark" ? " active" : "") + '" data-set-theme="dark">Dunkel</button>';
+    html += '<button class="theme-seg-btn' + (pref === "system" ? " active" : "") + '" data-set-theme="system">System</button>';
+    html += "</div></div></div>";
+
     html += '<div class="sidebar-bottom-actions">';
     html += '<button class="icon-action-btn primary" id="newListBtn" type="button" title="Neue Liste" aria-label="Neue Liste">' + svgPlus() + "</button>";
     html += '<button class="icon-action-btn" id="newGroupBtn" type="button" title="Neue Gruppe" aria-label="Neue Gruppe">' + svgFolderPlus() + "</button>";
     html += "</div>";
     el.innerHTML = html;
+  }
+
+  function currentThemePref() {
+    var attr = document.documentElement.getAttribute("data-theme");
+    return attr === "dark" ? "dark" : attr === "light" ? "light" : "system";
   }
 
   function listNavItem(l, indented) {
@@ -1176,16 +1202,28 @@
     drag.type = null; drag.embedEl = null; drag.embedOwnerId = null;
   });
 
-  var themeBtn = document.getElementById("themeToggle");
-  themeBtn.addEventListener("click", function () {
-    var root = document.documentElement;
-    var current = root.getAttribute("data-theme");
-    var mqDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    var next = !current ? (mqDark ? "light" : "dark") : (current === "dark" ? "light" : "dark");
-    root.setAttribute("data-theme", next);
-    themeBtn.textContent = next === "dark" ? "Light Mode" : "Dark Mode";
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("#optionsBtn")) {
+      state.optionsOpen = !state.optionsOpen;
+      renderSidebar();
+      return;
+    }
+    var themeChoice = e.target.closest("[data-set-theme]");
+    if (themeChoice) {
+      var choice = themeChoice.getAttribute("data-set-theme");
+      if (choice === "system") { document.documentElement.removeAttribute("data-theme"); }
+      else { document.documentElement.setAttribute("data-theme", choice); }
+      state.optionsOpen = false;
+      renderSidebar();
+      return;
+    }
+    if (state.optionsOpen && !e.target.closest(".options-wrap")) {
+      state.optionsOpen = false;
+      renderSidebar();
+    }
   });
 
+  document.documentElement.setAttribute("data-theme", "light");
   renderAll();
 })();
 </script>
