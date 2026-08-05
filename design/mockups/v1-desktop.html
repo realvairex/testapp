@@ -153,10 +153,11 @@
     flex-direction: column;
     border-right: 1px solid var(--line-soft);
     scroll-snap-align: start;
-    animation: col-in 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+    animation: col-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+    transform-origin: left center;
   }
   .column.closing {
-    animation: col-out 0.18s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    animation: col-out 0.24s cubic-bezier(0.32, 0.72, 0, 1) forwards;
     pointer-events: none;
   }
   .column.column-expanded {
@@ -165,8 +166,8 @@
     transition: flex-basis 0.24s cubic-bezier(0.32, 0.72, 0, 1);
   }
   @media (prefers-reduced-motion: reduce) { .column.column-expanded { transition: none; } }
-  @keyframes col-in { from { opacity: 0; transform: translateX(-18px) scale(0.99); } to { opacity: 1; transform: translateX(0) scale(1); } }
-  @keyframes col-out { to { opacity: 0; transform: translateX(-18px) scale(0.98); } }
+  @keyframes col-in { from { opacity: 0; transform: translateX(-100%); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes col-out { to { opacity: 0; transform: translateX(-100%); } }
   @media (prefers-reduced-motion: reduce) { .column, .column.closing { animation: none; } }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
@@ -690,7 +691,7 @@
       var colEl = el.closest(".column");
       if (colEl && !prefersReducedMotion()) {
         colEl.classList.add("closing");
-        setTimeout(function () { state.panelStack = state.panelStack.slice(0, j2 - 1); renderAll(); }, 180);
+        setTimeout(function () { state.panelStack = state.panelStack.slice(0, j2 - 1); renderAll(); }, 240);
       } else {
         state.panelStack = state.panelStack.slice(0, j2 - 1);
         renderAll();
