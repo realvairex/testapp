@@ -107,7 +107,21 @@
   }
 
   /* --- Sidebar --- */
-  .sidebar { background: var(--surface-sunken); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 18px 12px; overflow-y: auto; }
+  .sidebar { background: var(--surface-sunken); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 18px 12px; overflow-y: auto; transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1); }
+  @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
+
+  .app-window.sidebar-collapsed { grid-template-columns: 0 1fr; }
+  .app-window.sidebar-collapsed .sidebar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 248px;
+    transform: translateX(-100%); z-index: 30;
+    box-shadow: 14px 0 28px -14px rgba(0, 0, 0, 0.3);
+  }
+  .sidebar-hover-zone { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; z-index: 25; }
+  .app-window:not(.sidebar-collapsed) .sidebar-hover-zone { display: none; }
+  .app-window.sidebar-collapsed:has(.sidebar-hover-zone:hover) .sidebar,
+  .app-window.sidebar-collapsed .sidebar:hover {
+    transform: translateX(0);
+  }
   .brand { display: flex; align-items: center; gap: 9px; padding: 4px 8px 20px; }
   .brand-mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .brand-name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
@@ -291,6 +305,7 @@
   <div class="window-frame">
     <div class="app-window" id="appWindow">
       <aside class="sidebar" id="sidebar"></aside>
+      <div class="sidebar-hover-zone" id="sidebarHoverZone"></div>
       <div class="content-area" id="contentArea"></div>
     </div>
   </div>
@@ -768,7 +783,11 @@
     return '<button class="nav-item' + (opts.active ? " active" : "") + '" ' + attrs + ' type="button">' + iconOrDot + '<span class="nav-name">' + escapeHtml(opts.label) + '</span><span class="nav-count">' + opts.count + "</span></button>";
   }
 
-  function renderAll() { renderSidebar(); renderColumns(); }
+  function renderAll() {
+    renderSidebar();
+    renderColumns();
+    document.getElementById("appWindow").classList.toggle("sidebar-collapsed", state.panelStack.length >= 2);
+  }
 
   function scrollToEnd() {
     requestAnimationFrame(function () {
