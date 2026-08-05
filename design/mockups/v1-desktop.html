@@ -982,6 +982,22 @@
     renderColumns();
   }
 
+  // Closing a panel never changes any task/list data - it's a pure view
+  // action. renderAll()/renderColumns() rebuild every visible column's
+  // innerHTML from scratch (incl. the contenteditable page editors), which
+  // is safe but tears down and recreates DOM the user never touched,
+  // reading as an unwanted "refresh" flash right as the close animation
+  // settles. Removing just the closed column nodes leaves untouched
+  // survivor columns' DOM (and editor state/cursor) completely alone.
+  function closeColumnsFrom(fromColIndex) {
+    var el = document.getElementById("contentArea");
+    var cols = el.querySelectorAll(".column[data-col-index]");
+    for (var i = 0; i < cols.length; i++) {
+      if (parseInt(cols[i].getAttribute("data-col-index"), 10) >= fromColIndex) cols[i].remove();
+    }
+    prevPanelStack = state.panelStack.slice();
+  }
+
   function prefersReducedMotion() {
     return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
@@ -1117,7 +1133,7 @@
       document.getElementById("appWindow").classList.toggle("sidebar-collapsed", j2 - 1 >= 2);
       animatePanelsClosing(j2, function () {
         state.panelStack = state.panelStack.slice(0, j2 - 1);
-        renderAll();
+        closeColumnsFrom(j2);
       });
       return;
     }
@@ -1184,7 +1200,7 @@
     }
     if (e.key === "Escape" && state.panelStack.length) {
       document.getElementById("appWindow").classList.remove("sidebar-collapsed");
-      animatePanelsClosing(1, function () { state.panelStack = []; renderAll(); });
+      animatePanelsClosing(1, function () { state.panelStack = []; closeColumnsFrom(1); });
     }
   });
 
