@@ -388,3 +388,41 @@ keine Scrollbar). Bei 4 offenen Spalten (Verschachtelungstiefe 3)
 1038px) und die Scrollbar erscheint wie gewünscht erst dann.
 
 ---
+
+## 2026-08-05 — Scrollbar flackerte bei jeder Panel-Animation (auch beim allerersten Panel)
+
+**Kontext:** Der 2px-Border-Fix (Eintrag oben) hat den Ruhezustand
+korrigiert, aber der Nutzer meldete: die Scrollbar erscheint weiterhin
+kurz, sobald man das erste Sidepanel öffnet, und verschwindet danach
+wieder — nicht nur ab 3 Spalten.
+
+**Root Cause:** Die Push-Animation nutzt reine CSS-`transform`s
+(`translateX`/`scaleX`) für die FLIP-Technik. Chromium/Firefox zählen den
+transformierten Grenzrahmen eines Elements zum "scrollable overflow"
+seines scrollenden Vorfahren dazu — obwohl `transform` den echten
+Layout-Kasten (und damit `flex-basis`/normale Breite) gar nicht
+verändert. Eine neu geöffnete Spalte startet ihre Animation mit
+`translateX(...)`, das sie visuell weit rechts außerhalb des sichtbaren
+Bereichs positioniert; dieser transformierte Zustand lässt
+`contentArea.scrollWidth` kurzzeitig (für die Dauer der ~450ms-Animation)
+weit über die tatsächliche Breite hinausschießen, obwohl am Ende (und am
+Anfang) kein echter Überlauf existiert. Das erzeugte das gemeldete
+Aufblitzen der Scrollbar bei jeder Öffnen/Schließen-Aktion.
+
+**Entscheidung:** Neue CSS-Klasse `.content-area.anim-lock { overflow-x:
+hidden; }`, die in `runFlip()` genau für die Dauer der Transform-Animation
+gesetzt und danach wieder entfernt wird. Da die echte Scroll-Position
+(`scrollLeft`) bereits synchron vor Animationsstart auf ihr korrektes
+Endziel gesetzt wird, ist das rein kosmetische Ausblenden der
+Scrollbar-Leiste während der kurzen Animation unbedenklich — nichts, was
+der Nutzer in diesem Sekundenbruchteil tatsächlich bedienen könnte, geht
+verloren.
+
+**Verifikation:** Per Playwright über alle Animations-Frames geprüft:
+`overflow-x` bleibt durchgängig `hidden` solange `.anim-lock` gesetzt ist,
+`clientHeight` der Content-Area bleibt während der gesamten Animation
+konstant (keine Höhenänderung durch erscheinende/verschwindende
+Scrollbar mehr). Screenshot zur Kontrolle mitten in der Animation zeigt
+keine sichtbare Scrollbar.
+
+---
