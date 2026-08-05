@@ -195,11 +195,6 @@
     border-right: 1px solid var(--line-soft);
     scroll-snap-align: start;
   }
-  .column.col-enter { animation: col-in 0.34s cubic-bezier(0.32, 0.72, 0, 1); }
-  @keyframes col-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
-  @media (prefers-reduced-motion: reduce) { .column.col-enter { animation: none; } }
-  .column.col-push { transition: flex-basis 0.34s cubic-bezier(0.32, 0.72, 0, 1); }
-  @media (prefers-reduced-motion: reduce) { .column.col-push { transition: none; } }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
   .col-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -645,24 +640,15 @@
     sel.addRange(range);
   }
 
-  var prevPanelStack = [];
-
   function renderColumns() {
     var el = document.getElementById("contentArea");
     var html = "";
-    var newlyOpened = state.panelStack.filter(function (id) { return prevPanelStack.indexOf(id) === -1; });
-
-    var beforeRects = {};
-    var prevCols = el.querySelectorAll(".column[data-col-key]");
-    for (var bi = 0; bi < prevCols.length; bi++) {
-      beforeRects[prevCols[bi].getAttribute("data-col-key")] = prevCols[bi].getBoundingClientRect().width;
-    }
 
     if (state.view === "today") {
       var d = new Date(TODAY_ISO + "T00:00:00");
       var weekdays = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
       var months = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-      html += '<div class="column" data-col-index="0" data-col-key="today">';
+      html += '<div class="column" data-col-index="0">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">Heute</h2></div>';
       html += '<div class="col-meta">' + weekdays[d.getDay()] + ", " + d.getDate() + ". " + months[d.getMonth()] + "</div></div>";
       html += '<div class="blocks">';
@@ -687,7 +673,7 @@
     } else {
       var list = findList(state.currentListId);
       var c = countAll(list.tasks);
-      html += '<div class="column" data-col-index="0" data-col-key="list:' + list.id + '">';
+      html += '<div class="column" data-col-index="0">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
       html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
@@ -701,7 +687,7 @@
       var colIndex = p + 1;
       var node = findTaskGlobal(state.panelStack[p]);
       if (!node) continue;
-      html += '<div class="column" data-col-index="' + colIndex + '" data-col-key="task:' + node.id + '">';
+      html += '<div class="column" data-col-index="' + colIndex + '">';
       html += '<div class="col-header"><div class="col-header-top">';
       html += '<input class="col-title' + (node.done ? " done" : "") + '" value="' + escapeHtml(node.title) + '" data-title-for="' + node.id + '" />';
       html += '<button class="col-close" data-close-col="' + colIndex + '" aria-label="Seite schließen">' + svgClose() + "</button>";
@@ -721,29 +707,6 @@
     el.innerHTML = html;
     mountEditors();
     sizeColumns();
-
-    for (var q = 0; q < newlyOpened.length; q++) {
-      var enterEl = el.querySelector('.column[data-col-index="' + (state.panelStack.indexOf(newlyOpened[q]) + 1) + '"]');
-      if (enterEl) enterEl.classList.add("col-enter");
-    }
-
-    var flipEls = el.querySelectorAll(".column[data-col-key]");
-    for (var fi = 0; fi < flipEls.length; fi++) {
-      (function (colEl) {
-        var key = colEl.getAttribute("data-col-key");
-        var oldWidth = beforeRects[key];
-        if (oldWidth === undefined) return;
-        var newWidth = colEl.getBoundingClientRect().width;
-        if (Math.abs(oldWidth - newWidth) < 1) return;
-        colEl.style.flex = "0 0 " + oldWidth + "px";
-        void colEl.offsetWidth;
-        colEl.classList.add("col-push");
-        requestAnimationFrame(function () { colEl.style.flex = "0 0 " + newWidth + "px"; });
-        setTimeout(function () { colEl.classList.remove("col-push"); }, 380);
-      })(flipEls[fi]);
-    }
-
-    prevPanelStack = state.panelStack.slice();
   }
 
   function sizeColumns() {
