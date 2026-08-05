@@ -883,7 +883,7 @@
   // toggle `.sidebar-collapsed` to its FINAL target state first.
   function contentAreaWidth() {
     var appWindow = document.getElementById("appWindow");
-    var full = appWindow.getBoundingClientRect().width;
+    var full = appWindow.clientWidth; // excludes the 1px border on each side
     return appWindow.classList.contains("sidebar-collapsed") ? full : full - 248;
   }
 
