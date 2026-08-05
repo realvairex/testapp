@@ -153,11 +153,10 @@
     flex-direction: column;
     border-right: 1px solid var(--line-soft);
     scroll-snap-align: start;
-    animation: col-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
-    transform-origin: left center;
+    animation: col-in 0.42s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .column.closing {
-    animation: col-out 0.24s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    animation: col-out 0.32s cubic-bezier(0.32, 0, 0.67, 0) forwards;
     pointer-events: none;
   }
   .column.column-expanded {
@@ -166,8 +165,8 @@
     transition: flex-basis 0.24s cubic-bezier(0.32, 0.72, 0, 1);
   }
   @media (prefers-reduced-motion: reduce) { .column.column-expanded { transition: none; } }
-  @keyframes col-in { from { opacity: 0; transform: translateX(-100%); } to { opacity: 1; transform: translateX(0); } }
-  @keyframes col-out { to { opacity: 0; transform: translateX(-100%); } }
+  @keyframes col-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes col-out { to { transform: translateX(100%); } }
   @media (prefers-reduced-motion: reduce) { .column, .column.closing { animation: none; } }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
@@ -598,7 +597,7 @@
   function scrollToEnd() {
     requestAnimationFrame(function () {
       var el = document.getElementById("contentArea");
-      el.scrollTo({ left: el.scrollWidth, behavior: "smooth" });
+      el.scrollLeft = el.scrollWidth;
     });
   }
 
@@ -691,7 +690,7 @@
       var colEl = el.closest(".column");
       if (colEl && !prefersReducedMotion()) {
         colEl.classList.add("closing");
-        setTimeout(function () { state.panelStack = state.panelStack.slice(0, j2 - 1); renderAll(); }, 240);
+        setTimeout(function () { state.panelStack = state.panelStack.slice(0, j2 - 1); renderAll(); }, 320);
       } else {
         state.panelStack = state.panelStack.slice(0, j2 - 1);
         renderAll();
