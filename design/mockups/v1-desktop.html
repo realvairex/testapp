@@ -193,11 +193,16 @@
   .col-close:active { transform: scale(0.9); }
 
   .col-progress-row { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; }
-  .col-progress-track { flex: 1; height: 5px; border-radius: 100px; background: var(--line); overflow: hidden; }
+  .col-progress-track { flex: 1; height: 6px; border-radius: 100px; background: var(--line); overflow: hidden; }
   .col-progress-track > span { display: block; height: 100%; background: var(--accent); border-radius: 100px; transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
   .col-progress-label { font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
-  .editor-toolbar { display: flex; gap: 6px; margin: 10px 18px 2px; flex-shrink: 0; }
+  .quick-add { margin: 10px 18px 0; display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 10px; flex-shrink: 0; }
+  .quick-add svg { color: var(--accent); flex-shrink: 0; }
+  .quick-add input { border: none; background: transparent; outline: none; font: inherit; font-size: 13px; color: var(--ink); flex: 1; min-width: 0; }
+  .quick-add input::placeholder { color: var(--ink-faint); }
+
+  .editor-toolbar { display: flex; gap: 6px; margin: 8px 18px 2px; flex-shrink: 0; }
   .insert-btn { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: 100px; padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
   .insert-btn:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .insert-btn:active { transform: scale(0.95); }
@@ -217,7 +222,10 @@
   .page-editor:empty::before { content: attr(data-placeholder); color: var(--ink-faint); pointer-events: none; }
   .page-editor div { min-height: 1.65em; }
 
-  .inline-embed { position: relative; margin: 3px 0; animation: block-in 0.18s ease; overflow: hidden; }
+  .inline-embed { position: relative; margin: 3px 0; animation: block-in 0.18s ease; overflow: hidden; cursor: grab; }
+  .inline-embed.drag-ghost { opacity: 0.35; }
+  .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
+  .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
   @keyframes block-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
   .inline-embed.removing { animation: none; transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; margin: 0 !important; }
   @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity 0.15s ease; } }
@@ -251,7 +259,7 @@
 
   .list-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-  .mini-progress { width: 28px; height: 4px; border-radius: 100px; background: var(--line); flex-shrink: 0; overflow: hidden; }
+  .mini-progress { width: 34px; height: 5px; border-radius: 100px; background: var(--line); flex-shrink: 0; overflow: hidden; }
   .mini-progress > span { display: block; height: 100%; background: var(--accent); border-radius: 100px; transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
 
   .due-pill { font-size: 10.5px; font-weight: 600; padding: 3px 7px; border-radius: 100px; background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
@@ -356,7 +364,7 @@
   ];
 
   var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {} };
-  var drag = { type: null, id: null };
+  var drag = { type: null, id: null, embedEl: null, embedOwnerId: null };
 
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
   function findGroup(id) { for (var i = 0; i < groups.length; i++) { if (groups[i].id === id) return groups[i]; } return null; }
@@ -485,6 +493,7 @@
     var wrap = document.createElement("div");
     wrap.className = "inline-embed";
     wrap.contentEditable = "false";
+    wrap.draggable = true;
     wrap.setAttribute("data-embed-marker", "task:" + node.id);
     wrap.appendChild(tmp.firstElementChild);
     return wrap;
@@ -494,6 +503,7 @@
     var wrap = document.createElement("div");
     wrap.className = "inline-embed";
     wrap.contentEditable = "false";
+    wrap.draggable = true;
     wrap.setAttribute("data-embed-marker", "image:" + block.id);
     wrap.innerHTML = '<div class="block-image">' + svgImg() + "<span>" + escapeHtml(block.caption || "Bild") + ' · Platzhalter</span></div><button class="row-delete" data-delete-owner="' + ownerId + '" data-delete-block="' + block.id + '" data-delete-kind="image" aria-label="Bild löschen">' + svgTrash() + "</button>";
     return wrap;
@@ -587,21 +597,23 @@
   }
 
   function insertEmbedInEditor(editorEl, node) {
-    editorEl.focus();
     var sel = window.getSelection();
+    var hasCursorHere = sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode);
     var range;
-    if (sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode)) {
+    if (hasCursorHere) {
       range = sel.getRangeAt(0);
     } else {
+      // not focused/positioned in this page: insert at the very top instead of the end
       range = document.createRange();
       range.selectNodeContents(editorEl);
-      range.collapse(false);
+      range.collapse(true);
     }
     range.deleteContents();
     range.insertNode(node);
     range.setStartAfter(node);
     range.setEndAfter(node);
     range.collapse(true);
+    editorEl.focus();
     sel.removeAllRanges();
     sel.addRange(range);
   }
@@ -642,6 +654,7 @@
       html += '<div class="column" data-col-index="0">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
+      html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Aufgabe hinzufügen …" data-quick-add="0" autocomplete="off" /></div>';
       html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="0">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"0\">" + svgPlus() + " Bild</button></div>";
       html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
       html += "</div>";
@@ -668,6 +681,7 @@
         html += "</div>";
       }
       html += "</div>";
+      html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Unteraufgabe hinzufügen …" data-quick-add="' + colIndex + '" autocomplete="off" /></div>';
       html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="' + colIndex + '">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"" + colIndex + "\">" + svgPlus() + " Bild</button></div>";
       html += '<div class="blocks"><div data-editor-slot="' + node.id + '" data-editor-col="' + colIndex + '"></div></div>';
       html += "</div>";
@@ -919,6 +933,23 @@
   });
 
   document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target && e.target.hasAttribute && e.target.hasAttribute("data-quick-add")) {
+      e.preventDefault();
+      var val = e.target.value.trim();
+      if (!val) return;
+      var colIndex = parseInt(e.target.getAttribute("data-quick-add"), 10);
+      var owner = ownerAt(colIndex);
+      if (!owner) return;
+      var t = task(val);
+      childrenOf(owner).push(t);
+      owner.blocks.push({ type: "task", id: t.id });
+      if (owner.subtasks) { owner.done = false; recomputeAncestors(owner.id); }
+      e.target.value = "";
+      renderAll();
+      var again = document.querySelector('[data-quick-add="' + colIndex + '"]');
+      if (again) again.focus();
+      return;
+    }
     if (e.key === "Escape" && state.panelStack.length) { state.panelStack = []; renderAll(); }
   });
 
@@ -1086,6 +1117,63 @@
     clearDropIndicator();
     drag.type = null; drag.id = null;
     renderSidebar();
+  });
+
+  var embedDropIndicatorEl = null;
+  function clearEmbedDropIndicator() {
+    if (embedDropIndicatorEl) { embedDropIndicatorEl.classList.remove("drop-before", "drop-after"); embedDropIndicatorEl = null; }
+  }
+
+  document.addEventListener("dragstart", function (e) {
+    var handle = e.target.closest(".inline-embed[data-embed-marker]");
+    if (!handle) return;
+    var editor = handle.closest(".page-editor");
+    if (!editor) return;
+    drag.type = "embed";
+    drag.embedEl = handle;
+    drag.embedOwnerId = editor.getAttribute("data-editor-for");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", handle.getAttribute("data-embed-marker"));
+    setTimeout(function () { handle.classList.add("drag-ghost"); }, 0);
+  });
+
+  document.addEventListener("dragover", function (e) {
+    if (drag.type !== "embed") return;
+    var target = e.target.closest(".inline-embed[data-embed-marker]");
+    if (!target || target === drag.embedEl) return;
+    var editor = target.closest(".page-editor");
+    if (!editor || editor.getAttribute("data-editor-for") !== drag.embedOwnerId) return;
+    e.preventDefault();
+    var rect = target.getBoundingClientRect();
+    var pos = e.clientY < rect.top + rect.height / 2 ? "drop-before" : "drop-after";
+    clearEmbedDropIndicator();
+    target.classList.add(pos);
+    embedDropIndicatorEl = target;
+  });
+
+  document.addEventListener("drop", function (e) {
+    if (drag.type !== "embed") return;
+    var target = e.target.closest(".inline-embed[data-embed-marker]");
+    if (target && target !== drag.embedEl) {
+      var editor = target.closest(".page-editor");
+      if (editor && editor.getAttribute("data-editor-for") === drag.embedOwnerId) {
+        e.preventDefault();
+        var rect = target.getBoundingClientRect();
+        var pos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
+        if (pos === "before") { target.parentNode.insertBefore(drag.embedEl, target); }
+        else { target.parentNode.insertBefore(drag.embedEl, target.nextSibling); }
+        serializeEditor(drag.embedOwnerId);
+        renderAll();
+      }
+    }
+    clearEmbedDropIndicator();
+  });
+
+  document.addEventListener("dragend", function (e) {
+    if (drag.type !== "embed") return;
+    if (drag.embedEl) drag.embedEl.classList.remove("drag-ghost");
+    clearEmbedDropIndicator();
+    drag.type = null; drag.embedEl = null; drag.embedOwnerId = null;
   });
 
   var themeBtn = document.getElementById("themeToggle");
