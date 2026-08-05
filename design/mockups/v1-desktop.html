@@ -96,8 +96,7 @@
     width: 100%;
     max-width: 1040px;
     height: 640px;
-    display: grid;
-    grid-template-columns: 248px 1fr;
+    display: flex;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-window);
@@ -106,14 +105,33 @@
     position: relative;
   }
 
-  /* --- Sidebar --- */
-  .sidebar { background: var(--surface-sunken); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 18px 12px; overflow-y: auto; transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1); }
+  /* --- Sidebar ---
+     The sidebar itself is always position:absolute and only ever animates
+     `transform` (compositor-only, no reflow). A separate invisible
+     `.sidebar-track` flex item reserves/releases its 248px of space so the
+     content-area resizes via a plain, natively-interpolated CSS transition
+     on flex-basis instead of an instant grid-template-columns snap. Both
+     run concurrently with the JS column FLIP animation, started in the
+     same tick, so nothing has to "wait" for the sidebar and there's no
+     freeze-frame between the two. */
+  .sidebar-track {
+    flex: 0 0 248px;
+    transition: flex-basis 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .app-window.sidebar-collapsed .sidebar-track { flex-basis: 0; }
+  @media (prefers-reduced-motion: reduce) { .sidebar-track { transition: none; } }
+
+  .sidebar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 248px; z-index: 30;
+    background: var(--surface-sunken); border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; padding: 18px 12px; overflow-y: auto;
+    transform: translateX(0);
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  }
   @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
 
-  .app-window.sidebar-collapsed { grid-template-columns: 0 1fr; }
   .app-window.sidebar-collapsed .sidebar {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 248px;
-    transform: translateX(-100%); z-index: 30;
+    transform: translateX(-100%);
     box-shadow: 14px 0 28px -14px rgba(0, 0, 0, 0.3);
   }
   .sidebar-hover-zone { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; z-index: 25; }
@@ -175,7 +193,8 @@
 
   /* --- Content: horizontal column stack --- */
   .content-area {
-    grid-column: 2;
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
@@ -311,6 +330,7 @@
 <div class="page">
   <div class="window-frame">
     <div class="app-window" id="appWindow">
+      <div class="sidebar-track" aria-hidden="true"></div>
       <aside class="sidebar" id="sidebar"></aside>
       <div class="sidebar-hover-zone" id="sidebarHoverZone"></div>
       <div class="content-area" id="contentArea"></div>
@@ -727,7 +747,7 @@
     el.innerHTML = html;
     mountEditors();
     sizeColumns();
-    el.scrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+    el.scrollLeft = Math.max(0, el.scrollWidth - contentAreaWidth());
     animateColumnChange(el, beforeRects, newlyOpened);
     prevPanelStack = state.panelStack.slice();
   }
@@ -816,7 +836,7 @@
     }
 
     var survivingCount = survivingEls.length || 1;
-    var contentWidth = el.clientWidth;
+    var contentWidth = contentAreaWidth();
     var newSurvivorWidth = Math.max(240, contentWidth / Math.min(survivingCount, 3));
 
     // Commit the final layout instantly (temporary - afterClose() rebuilds
@@ -857,11 +877,21 @@
     runFlip(el, plan, afterClose);
   }
 
+  // The content-area's true final width, independent of how far the
+  // sidebar-track's CSS transition has progressed at the moment this is
+  // called (its `clientWidth` is ambiguous mid-transition). Callers must
+  // toggle `.sidebar-collapsed` to its FINAL target state first.
+  function contentAreaWidth() {
+    var appWindow = document.getElementById("appWindow");
+    var full = appWindow.getBoundingClientRect().width;
+    return appWindow.classList.contains("sidebar-collapsed") ? full : full - 248;
+  }
+
   function sizeColumns() {
     var el = document.getElementById("contentArea");
     var cols = el.querySelectorAll(".column");
     if (!cols.length) return;
-    var available = el.clientWidth;
+    var available = contentAreaWidth();
     var perColumn = Math.max(240, available / Math.min(cols.length, 3));
     for (var i = 0; i < cols.length; i++) {
       cols[i].style.flex = "0 0 " + perColumn + "px";
@@ -1074,6 +1104,7 @@
     el = e.target.closest("[data-close-col]");
     if (el) {
       var j2 = parseInt(el.getAttribute("data-close-col"), 10);
+      document.getElementById("appWindow").classList.toggle("sidebar-collapsed", j2 - 1 >= 2);
       animatePanelsClosing(j2, function () {
         state.panelStack = state.panelStack.slice(0, j2 - 1);
         renderAll();
@@ -1142,6 +1173,7 @@
       return;
     }
     if (e.key === "Escape" && state.panelStack.length) {
+      document.getElementById("appWindow").classList.remove("sidebar-collapsed");
       animatePanelsClosing(1, function () { state.panelStack = []; renderAll(); });
     }
   });

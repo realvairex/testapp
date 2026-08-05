@@ -282,3 +282,74 @@ Löschen (inkl. Kaskaden-Effekt auf Panel/Heute-Ansicht) und Drag&Drop-
 Bild-Einfügen verifiziert.
 
 ---
+
+## 2026-08-05 — Push-Animation: Ursache für "Standbild"/"spawnt nur" gefunden und App-Shell auf Flex umgebaut
+
+**Kontext:** Die Spalten-Push-Animation (Miller-Columns, Vorbild
+[tympanus.net/Development/SidebarTransitions](https://tympanus.net/Development/SidebarTransitions/),
+"Push"-Effekt) wurde mehrfach neu geschrieben (Keyframes → FLIP auf
+`flex-basis` → reines FLIP auf `transform`/`scaleX`, GPU-only) und in jeder
+Version per Headless-Browser (Playwright, Frame-Timing-Messung) als
+60fps/korrekt verifiziert — trotzdem meldete der Nutzer in der echten
+Umgebung weiterhin Probleme, zuletzt präzise eingegrenzt auf: "erst ab der
+3. Spalte ist es nicht mehr smooth", weitere Spalten "spawnen nur" statt
+sichtbar reinzuschieben, und beim Schließen der 3. Spalte (zurück auf 2)
+gibt es dazwischen ein "Standbild", bis alles fertig ist.
+
+**Root Cause:** Die Sidebar wurde bisher über CSS Grid ausgeblendet
+(`grid-template-columns: 248px 1fr` → `0 1fr`, kombiniert mit einem
+Wechsel von `position: static` auf `position: absolute` bei der Sidebar
+selbst). Beides sind Eigenschaften, die sich grundsätzlich nicht animieren
+lassen — der Wechsel passiert als harter, sofortiger Sprung im selben
+Frame. Dieser Sprung war zudem zeitlich falsch einsortiert: Beim Öffnen
+wurde die Sidebar-Collapse-Klasse zwar vor der Spalten-Messung
+umgeschaltet, aber weil der Sprung sofort (nicht über 300+ ms) passiert,
+hatte die Spalten-FLIP-Animation keine sichtbare Bewegung mehr zu zeigen —
+die Fläche war ja schon da ("spawnt nur"). Beim Schließen war es noch
+schlimmer: Die Sidebar-Klasse wurde erst NACH Abschluss der
+Schließ-Animation umgeschaltet (in `afterClose()`), wodurch die
+Spalten-Breiten während der Animation auf Basis der FALSCHEN
+(noch-sidebar-ausgeblendet) Content-Breite berechnet wurden — die
+Animation lief smooth zu einem falschen Ziel, gefolgt von einem
+unanimierten Sprung zur echten Endbreite, sobald die Sidebar zurückkam.
+Das ist exakt das gemeldete "Standbild".
+
+**Entscheidung:** App-Shell von CSS Grid auf Flexbox umgebaut:
+- Die Sidebar selbst ist jetzt IMMER `position: absolute` (kein
+  Positions-Wechsel mehr) und animiert ausschließlich `transform:
+  translateX(...)` — eine reine Compositor-Eigenschaft, jederzeit
+  animierbar, unabhängig vom Rest.
+- Ein neues unsichtbares `.sidebar-track`-Element reserviert als
+  Flex-Item die 248px Platz für die Sidebar und animiert nur
+  `flex-basis` per normalem CSS `transition` (keine Grid-Spalten mehr,
+  kein JS nötig) — das lässt die Content-Area nativ und flüssig breiter/
+  schmaler werden.
+- Eine neue Hilfsfunktion `contentAreaWidth()` berechnet die
+  Ziel-Breite der Content-Area analytisch aus der (stabilen)
+  Gesamtbreite des App-Fensters minus 248px, statt `element.clientWidth`
+  auszulesen — letzteres ist während einer laufenden CSS-Transition
+  mehrdeutig und lieferte teils den alten, teils einen Zwischenwert.
+  `sizeColumns()`, `animatePanelsClosing()` und der finale
+  `scrollLeft`-Abgleich in `renderColumns()` nutzen jetzt diese Funktion.
+- Beim Schließen eines Panels (Klick auf Schließen-Button sowie Escape)
+  wird `sidebar-collapsed` jetzt VOR dem Start der Schließ-Animation auf
+  den korrekten Zielzustand gesetzt (berechnet aus der zukünftigen
+  Panel-Stack-Länge), nicht erst danach in `renderAll()`.
+
+Damit laufen drei unabhängige, aber zeitgleich gestartete Animationen
+parallel: die Sidebar-Verschiebung (CSS `transform`-Transition), die
+Content-Area-Verbreiterung (CSS `flex-basis`-Transition) und die
+Spalten-Verschiebung/-Skalierung (JS-FLIP auf `transform`) — alle ~0,4s,
+gleiche Easing-Kurve, kein Schritt wartet mehr auf den Abschluss eines
+anderen.
+
+**Verifikation:** Per Playwright Frame-für-Frame die Breite der
+Content-Area beim Öffnen der 3. und beim Schließen zurück auf 2 Spalten
+gemessen: Die Breite ändert sich jetzt über ca. 25 aufeinanderfolgende
+Frames kontinuierlich (z.B. 790→1038px beim Öffnen, 1038→790px beim
+Schließen) statt in einem Sprung mit anschließendem Sprung — kein
+"Standbild"-Plateau mehr messbar. Da automatisierte Messungen in dieser
+Session bereits mehrfach nicht mit dem tatsächlichen Nutzererlebnis
+übereinstimmten, steht die reale Bestätigung durch den Nutzer noch aus.
+
+---
