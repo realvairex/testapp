@@ -146,6 +146,15 @@ Schema Overhead ohne Gegenwert. Git-Tags liefern denselben Kernnutzen
 Zusatzaufwand und passen zur bestehenden Backup-Konvention (häufige,
 kleine Commits).
 
+**Korrektur (selber Tag):** Der Push des ersten Tags schlug fehl (HTTP 403)
+— die Session-Umgebung erlaubt nur Pushes auf den freigegebenen
+Arbeits-Branch, keine zusätzlichen Git-Referenzen wie Tags. Ein rein
+lokaler Tag würde beim Verwerfen des Session-Containers verloren gehen und
+wäre damit kein echtes Backup. Stattdessen: `docs/milestones.md` — eine
+normale, mitcommittete Datei, die Meilensteine mit Commit-Hash auflistet.
+Funktional gleichwertig (`git checkout <hash>` statt `git checkout <tag>`),
+aber zuverlässig persistent über den normalen Push-Weg.
+
 ---
 
 ## 2026-08-05 — Name: Unfold

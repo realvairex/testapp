@@ -49,9 +49,11 @@ Für dieses Projekt gilt durchgängig:
   muss.
 - **Meilensteine:** Bedeutsame Zwischenstände (abgeschlossene
   Mockup-Iterationen, erste lauffähige Version, etc.) werden selbstständig
-  per Git-Tag markiert — im Zweifel lieber häufiger als zu selten, ohne
-  dass der Nutzer danach fragen muss. Volles Semantic-Versioning-Schema
-  erst ab echtem App-Code (siehe `docs/decisions.md`).
+  in `docs/milestones.md` mit Commit-Hash festgehalten — im Zweifel lieber
+  häufiger als zu selten, ohne dass der Nutzer danach fragen muss. (Git-Tags
+  können in dieser Session-Umgebung nicht gepusht werden, siehe
+  `docs/decisions.md`.) Volles Semantic-Versioning-Schema erst ab echtem
+  App-Code.
 
 ## Status
 
@@ -71,3 +73,4 @@ Code im Browser) und Mobile (PWA oder React Native). Siehe
 - `CLAUDE.md` — dieser Datei: Projektüberblick, Konventionen (dieses Dokument)
 - `docs/concept.md` — Produktvision, Inspiration, Feature-Liste, Design-Richtung
 - `docs/decisions.md` — laufendes Entscheidungsprotokoll
+- `docs/milestones.md` — Meilensteine mit Commit-Hash zum Zurückspringen
