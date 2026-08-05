@@ -208,9 +208,6 @@
   .col-close:active { transform: scale(0.9); }
 
   .col-progress-row { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; }
-  .col-progress-track { flex: 1; height: 6px; border-radius: 100px; background: var(--line); overflow: hidden; }
-  .col-progress-track > span { display: block; height: 100%; background: var(--accent); border-radius: 100px; transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
-  .col-progress-label { font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
   .quick-add { margin: 8px 18px 12px; display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 10px; flex-shrink: 0; }
   .quick-add svg { color: var(--accent); flex-shrink: 0; }
@@ -690,19 +687,14 @@
       var colIndex = p + 1;
       var node = findTaskGlobal(state.panelStack[p]);
       if (!node) continue;
-      var prog = progress(node);
       html += '<div class="column" data-col-index="' + colIndex + '">';
       html += '<div class="col-header"><div class="col-header-top">';
       html += '<input class="col-title' + (node.done ? " done" : "") + '" value="' + escapeHtml(node.title) + '" data-title-for="' + node.id + '" />';
       html += '<button class="col-close" data-close-col="' + colIndex + '" aria-label="Seite schließen">' + svgClose() + "</button>";
       html += "</div>";
-      if (node.due || prog) {
+      if (node.due) {
         html += '<div class="col-progress-row">';
-        if (node.due) html += '<span class="due-pill' + (node.due === TODAY_ISO ? " today" : "") + '">' + formatDue(node.due) + "</span>";
-        if (prog) {
-          var pct2 = Math.round((prog.done / prog.total) * 100);
-          html += '<span class="col-progress-track"><span style="width:' + pct2 + '%"></span></span><span class="col-progress-label">' + prog.done + "/" + prog.total + "</span>";
-        }
+        html += '<span class="due-pill' + (node.due === TODAY_ISO ? " today" : "") + '">' + formatDue(node.due) + "</span>";
         html += "</div>";
       }
       html += "</div>";
