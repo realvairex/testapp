@@ -88,13 +88,7 @@
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 
-  .page { max-width: 1180px; margin: 0 auto; padding: 56px 24px 96px; }
-  .intro { max-width: 660px; margin: 0 auto 40px; text-align: center; }
-  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); }
-  .intro h1 { font-size: clamp(32px, 4vw, 42px); line-height: 1.1; letter-spacing: -0.02em; margin: 10px 0 12px; text-wrap: balance; font-weight: 700; }
-  .intro p { font-size: 16px; line-height: 1.6; color: var(--ink-soft); margin: 0; text-wrap: balance; }
-  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 22px; }
-  .legend span { font-size: 12.5px; font-weight: 500; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: 100px; padding: 6px 13px; }
+  .page { max-width: 1180px; margin: 0 auto; padding: 40px 24px 96px; }
 
   .window-frame { display: flex; justify-content: center; }
 
@@ -128,7 +122,24 @@
   .nav-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-count { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: right; }
   .nav-item.active .nav-count { color: var(--accent); }
-  .new-list-btn { margin-top: 10px; display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: none; background: transparent; border-radius: 8px; font-size: 13.5px; color: var(--ink-faint); cursor: pointer; font-family: inherit; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+  .nav-item-indented { padding-left: 26px; }
+  .nav-item[draggable="true"], .group-row[draggable="true"] { cursor: grab; }
+  .nav-item.drag-ghost { opacity: 0.35; }
+
+  .group-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 4px 7px 6px; border-radius: 8px; margin-top: 2px; }
+  .group-row.drag-ghost { opacity: 0.35; }
+  .group-chevron { width: 16px; height: 16px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .group-chevron svg { transition: transform 0.15s ease; }
+  .group-chevron.collapsed svg { transform: rotate(-90deg); }
+  .group-title { flex: 1; min-width: 0; border: none; background: transparent; font: inherit; font-size: 12.5px; font-weight: 650; letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: 4px; }
+  .group-title:focus { outline: none; background: var(--surface); box-shadow: 0 0 0 1px var(--line); text-transform: none; }
+
+  .drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
+  .drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
+  .drop-into { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
+
+  .sidebar-actions { display: flex; flex-direction: column; margin-top: 10px; }
+  .new-list-btn { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: none; background: transparent; border-radius: 8px; font-size: 13.5px; color: var(--ink-faint); cursor: pointer; font-family: inherit; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
   .new-list-btn:hover { background: var(--line-soft); color: var(--ink-soft); }
   .new-list-btn:active { transform: scale(0.97); }
   .sidebar-spacer { flex: 1; }
@@ -246,24 +257,6 @@
 <button class="theme-toggle" id="themeToggle" type="button">Dark Mode</button>
 
 <div class="page">
-  <div class="intro">
-    <div class="eyebrow">Konzept-Mockup · Desktop</div>
-    <h1>Unfold</h1>
-    <p>
-      Jede Aufgabe ist eine eigene Seite, keine Baumstruktur in der
-      Hauptliste. Klick eine Aufgabe an — ihre Seite klappt sich rechts
-      daneben auf. Klick darin eine Unteraufgabe an — die nächste Seite
-      klappt sich wieder auf, bis zu drei gleichzeitig sichtbar.
-    </p>
-    <div class="legend">
-      <span>Seiten statt Baumliste</span>
-      <span>Bis zu 3 Spalten gleichzeitig</span>
-      <span>Freie Blöcke: Text, Bild, Aufgabe</span>
-      <span>Quick Capture</span>
-      <span>Heute-Ansicht</span>
-    </div>
-  </div>
-
   <div class="window-frame">
     <div class="app-window" id="appWindow">
       <aside class="sidebar" id="sidebar"></aside>
@@ -296,12 +289,17 @@
     return t;
   }
 
-  function makeList(id, name, color, items, intro) {
-    var l = { id: id, name: name, color: color, tasks: items, blocks: [] };
+  function makeList(id, name, color, items, intro, groupId) {
+    var l = { id: id, name: name, color: color, tasks: items, blocks: [], groupId: groupId || null };
     if (intro) l.blocks.push({ type: "text", text: intro });
     for (var i = 0; i < items.length; i++) { l.blocks.push({ type: "task", id: items[i].id }); }
     return l;
   }
+
+  var groups = [
+    { id: "g1", name: "Privat" },
+    { id: "g2", name: "Arbeit" }
+  ];
 
   var lists = [
     makeList("inbox", "Inbox", "var(--list-inbox)", [
@@ -326,7 +324,7 @@
         ]
       }),
       task("Laufschuhe neu kaufen", { due: "2026-08-14" })
-    ], "Fokus für diese Woche: Urlaub startklar machen."),
+    ], "Fokus für diese Woche: Urlaub startklar machen.", "g1"),
     makeList("work", "Redesign-Launch", "var(--list-work)", [
       task("Onboarding-Flow überarbeiten", {
         subtasks: [
@@ -336,15 +334,17 @@
         ]
       }),
       task("Launch-Checkliste finalisieren", { due: "2026-08-20" })
-    ]),
+    ], null, "g2"),
     makeList("groceries", "Einkaufen", "var(--list-groceries)", [
       task("Hafermilch"), task("Kaffeebohnen"), task("Spülmaschinentabs", { done: true })
-    ])
+    ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [] };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {} };
+  var drag = { type: null, id: null };
 
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
+  function findGroup(id) { for (var i = 0; i < groups.length; i++) { if (groups[i].id === id) return groups[i]; } return null; }
   function childrenOf(owner) { return owner.tasks ? owner.tasks : owner.subtasks; }
 
   function findTaskGlobal(id) {
@@ -434,6 +434,7 @@
   function svgPlus() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'; }
   function svgImg() { return '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="6" r="1" fill="currentColor"/><path d="M2 11l3.5-3.5L8 10l2-2 3 3" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>'; }
   function svgClose() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'; }
+  function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
   function svgTrash() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M2.5 3.5h8M5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M3.5 3.5l.5 8a1 1 0 001 1h4a1 1 0 001-1l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
@@ -557,21 +558,42 @@
     html += '<div class="nav-label">Übersicht</div>';
     html += navItem({ kind: "today", active: state.view === "today", label: "Heute", count: collectToday().length, icon: true });
     html += '<div class="nav-label">Listen</div>';
-    for (var i = 0; i < lists.length; i++) {
-      var l = lists[i];
-      var c = countAll(l.tasks);
-      html += navItem({ kind: "list", id: l.id, active: state.view === "list" && state.currentListId === l.id, label: l.name, count: c.total - c.done, color: l.color });
+
+    var ungrouped = lists.filter(function (l) { return !l.groupId; });
+    for (var i = 0; i < ungrouped.length; i++) { html += listNavItem(ungrouped[i]); }
+
+    for (var gi = 0; gi < groups.length; gi++) {
+      var g = groups[gi];
+      var collapsed = !!state.collapsedGroups[g.id];
+      var groupLists = lists.filter(function (l) { return l.groupId === g.id; });
+      html += groupHeader(g, collapsed, groupLists.length);
+      if (!collapsed) { for (var k = 0; k < groupLists.length; k++) { html += listNavItem(groupLists[k], true); } }
     }
+
+    html += '<div class="sidebar-actions">';
     html += '<button class="new-list-btn" id="newListBtn" type="button">' + svgPlus() + "Neue Liste</button>";
+    html += '<button class="new-list-btn" id="newGroupBtn" type="button">' + svgPlus() + "Neue Gruppe</button>";
+    html += "</div>";
     html += '<div class="sidebar-spacer"></div>';
     el.innerHTML = html;
   }
 
+  function listNavItem(l, indented) {
+    var c = countAll(l.tasks);
+    var active = state.view === "list" && state.currentListId === l.id;
+    return '<button class="nav-item' + (active ? " active" : "") + (indented ? " nav-item-indented" : "") + '" data-nav="list" data-list="' + l.id + '" draggable="true" data-drag-type="list" data-drag-id="' + l.id + '" type="button"><span class="nav-dot" style="background:' + l.color + '"></span><span class="nav-name">' + escapeHtml(l.name) + '</span><span class="nav-count">' + (c.total - c.done) + "</span></button>";
+  }
+
+  function groupHeader(g, collapsed, count) {
+    return '<div class="group-row" draggable="true" data-drag-type="group" data-drag-id="' + g.id + '">' +
+      '<button class="group-chevron' + (collapsed ? " collapsed" : "") + '" data-toggle-group="' + g.id + '" aria-label="Gruppe ein-/ausklappen">' + svgChevronDown() + "</button>" +
+      '<input class="group-title" value="' + escapeHtml(g.name) + '" data-group-title-for="' + g.id + '" />' +
+      '<span class="nav-count">' + count + "</span></div>";
+  }
+
   function navItem(opts) {
-    var attrs = opts.kind === "today" ? 'data-nav="today"' : 'data-nav="list" data-list="' + opts.id + '"';
-    var iconOrDot = opts.icon
-      ? '<svg class="nav-icon" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.2l1.7 3.7 4 .5-3 2.8.8 4-3.5-2-3.5 2 .8-4-3-2.8 4-.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>'
-      : '<span class="nav-dot" style="background:' + opts.color + '"></span>';
+    var attrs = 'data-nav="today"';
+    var iconOrDot = '<svg class="nav-icon" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.2l1.7 3.7 4 .5-3 2.8.8 4-3.5-2-3.5 2 .8-4-3-2.8 4-.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>';
     return '<button class="nav-item' + (opts.active ? " active" : "") + '" ' + attrs + ' type="button">' + iconOrDot + '<span class="nav-name">' + escapeHtml(opts.label) + '</span><span class="nav-count">' + opts.count + "</span></button>";
   }
 
@@ -614,6 +636,22 @@
       lists.push(newList);
       state.view = "list"; state.currentListId = newList.id; state.panelStack = [];
       renderAll();
+      return;
+    }
+
+    el = e.target.closest("#newGroupBtn");
+    if (el) {
+      var gn = groups.length + 1;
+      groups.push({ id: "grp" + Date.now(), name: "Neue Gruppe " + gn });
+      renderSidebar();
+      return;
+    }
+
+    el = e.target.closest("[data-toggle-group]");
+    if (el) {
+      var gid = el.getAttribute("data-toggle-group");
+      state.collapsedGroups[gid] = !state.collapsedGroups[gid];
+      renderSidebar();
       return;
     }
 
@@ -730,6 +768,122 @@
       var node = findTaskGlobal(e.target.getAttribute("data-title-for"));
       if (node) node.title = e.target.value;
     }
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-group-title-for")) {
+      var group = findGroup(e.target.getAttribute("data-group-title-for"));
+      if (group) group.name = e.target.value;
+    }
+  });
+
+  function moveList(draggedId, targetId, position) {
+    var draggedIdx = lists.findIndex(function (l) { return l.id === draggedId; });
+    if (draggedIdx < 0) return;
+    var draggedList = lists[draggedIdx];
+    lists.splice(draggedIdx, 1);
+    var targetIdx = lists.findIndex(function (l) { return l.id === targetId; });
+    if (targetIdx < 0) { lists.push(draggedList); return; }
+    var target = lists[targetIdx];
+    draggedList.groupId = target.groupId;
+    var insertAt = position === "before" ? targetIdx : targetIdx + 1;
+    lists.splice(insertAt, 0, draggedList);
+  }
+
+  function moveListToGroupEnd(draggedId, groupId) {
+    var idx = lists.findIndex(function (l) { return l.id === draggedId; });
+    if (idx < 0) return;
+    var draggedList = lists[idx];
+    lists.splice(idx, 1);
+    draggedList.groupId = groupId;
+    lists.push(draggedList);
+  }
+
+  function moveGroup(draggedId, targetId, position) {
+    var draggedIdx = groups.findIndex(function (g) { return g.id === draggedId; });
+    if (draggedIdx < 0) return;
+    var draggedGroup = groups[draggedIdx];
+    groups.splice(draggedIdx, 1);
+    var targetIdx = groups.findIndex(function (g) { return g.id === targetId; });
+    if (targetIdx < 0) { groups.push(draggedGroup); return; }
+    var insertAt = position === "before" ? targetIdx : targetIdx + 1;
+    groups.splice(insertAt, 0, draggedGroup);
+  }
+
+  var dropIndicatorEl = null;
+  function clearDropIndicator() {
+    if (dropIndicatorEl) { dropIndicatorEl.classList.remove("drop-before", "drop-after", "drop-into"); dropIndicatorEl = null; }
+  }
+
+  var sidebarEl = document.getElementById("sidebar");
+
+  sidebarEl.addEventListener("dragstart", function (e) {
+    var handle = e.target.closest('[data-drag-type]');
+    if (!handle) return;
+    drag.type = handle.getAttribute("data-drag-type");
+    drag.id = handle.getAttribute("data-drag-id");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", drag.id);
+    setTimeout(function () { handle.classList.add("drag-ghost"); }, 0);
+  });
+
+  sidebarEl.addEventListener("dragend", function (e) {
+    var handle = e.target.closest('[data-drag-type]');
+    if (handle) handle.classList.remove("drag-ghost");
+    clearDropIndicator();
+    drag.type = null; drag.id = null;
+  });
+
+  sidebarEl.addEventListener("dragover", function (e) {
+    if (!drag.type) return;
+    var groupTarget = e.target.closest('.group-row[data-drag-type="group"]');
+    var listTarget = e.target.closest('.nav-item[data-drag-type="list"]');
+
+    if (drag.type === "list" && groupTarget) {
+      e.preventDefault();
+      clearDropIndicator();
+      groupTarget.classList.add("drop-into");
+      dropIndicatorEl = groupTarget;
+      return;
+    }
+    if (drag.type === "list" && listTarget && listTarget.getAttribute("data-drag-id") !== drag.id) {
+      e.preventDefault();
+      var rect = listTarget.getBoundingClientRect();
+      var pos = e.clientY < rect.top + rect.height / 2 ? "drop-before" : "drop-after";
+      clearDropIndicator();
+      listTarget.classList.add(pos);
+      dropIndicatorEl = listTarget;
+      return;
+    }
+    if (drag.type === "group" && groupTarget && groupTarget.getAttribute("data-drag-id") !== drag.id) {
+      e.preventDefault();
+      var grect = groupTarget.getBoundingClientRect();
+      var gpos = e.clientY < grect.top + grect.height / 2 ? "drop-before" : "drop-after";
+      clearDropIndicator();
+      groupTarget.classList.add(gpos);
+      dropIndicatorEl = groupTarget;
+      return;
+    }
+  });
+
+  sidebarEl.addEventListener("drop", function (e) {
+    if (!drag.type) return;
+    e.preventDefault();
+    var groupTarget = e.target.closest('.group-row[data-drag-type="group"]');
+    var listTarget = e.target.closest('.nav-item[data-drag-type="list"]');
+
+    if (drag.type === "list" && groupTarget) {
+      moveListToGroupEnd(drag.id, groupTarget.getAttribute("data-drag-id"));
+    } else if (drag.type === "list" && listTarget && listTarget.getAttribute("data-drag-id") !== drag.id) {
+      var rect = listTarget.getBoundingClientRect();
+      var pos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
+      moveList(drag.id, listTarget.getAttribute("data-drag-id"), pos);
+    } else if (drag.type === "group" && groupTarget && groupTarget.getAttribute("data-drag-id") !== drag.id) {
+      var grect = groupTarget.getBoundingClientRect();
+      var gpos = e.clientY < grect.top + grect.height / 2 ? "before" : "after";
+      moveGroup(drag.id, groupTarget.getAttribute("data-drag-id"), gpos);
+    }
+
+    clearDropIndicator();
+    drag.type = null; drag.id = null;
+    renderSidebar();
   });
 
   var themeBtn = document.getElementById("themeToggle");
