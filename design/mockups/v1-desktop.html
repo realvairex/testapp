@@ -196,7 +196,8 @@
     scroll-snap-align: start;
   }
   .column.col-animating {
-    transition: flex-basis 0.32s cubic-bezier(0.32, 0.72, 0, 1), transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: flex-basis 0.42s cubic-bezier(0.32, 0.72, 0, 1), transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: flex-basis, transform;
   }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
@@ -784,24 +785,26 @@
         if (item.isNew) { item.el.style.transform = "translateX(0)"; }
         else { item.el.style.flex = "0 0 " + item.targetWidth + "px"; }
       }
-      if (scrollNeeded) { animateScrollLeft(el, oldScrollLeft, targetScrollLeft, 320); }
+      if (scrollNeeded) { animateScrollLeft(el, oldScrollLeft, targetScrollLeft, 420); }
       setTimeout(function () {
         for (var q = 0; q < plan.length; q++) {
           plan[q].el.classList.remove("col-animating");
           plan[q].el.style.transform = "";
         }
-      }, 340);
+      }, 440);
     });
   }
 
   function animateScrollLeft(el, from, to, duration) {
     var start = null;
+    el.style.willChange = "scroll-position";
     function step(ts) {
       if (start === null) start = ts;
       var elapsed = ts - start;
       var progress = Math.min(elapsed / duration, 1);
       el.scrollLeft = from + (to - from) * appleEase(progress);
-      if (progress < 1) requestAnimationFrame(step);
+      if (progress < 1) { requestAnimationFrame(step); }
+      else { el.style.willChange = ""; }
     }
     requestAnimationFrame(step);
   }
