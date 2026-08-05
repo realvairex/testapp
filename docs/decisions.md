@@ -243,3 +243,42 @@ einzelner Spezialeffekte ist außerdem näher am tatsächlichen Apple-Gefühl,
 das als Design-Referenz genannt wurde.
 
 ---
+
+## 2026-08-05 — "Word-Seite"-Konzept überarbeitet: echtes Freitext-Dokument statt fester Block-Liste
+
+**Kontext:** Die erste Umsetzung der "jede Liste/Aufgabe ist eine Seite"-Idee
+war eine feste, nur am Ende erweiterbare Abfolge von Blöcken (Text/Bild/
+Aufgabe) mit zwei Buttons zum Anhängen. Nutzer-Feedback: das trifft die
+Vorstellung nicht — gewünscht ist, dass man überall in die Seite
+reinklicken und wie in einer Textverarbeitung direkt lostippen kann,
+mit der zusätzlichen Möglichkeit, an der Cursor-Position eine Aufgabe
+einzufügen (Vorbild: "Cursor mitten im Text setzen, Bild reinziehen,
+wild alles mischen").
+
+**Recherche:** Kurz nachgeschaut, wie Superlist das löst
+([superlist.com/feature-lists](https://www.superlist.com/feature-lists)):
+dort ist es block-basiert (nicht ein einziges großes Freitext-Feld),
+Inhalte werden per "/"-Befehl eingefügt (Aufgabe, Überschrift, Absatz,
+Datei) und lassen sich frei per Drag an eine beliebige Stelle im Dokument
+verschieben.
+
+**Entscheidung:** Jede Liste/Aufgabe rendert jetzt als ein echtes
+`contenteditable`-Dokument (ein Element pro Seite), in das direkt getippt
+werden kann; Aufgaben und Bilder werden als eingebettete, in sich
+geschlossene Elemente an der aktuellen Cursor-Position eingefügt (Toolbar-
+Buttons "+ Aufgabe" / "+ Bild", zusätzlich Bild-Drop per Drag&Drop an die
+Cursor-Position). Der Dateninhalt (`owner.blocks`) bleibt die
+Wahrheitsquelle, wird aber nur beim Verlassen des Feldes (Blur) aus dem
+live bearbeiteten DOM neu eingelesen — nicht bei jedem Tastendruck, damit
+Tippen nicht durch Neu-Rendern unterbrochen wird. Freies Verschieben
+einzelner Blöcke per Drag (wie bei Superlist) ist bewusst zurückgestellt,
+da der Kern ("überall klicken und schreiben können") zuerst sitzen sollte.
+
+**Begründung:** Trifft die vom Nutzer explizit gewünschte
+Textverarbeitungs-Anmutung und ist durch die Superlist-Recherche als
+plausibler, etablierter Ansatz bestätigt. Die Umsetzung wurde per
+Headless-Browser-Tests gegen Tippen-an-Cursorposition, Checkbox-Kaskade,
+Löschen (inkl. Kaskaden-Effekt auf Panel/Heute-Ansicht) und Drag&Drop-
+Bild-Einfügen verifiziert.
+
+---

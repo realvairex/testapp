@@ -25,9 +25,13 @@ kompliziert und überladen.
 ## Kernfunktionen (v1)
 
 ### 1. Jede Liste und jede Aufgabe ist eine eigene Seite
-- Listen und Aufgaben funktionieren wie eine freie "Word-Seite": Text,
-  Bilder und Aufgaben/Unteraufgaben lassen sich frei und in beliebiger
-  Reihenfolge einfügen — kein starres Formular mit festen Feldern.
+- Listen und Aufgaben funktionieren wie eine freie "Word-Seite": Man kann
+  überall reinklicken und direkt lostippen (echtes Freitext-Dokument, kein
+  starres Formular mit festen Feldern). Aufgaben und Bilder werden an der
+  aktuellen Cursor-Position eingefügt (Button oder Drag&Drop fürs Bild)
+  und mischen sich frei mit dem Text.
+- Geplant, noch nicht umgesetzt: eingebettete Aufgaben/Bilder per Drag frei
+  innerhalb der Seite verschieben (wie bei Superlist).
 - Die Hauptliste zeigt Unteraufgaben **nicht** inline/verschachtelt an.
   Eine auf der eigenen Seite einer Aufgabe angelegte Unteraufgabe taucht
   nur dort auf, nicht rückwirkend in der übergeordneten Liste.

@@ -197,47 +197,44 @@
   .col-progress-track > span { display: block; height: 100%; background: var(--accent); border-radius: 100px; transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
   .col-progress-label { font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
-  .quick-add { margin: 10px 18px 0; display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 10px; flex-shrink: 0; }
-  .quick-add svg { color: var(--accent); flex-shrink: 0; }
-  .quick-add input { border: none; background: transparent; outline: none; font: inherit; font-size: 13px; color: var(--ink); flex: 1; min-width: 0; }
-  .quick-add input::placeholder { color: var(--ink-faint); }
-
-  .insert-row { display: flex; gap: 6px; margin: 8px 18px 4px; flex-shrink: 0; }
+  .editor-toolbar { display: flex; gap: 6px; margin: 10px 18px 2px; flex-shrink: 0; }
   .insert-btn { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: 100px; padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
   .insert-btn:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .insert-btn:active { transform: scale(0.95); }
 
-  .blocks { flex: 1; overflow-y: auto; padding: 8px 12px 24px; }
+  .blocks { flex: 1; overflow-y: auto; padding: 4px 6px 24px; }
 
-  .block { margin: 3px 6px; animation: block-in 0.18s ease; overflow: hidden; }
+  .page-editor {
+    min-height: 100%;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--ink);
+    white-space: pre-wrap;
+    outline: none;
+    cursor: text;
+  }
+  .page-editor:empty::before { content: attr(data-placeholder); color: var(--ink-faint); pointer-events: none; }
+  .page-editor div { min-height: 1.65em; }
+
+  .inline-embed { position: relative; margin: 3px 0; animation: block-in 0.18s ease; overflow: hidden; }
   @keyframes block-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-  .block.removing { animation: none; transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; margin: 0 6px !important; }
-  @media (prefers-reduced-motion: reduce) { .block { animation: none; } .block.removing { transition: opacity 0.15s ease; } }
+  .inline-embed.removing { animation: none; transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; margin: 0 !important; }
+  @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity 0.15s ease; } }
   .removing { transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; overflow: hidden; }
   @media (prefers-reduced-motion: reduce) { .removing { transition: opacity 0.15s ease; } }
 
-  .block-text-wrap, .block-image-wrap { display: flex; align-items: flex-start; gap: 4px; }
-  .block-text {
-    font-size: 13.5px;
-    line-height: 1.55;
-    color: var(--ink-soft);
-    padding: 6px 6px;
-    border-radius: 6px;
-    outline: none;
-    flex: 1;
-    min-width: 0;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  .block-text:focus { background: var(--surface-sunken); box-shadow: 0 0 0 1px var(--line); }
-  .block-text:empty::before { content: attr(data-placeholder); color: var(--ink-faint); }
+  .inline-embed .task-row { padding-right: 26px; }
 
-  .block-image { display: flex; align-items: center; gap: 8px; padding: 14px 12px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-faint); font-size: 12px; flex: 1; min-width: 0; }
+  .block-image { display: flex; align-items: center; gap: 8px; padding: 14px 12px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-faint); font-size: 12px; margin-right: 26px; }
   .block-image svg { flex-shrink: 0; }
 
-  .row-delete { opacity: 0; width: 18px; height: 18px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, transform 0.1s ease; }
-  .task-row:hover .row-delete, .block-text-wrap:hover .row-delete, .block-image-wrap:hover .row-delete { opacity: 1; }
+  .row-delete { opacity: 0; width: 18px; height: 18px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, transform 0.1s ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  .inline-embed:hover .row-delete { opacity: 1; }
   .row-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
-  .row-delete:active { transform: scale(0.88); }
+  .row-delete:active { transform: translateY(-50%) scale(0.88); }
+
+  .page-editor.drag-over { background: var(--accent-soft); }
 
   .task-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: 8px; cursor: pointer; transition: background-color 0.15s ease, transform 0.1s ease; }
   .task-row:hover { background: var(--line-soft); }
@@ -301,7 +298,7 @@
       blocks: []
     };
     if (opts.text) t.blocks.push({ type: "text", text: opts.text });
-    if (opts.image) t.blocks.push({ type: "image", caption: opts.image });
+    if (opts.image) t.blocks.push({ type: "image", id: nextId(), caption: opts.image });
     for (var i = 0; i < t.subtasks.length; i++) { t.blocks.push({ type: "task", id: t.subtasks[i].id }); }
     return t;
   }
@@ -467,32 +464,145 @@
       html += '<span class="mini-progress" title="' + prog.done + " von " + prog.total + ' erledigt"><span style="width:' + pct + '%"></span></span>';
     }
     if (node.due) html += '<span class="due-pill' + (node.due === TODAY_ISO ? " today" : "") + '">' + formatDue(node.due) + "</span>";
-    if (deleteCtx) html += '<button class="row-delete" data-delete-owner="' + deleteCtx.ownerId + '" data-delete-idx="' + deleteCtx.blockIdx + '" data-delete-kind="task" aria-label="Aufgabe löschen">' + svgTrash() + "</button>";
+    if (deleteCtx) html += '<button class="row-delete" data-delete-owner="' + deleteCtx.ownerId + '" data-delete-block="' + node.id + '" data-delete-kind="task" aria-label="Aufgabe löschen">' + svgTrash() + "</button>";
     html += "</div>";
-    return html;
-  }
-
-  function renderBlocks(owner, colIndex) {
-    var kids = childrenOf(owner);
-    var html = "";
-    for (var i = 0; i < owner.blocks.length; i++) {
-      var b = owner.blocks[i];
-      if (b.type === "text") {
-        html += '<div class="block block-text-wrap"><div class="block-text" contenteditable="true" data-placeholder="Text eingeben …" data-text-owner="' + owner.id + '" data-block-idx="' + i + '">' + escapeHtml(b.text) + '</div><button class="row-delete" data-delete-owner="' + owner.id + '" data-delete-idx="' + i + '" data-delete-kind="text" aria-label="Text löschen">' + svgTrash() + "</button></div>";
-      } else if (b.type === "image") {
-        html += '<div class="block block-image-wrap"><div class="block-image">' + svgImg() + "<span>" + escapeHtml(b.caption || "Bild") + ' · Platzhalter</span></div><button class="row-delete" data-delete-owner="' + owner.id + '" data-delete-idx="' + i + '" data-delete-kind="image" aria-label="Bild löschen">' + svgTrash() + "</button></div>";
-      } else if (b.type === "task") {
-        var child = null;
-        for (var k = 0; k < kids.length; k++) { if (kids[k].id === b.id) { child = kids[k]; break; } }
-        if (child) html += '<div class="block">' + renderTaskRow(child, colIndex, null, { ownerId: owner.id, blockIdx: i }) + "</div>";
-      }
-    }
     return html;
   }
 
   function ownerAt(colIndex) {
     if (colIndex === 0) return state.view === "list" ? findList(state.currentListId) : null;
     return findTaskGlobal(state.panelStack[colIndex - 1]);
+  }
+
+  // --- Free-form page editor: renders owner.blocks as a live contenteditable
+  // document instead of a fixed block list, so text can be typed anywhere
+  // and tasks/images inserted at the cursor.
+
+  function makeInlineTaskNode(node, colIndex, ownerId) {
+    var tmp = document.createElement("div");
+    tmp.innerHTML = renderTaskRow(node, colIndex, null, { ownerId: ownerId });
+    var wrap = document.createElement("div");
+    wrap.className = "inline-embed";
+    wrap.contentEditable = "false";
+    wrap.setAttribute("data-embed-marker", "task:" + node.id);
+    wrap.appendChild(tmp.firstElementChild);
+    return wrap;
+  }
+
+  function makeInlineImageNode(block, ownerId) {
+    var wrap = document.createElement("div");
+    wrap.className = "inline-embed";
+    wrap.contentEditable = "false";
+    wrap.setAttribute("data-embed-marker", "image:" + block.id);
+    wrap.innerHTML = '<div class="block-image">' + svgImg() + "<span>" + escapeHtml(block.caption || "Bild") + ' · Platzhalter</span></div><button class="row-delete" data-delete-owner="' + ownerId + '" data-delete-block="' + block.id + '" data-delete-kind="image" aria-label="Bild löschen">' + svgTrash() + "</button>";
+    return wrap;
+  }
+
+  function buildEditorDOM(owner, colIndex) {
+    var el = document.createElement("div");
+    el.className = "page-editor";
+    el.contentEditable = "true";
+    el.setAttribute("data-editor-for", owner.id);
+    el.setAttribute("data-editor-col", colIndex);
+    el.setAttribute("data-placeholder", "Schreib einfach los …");
+    var kids = childrenOf(owner);
+    for (var i = 0; i < owner.blocks.length; i++) {
+      var b = owner.blocks[i];
+      if (b.type === "text") {
+        el.appendChild(document.createTextNode(b.text));
+      } else if (b.type === "task") {
+        var child = null;
+        for (var k = 0; k < kids.length; k++) { if (kids[k].id === b.id) { child = kids[k]; break; } }
+        if (child) el.appendChild(makeInlineTaskNode(child, colIndex, owner.id));
+      } else if (b.type === "image") {
+        el.appendChild(makeInlineImageNode(b, owner.id));
+      }
+    }
+    return el;
+  }
+
+  function mountEditors() {
+    var slots = document.querySelectorAll("[data-editor-slot]");
+    for (var i = 0; i < slots.length; i++) {
+      var slot = slots[i];
+      var ownerId = slot.getAttribute("data-editor-slot");
+      var colIndex = parseInt(slot.getAttribute("data-editor-col"), 10);
+      var owner = findList(ownerId) || findTaskGlobal(ownerId);
+      if (!owner) continue;
+      slot.appendChild(buildEditorDOM(owner, colIndex));
+    }
+  }
+
+  function serializeEditor(ownerId) {
+    var editorEl = document.querySelector('[data-editor-for="' + ownerId + '"]');
+    if (!editorEl) return;
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (!owner) return;
+
+    var clone = editorEl.cloneNode(true);
+    var embeds = clone.querySelectorAll("[data-embed-marker]");
+    for (var i = 0; i < embeds.length; i++) {
+      var marker = document.createTextNode("" + embeds[i].getAttribute("data-embed-marker") + "");
+      embeds[i].parentNode.replaceChild(marker, embeds[i]);
+    }
+    var raw = clone.innerText || clone.textContent || "";
+    var parts = raw.split("");
+
+    var newBlocks = [];
+    for (var p = 0; p < parts.length; p++) {
+      if (p % 2 === 0) {
+        var text = parts[p].replace(/^\n+|\n+$/g, "");
+        if (text !== "") newBlocks.push({ type: "text", text: text });
+      } else {
+        var mm = parts[p].split(":");
+        if (mm[0] === "task") {
+          newBlocks.push({ type: "task", id: mm.slice(1).join(":") });
+        } else if (mm[0] === "image") {
+          var imgId = mm.slice(1).join(":");
+          var oldImg = owner.blocks.filter(function (b) { return b.type === "image" && b.id === imgId; })[0];
+          newBlocks.push({ type: "image", id: imgId, caption: oldImg ? oldImg.caption : "Bild" });
+        }
+      }
+    }
+
+    var oldTaskIds = owner.blocks.filter(function (b) { return b.type === "task"; }).map(function (b) { return b.id; });
+    var newTaskIds = newBlocks.filter(function (b) { return b.type === "task"; }).map(function (b) { return b.id; });
+    var removedAncestorUpdateNeeded = owner.subtasks ? true : false;
+    for (var t = 0; t < oldTaskIds.length; t++) {
+      if (newTaskIds.indexOf(oldTaskIds[t]) === -1) {
+        var kids2 = childrenOf(owner);
+        var ki = kids2.findIndex(function (k) { return k.id === oldTaskIds[t]; });
+        if (ki >= 0) kids2.splice(ki, 1);
+        var stackIdx = state.panelStack.indexOf(oldTaskIds[t]);
+        if (stackIdx >= 0) state.panelStack = state.panelStack.slice(0, stackIdx);
+      }
+    }
+
+    owner.blocks = newBlocks;
+    if (removedAncestorUpdateNeeded) {
+      owner.done = owner.subtasks.length > 0 && owner.subtasks.every(function (s) { return s.done; });
+      recomputeAncestors(owner.id);
+    }
+  }
+
+  function insertEmbedInEditor(editorEl, node) {
+    editorEl.focus();
+    var sel = window.getSelection();
+    var range;
+    if (sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode)) {
+      range = sel.getRangeAt(0);
+    } else {
+      range = document.createRange();
+      range.selectNodeContents(editorEl);
+      range.collapse(false);
+    }
+    range.deleteContents();
+    range.insertNode(node);
+    range.setStartAfter(node);
+    range.setEndAfter(node);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 
   function renderColumns() {
@@ -531,11 +641,9 @@
       html += '<div class="column" data-col-index="0">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
-      html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Aufgabe hinzufügen …" data-quick-add="0" autocomplete="off" /></div>';
-      html += '<div class="insert-row"><button class="insert-btn" data-insert-text="0">' + svgPlus() + " Text</button><button class=\"insert-btn\" data-insert-image=\"0\">" + svgPlus() + " Bild</button></div>";
-      html += '<div class="blocks">';
-      html += list.tasks.length || list.blocks.length ? renderBlocks(list, 0) : '<div class="empty-state">Noch leer — leg oben eine Aufgabe an.</div>';
-      html += "</div></div>";
+      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="0">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"0\">" + svgPlus() + " Bild</button></div>";
+      html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
+      html += "</div>";
     }
 
     // panel columns
@@ -559,14 +667,13 @@
         html += "</div>";
       }
       html += "</div>";
-      html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Unteraufgabe hinzufügen …" data-quick-add="' + colIndex + '" autocomplete="off" /></div>';
-      html += '<div class="insert-row"><button class="insert-btn" data-insert-text="' + colIndex + '">' + svgPlus() + " Text</button><button class=\"insert-btn\" data-insert-image=\"" + colIndex + "\">" + svgPlus() + " Bild</button></div>";
-      html += '<div class="blocks">';
-      html += node.blocks.length ? renderBlocks(node, colIndex) : '<div class="empty-state">Diese Seite ist noch leer.</div>';
-      html += "</div></div>";
+      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="' + colIndex + '">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"" + colIndex + "\">" + svgPlus() + " Bild</button></div>";
+      html += '<div class="blocks"><div data-editor-slot="' + node.id + '" data-editor-col="' + colIndex + '"></div></div>';
+      html += "</div>";
     }
 
     el.innerHTML = html;
+    mountEditors();
   }
 
   function renderSidebar() {
@@ -724,25 +831,25 @@
     el = e.target.closest("[data-delete-owner]");
     if (el) {
       var ownerId = el.getAttribute("data-delete-owner");
-      var idx = parseInt(el.getAttribute("data-delete-idx"), 10);
+      var blockId = el.getAttribute("data-delete-block");
       var kind = el.getAttribute("data-delete-kind");
       var deleteOwner = findList(ownerId) || findTaskGlobal(ownerId);
-      var blockEl = el.closest(".block");
+      var embedEl = el.closest(".inline-embed");
       if (deleteOwner) {
-        animateRemove(blockEl, function () {
-          var block = deleteOwner.blocks[idx];
-          if (kind === "task" && block) {
+        animateRemove(embedEl, function () {
+          var bidx = deleteOwner.blocks.findIndex(function (b) { return b.id === blockId; });
+          if (kind === "task" && bidx >= 0) {
             var kids = childrenOf(deleteOwner);
-            var ki = kids.findIndex(function (k) { return k.id === block.id; });
+            var ki = kids.findIndex(function (k) { return k.id === blockId; });
             if (ki >= 0) kids.splice(ki, 1);
-            var stackIdx = state.panelStack.indexOf(block.id);
+            var stackIdx = state.panelStack.indexOf(blockId);
             if (stackIdx >= 0) state.panelStack = state.panelStack.slice(0, stackIdx);
             if (deleteOwner.subtasks) {
               deleteOwner.done = deleteOwner.subtasks.length > 0 && deleteOwner.subtasks.every(function (s) { return s.done; });
               recomputeAncestors(deleteOwner.id);
             }
           }
-          deleteOwner.blocks.splice(idx, 1);
+          if (bidx >= 0) deleteOwner.blocks.splice(bidx, 1);
           renderAll();
         });
       }
@@ -767,55 +874,95 @@
       return;
     }
 
-    el = e.target.closest("[data-insert-text]");
+    el = e.target.closest("[data-insert-task-at]");
     if (el) {
-      var owner = ownerAt(parseInt(el.getAttribute("data-insert-text"), 10));
-      if (owner) { owner.blocks.push({ type: "text", text: "" }); renderColumns(); focusLastText(owner.id); }
+      var colIndex1 = parseInt(el.getAttribute("data-insert-task-at"), 10);
+      var owner1 = ownerAt(colIndex1);
+      if (!owner1) return;
+      var editorEl1 = document.querySelector('[data-editor-for="' + owner1.id + '"]');
+      var t1 = task("Neue Aufgabe");
+      childrenOf(owner1).push(t1);
+      if (owner1.subtasks) { owner1.done = false; recomputeAncestors(owner1.id); }
+      if (editorEl1) {
+        insertEmbedInEditor(editorEl1, makeInlineTaskNode(t1, colIndex1, owner1.id));
+        serializeEditor(owner1.id);
+      } else {
+        owner1.blocks.push({ type: "task", id: t1.id });
+      }
+      state.panelStack = state.panelStack.slice(0, colIndex1).concat([t1.id]);
+      renderAll();
+      scrollToEnd();
       return;
     }
 
-    el = e.target.closest("[data-insert-image]");
+    el = e.target.closest("[data-insert-image-at]");
     if (el) {
-      var owner2 = ownerAt(parseInt(el.getAttribute("data-insert-image"), 10));
-      if (owner2) { owner2.blocks.push({ type: "image", caption: "Neues Bild" }); renderColumns(); }
+      var colIndex2 = parseInt(el.getAttribute("data-insert-image-at"), 10);
+      var owner2 = ownerAt(colIndex2);
+      if (!owner2) return;
+      var editorEl2 = document.querySelector('[data-editor-for="' + owner2.id + '"]');
+      var imgBlock = { type: "image", id: "img" + Date.now(), caption: "Neues Bild" };
+      if (editorEl2) {
+        insertEmbedInEditor(editorEl2, makeInlineImageNode(imgBlock, owner2.id));
+        serializeEditor(owner2.id);
+      } else {
+        owner2.blocks.push(imgBlock);
+      }
+      renderColumns();
       return;
     }
   });
 
-  function focusLastText(ownerId) {
-    requestAnimationFrame(function () {
-      var nodes = document.querySelectorAll('[data-text-owner="' + ownerId + '"]');
-      if (nodes.length) nodes[nodes.length - 1].focus();
-    });
-  }
+  document.addEventListener("mousedown", function (e) {
+    if (e.target.closest("[data-insert-task-at], [data-insert-image-at]")) { e.preventDefault(); }
+  });
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && e.target && e.target.hasAttribute && e.target.hasAttribute("data-quick-add")) {
-      e.preventDefault();
-      var val = e.target.value.trim();
-      if (!val) return;
-      var colIndex = parseInt(e.target.getAttribute("data-quick-add"), 10);
-      var owner = ownerAt(colIndex);
-      if (!owner) return;
-      var t = task(val);
-      childrenOf(owner).push(t);
-      owner.blocks.push({ type: "task", id: t.id });
-      if (owner.subtasks) { owner.done = false; recomputeAncestors(owner.id); }
-      e.target.value = "";
-      renderAll();
-      var again = document.querySelector('[data-quick-add="' + colIndex + '"]');
-      if (again) again.focus();
-    }
     if (e.key === "Escape" && state.panelStack.length) { state.panelStack = []; renderAll(); }
   });
 
   document.addEventListener("blur", function (e) {
-    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-text-owner")) {
-      var owner = findTaskGlobal(e.target.getAttribute("data-text-owner")) || findList(e.target.getAttribute("data-text-owner"));
-      var idx = parseInt(e.target.getAttribute("data-block-idx"), 10);
-      if (owner && owner.blocks[idx]) owner.blocks[idx].text = e.target.textContent;
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-editor-for")) {
+      serializeEditor(e.target.getAttribute("data-editor-for"));
     }
   }, true);
+
+  document.addEventListener("dragover", function (e) {
+    var editor = e.target.closest(".page-editor");
+    if (!editor || drag.type) return;
+    e.preventDefault();
+    editor.classList.add("drag-over");
+  });
+
+  document.addEventListener("dragleave", function (e) {
+    var editor = e.target.closest(".page-editor");
+    if (editor) editor.classList.remove("drag-over");
+  });
+
+  document.addEventListener("drop", function (e) {
+    var editor = e.target.closest(".page-editor");
+    if (!editor || drag.type) return;
+    e.preventDefault();
+    editor.classList.remove("drag-over");
+    var ownerId = editor.getAttribute("data-editor-for");
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (!owner) return;
+    var imgBlock = { type: "image", id: "img" + Date.now(), caption: "Reingezogenes Bild" };
+    var range = null;
+    if (document.caretRangeFromPoint) { range = document.caretRangeFromPoint(e.clientX, e.clientY); }
+    else if (document.caretPositionFromPoint) {
+      var pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+      if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); range.collapse(true); }
+    }
+    var node = makeInlineImageNode(imgBlock, owner.id);
+    if (range && editor.contains(range.startContainer)) {
+      range.insertNode(node);
+    } else {
+      editor.appendChild(node);
+    }
+    serializeEditor(ownerId);
+    renderColumns();
+  });
 
   document.addEventListener("input", function (e) {
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-title-for")) {
