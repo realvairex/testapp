@@ -159,6 +159,12 @@
     animation: col-out 0.18s cubic-bezier(0.32, 0.72, 0, 1) forwards;
     pointer-events: none;
   }
+  .column.column-expanded {
+    flex: 1 1 auto;
+    width: auto;
+    transition: flex-basis 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @media (prefers-reduced-motion: reduce) { .column.column-expanded { transition: none; } }
   @keyframes col-in { from { opacity: 0; transform: translateX(-18px) scale(0.99); } to { opacity: 1; transform: translateX(0) scale(1); } }
   @keyframes col-out { to { opacity: 0; transform: translateX(-18px) scale(0.98); } }
   @media (prefers-reduced-motion: reduce) { .column, .column.closing { animation: none; } }
@@ -368,6 +374,35 @@
     return null;
   }
 
+  function findParentTask(id) {
+    function search(nodes) {
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        for (var k = 0; k < n.subtasks.length; k++) { if (n.subtasks[k].id === id) return n; }
+        var f = search(n.subtasks);
+        if (f) return f;
+      }
+      return null;
+    }
+    for (var i = 0; i < lists.length; i++) { var f = search(lists[i].tasks); if (f) return f; }
+    return null;
+  }
+
+  function setDoneCascade(node, value) {
+    node.done = value;
+    for (var i = 0; i < node.subtasks.length; i++) { setDoneCascade(node.subtasks[i], value); }
+  }
+
+  function recomputeAncestors(id) {
+    var current = id;
+    while (true) {
+      var parent = findParentTask(current);
+      if (!parent) break;
+      parent.done = parent.subtasks.length > 0 && parent.subtasks.every(function (s) { return s.done; });
+      current = parent.id;
+    }
+  }
+
   function progress(node) {
     var kids = childrenOf(node);
     if (!kids.length) return null;
@@ -459,12 +494,14 @@
     var el = document.getElementById("contentArea");
     var html = "";
 
-    // base column
+    // base column: fills available width when no page is open alongside it
+    var baseClass = state.panelStack.length === 0 ? " column-expanded" : "";
+
     if (state.view === "today") {
       var d = new Date(TODAY_ISO + "T00:00:00");
       var weekdays = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
       var months = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-      html += '<div class="column" data-col-index="0">';
+      html += '<div class="column' + baseClass + '" data-col-index="0">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">Heute</h2></div>';
       html += '<div class="col-meta">' + weekdays[d.getDay()] + ", " + d.getDate() + ". " + months[d.getMonth()] + "</div></div>";
       html += '<div class="blocks">';
@@ -489,7 +526,7 @@
     } else {
       var list = findList(state.currentListId);
       var c = countAll(list.tasks);
-      html += '<div class="column" data-col-index="0">';
+      html += '<div class="column' + baseClass + '" data-col-index="0">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
       html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Aufgabe hinzufügen …" data-quick-add="0" autocomplete="off" /></div>';
@@ -600,7 +637,12 @@
     el = e.target.closest("[data-check]");
     if (el) {
       var node = findTaskGlobal(el.getAttribute("data-check"));
-      if (node) { node.done = !node.done; renderColumns(); renderSidebar(); }
+      if (node) {
+        setDoneCascade(node, !node.done);
+        recomputeAncestors(node.id);
+        renderColumns();
+        renderSidebar();
+      }
       return;
     }
 
@@ -620,6 +662,10 @@
             if (ki >= 0) kids.splice(ki, 1);
             var stackIdx = state.panelStack.indexOf(block.id);
             if (stackIdx >= 0) state.panelStack = state.panelStack.slice(0, stackIdx);
+            if (deleteOwner.subtasks) {
+              deleteOwner.done = deleteOwner.subtasks.length > 0 && deleteOwner.subtasks.every(function (s) { return s.done; });
+              recomputeAncestors(deleteOwner.id);
+            }
           }
           deleteOwner.blocks.splice(idx, 1);
           renderAll();
@@ -685,6 +731,7 @@
       var t = task(val);
       childrenOf(owner).push(t);
       owner.blocks.push({ type: "task", id: t.id });
+      if (owner.subtasks) { owner.done = false; recomputeAncestors(owner.id); }
       e.target.value = "";
       renderAll();
       var again = document.querySelector('[data-quick-add="' + colIndex + '"]');
