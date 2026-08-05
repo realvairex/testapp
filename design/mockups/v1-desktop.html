@@ -190,14 +190,19 @@
     flex: 1 1 0%;
     min-width: 240px;
     height: 100%;
-    display: flex;
-    flex-direction: column;
     border-right: 1px solid var(--line-soft);
     scroll-snap-align: start;
+    transform-origin: left center;
   }
-  .column.col-animating {
-    transition: flex-basis 0.42s cubic-bezier(0.32, 0.72, 0, 1), transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
-    will-change: flex-basis, transform;
+  .col-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transform-origin: left center;
+  }
+  .column.col-animating, .col-inner.col-animating {
+    transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
   }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
@@ -655,14 +660,15 @@
     var beforeRects = {};
     var prevCols = el.querySelectorAll(".column[data-col-key]");
     for (var bi = 0; bi < prevCols.length; bi++) {
-      beforeRects[prevCols[bi].getAttribute("data-col-key")] = prevCols[bi].getBoundingClientRect().width;
+      var pr = prevCols[bi].getBoundingClientRect();
+      beforeRects[prevCols[bi].getAttribute("data-col-key")] = { left: pr.left, width: pr.width };
     }
 
     if (state.view === "today") {
       var d = new Date(TODAY_ISO + "T00:00:00");
       var weekdays = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
       var months = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-      html += '<div class="column" data-col-index="0" data-col-key="today">';
+      html += '<div class="column" data-col-index="0" data-col-key="today"><div class="col-inner">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">Heute</h2></div>';
       html += '<div class="col-meta">' + weekdays[d.getDay()] + ", " + d.getDate() + ". " + months[d.getMonth()] + "</div></div>";
       html += '<div class="blocks">';
@@ -683,17 +689,17 @@
           for (var k = 0; k < group.length; k++) { html += '<div class="block">' + renderTaskRow(group[k].node, 0, null) + "</div>"; }
         }
       }
-      html += "</div></div>";
+      html += "</div></div></div>";
     } else {
       var list = findList(state.currentListId);
       var c = countAll(list.tasks);
-      html += '<div class="column" data-col-index="0" data-col-key="list:' + list.id + '">';
+      html += '<div class="column" data-col-index="0" data-col-key="list:' + list.id + '"><div class="col-inner">';
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
       html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
       html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="0">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"0\">" + svgPlus() + " Bild</button></div>";
       html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Aufgabe hinzufügen …" data-quick-add="0" autocomplete="off" /></div>';
-      html += "</div>";
+      html += "</div></div>";
     }
 
     // panel columns
@@ -701,7 +707,7 @@
       var colIndex = p + 1;
       var node = findTaskGlobal(state.panelStack[p]);
       if (!node) continue;
-      html += '<div class="column" data-col-index="' + colIndex + '" data-col-key="task:' + node.id + '">';
+      html += '<div class="column" data-col-index="' + colIndex + '" data-col-key="task:' + node.id + '"><div class="col-inner">';
       html += '<div class="col-header"><div class="col-header-top">';
       html += '<input class="col-title' + (node.done ? " done" : "") + '" value="' + escapeHtml(node.title) + '" data-title-for="' + node.id + '" />';
       html += '<button class="col-close" data-close-col="' + colIndex + '" aria-label="Seite schließen">' + svgClose() + "</button>";
@@ -715,146 +721,140 @@
       html += '<div class="blocks"><div data-editor-slot="' + node.id + '" data-editor-col="' + colIndex + '"></div></div>';
       html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="' + colIndex + '">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"" + colIndex + "\">" + svgPlus() + " Bild</button></div>";
       html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Unteraufgabe hinzufügen …" data-quick-add="' + colIndex + '" autocomplete="off" /></div>';
-      html += "</div>";
+      html += "</div></div>";
     }
 
     el.innerHTML = html;
     mountEditors();
     sizeColumns();
-    var targetScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
-    el.scrollLeft = oldScrollLeft;
-    animateColumnChange(el, beforeRects, newlyOpened, oldScrollLeft, targetScrollLeft);
+    el.scrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+    animateColumnChange(el, beforeRects, newlyOpened);
     prevPanelStack = state.panelStack.slice();
   }
 
-  function appleEase(t) {
-    var x1 = 0.32, y1 = 0.72, x2 = 0, y2 = 1;
-    function A(a1, a2) { return 1 - 3 * a2 + 3 * a1; }
-    function B(a1, a2) { return 3 * a2 - 6 * a1; }
-    function C(a1) { return 3 * a1; }
-    function calcBezier(u, a1, a2) { return ((A(a1, a2) * u + B(a1, a2)) * u + C(a1)) * u; }
-    function getSlope(u, a1, a2) { return 3 * A(a1, a2) * u * u + 2 * B(a1, a2) * u + C(a1); }
-    var u = t;
-    for (var i = 0; i < 6; i++) {
-      var slope = getSlope(u, x1, x2);
-      if (slope === 0) break;
-      u -= (calcBezier(u, x1, x2) - t) / slope;
+  // Pure-transform FLIP animator: every entry gets an inverse "from" transform
+  // applied instantly (no transition), then a forced reflow, then animates to
+  // "to" on the next frame. Only `transform` ever animates - layout (flex-basis,
+  // scrollLeft) is always committed to its final value up front, so there is
+  // no per-frame reflow during the animation itself, only compositing.
+  function runFlip(el, plan, callback) {
+    if (!plan.length) { if (callback) callback(); return; }
+    for (var i = 0; i < plan.length; i++) {
+      plan[i].column.style.transform = plan[i].fromCol;
+      if (plan[i].colInner) plan[i].colInner.style.transform = plan[i].fromInner || "";
     }
-    return calcBezier(u, y1, y2);
-  }
-
-  function animateColumnChange(el, beforeRects, newlyOpened, oldScrollLeft, targetScrollLeft) {
-    var appWindow = document.getElementById("appWindow");
-    var appRight = appWindow.getBoundingClientRect().right;
-    var newKeys = newlyOpened.map(function (id) { return "task:" + id; });
-    var cols = el.querySelectorAll(".column[data-col-key]");
-
-    // Pass 1: measure every column's final (already-rendered) position/size
-    // before mutating anything - mutating one column reflows its siblings,
-    // so measuring and mutating in the same pass gives wrong numbers.
-    var finals = [];
-    for (var i = 0; i < cols.length; i++) {
-      var rect = cols[i].getBoundingClientRect();
-      finals.push({ el: cols[i], key: cols[i].getAttribute("data-col-key"), width: rect.width, left: rect.left });
-    }
-
-    // Pass 2: freeze each column at its "before" state now that all final
-    // values are safely captured.
-    var plan = [];
-    for (var j = 0; j < finals.length; j++) {
-      var f = finals[j];
-      var isNew = newKeys.indexOf(f.key) !== -1;
-      if (isNew) {
-        var startOffset = appRight - f.left;
-        f.el.style.transform = "translateX(" + startOffset + "px)";
-        plan.push({ el: f.el, isNew: true });
-      } else if (beforeRects[f.key] !== undefined && Math.abs(beforeRects[f.key] - f.width) > 1) {
-        f.el.style.flex = "0 0 " + beforeRects[f.key] + "px";
-        plan.push({ el: f.el, isNew: false, targetWidth: f.width });
-      }
-    }
-
-    var scrollNeeded = Math.abs(oldScrollLeft - targetScrollLeft) > 1;
-    if (!plan.length && !scrollNeeded) return;
     void el.offsetWidth;
-
     requestAnimationFrame(function () {
-      for (var p = 0; p < plan.length; p++) {
-        var item = plan[p];
-        item.el.classList.add("col-animating");
-        if (item.isNew) { item.el.style.transform = "translateX(0)"; }
-        else { item.el.style.flex = "0 0 " + item.targetWidth + "px"; }
+      for (var j = 0; j < plan.length; j++) {
+        var item = plan[j];
+        item.column.classList.add("col-animating");
+        if (item.colInner) item.colInner.classList.add("col-animating");
+        item.column.style.transform = item.toCol;
+        if (item.colInner) item.colInner.style.transform = item.toInner || "";
       }
-      if (scrollNeeded) { animateScrollLeft(el, oldScrollLeft, targetScrollLeft, 420); }
       setTimeout(function () {
-        for (var q = 0; q < plan.length; q++) {
-          plan[q].el.classList.remove("col-animating");
-          plan[q].el.style.transform = "";
+        for (var k = 0; k < plan.length; k++) {
+          plan[k].column.classList.remove("col-animating");
+          plan[k].column.style.transform = "";
+          plan[k].column.style.pointerEvents = "";
+          if (plan[k].colInner) { plan[k].colInner.classList.remove("col-animating"); plan[k].colInner.style.transform = ""; }
         }
-      }, 440);
+        if (callback) callback();
+      }, 460);
     });
   }
 
-  function animateScrollLeft(el, from, to, duration) {
-    var start = null;
-    el.style.willChange = "scroll-position";
-    function step(ts) {
-      if (start === null) start = ts;
-      var elapsed = ts - start;
-      var progress = Math.min(elapsed / duration, 1);
-      el.scrollLeft = from + (to - from) * appleEase(progress);
-      if (progress < 1) { requestAnimationFrame(step); }
-      else { el.style.willChange = ""; }
+  function animateColumnChange(el, beforeRects, newlyOpened) {
+    var appRight = document.getElementById("appWindow").getBoundingClientRect().right;
+    var newKeys = newlyOpened.map(function (id) { return "task:" + id; });
+    var cols = el.querySelectorAll(".column[data-col-key]");
+    var plan = [];
+
+    for (var i = 0; i < cols.length; i++) {
+      var colEl = cols[i];
+      var key = colEl.getAttribute("data-col-key");
+      var rect = colEl.getBoundingClientRect();
+
+      if (newKeys.indexOf(key) !== -1) {
+        var startOffset = appRight - rect.left;
+        plan.push({ column: colEl, colInner: null, fromCol: "translateX(" + startOffset + "px)", toCol: "translateX(0)" });
+      } else if (beforeRects[key]) {
+        var old = beforeRects[key];
+        var deltaX = old.left - rect.left;
+        var scaleRatio = old.width / rect.width;
+        if (Math.abs(deltaX) > 0.5 || Math.abs(scaleRatio - 1) > 0.01) {
+          plan.push({
+            column: colEl,
+            colInner: colEl.querySelector(".col-inner"),
+            fromCol: "translateX(" + deltaX + "px) scaleX(" + scaleRatio + ")",
+            toCol: "translateX(0) scaleX(1)",
+            fromInner: "scaleX(" + (1 / scaleRatio) + ")",
+            toInner: "scaleX(1)"
+          });
+        }
+      }
     }
-    requestAnimationFrame(step);
+
+    runFlip(el, plan);
   }
 
   function animatePanelsClosing(fromColIndex, afterClose) {
     var el = document.getElementById("contentArea");
-    var appWindow = document.getElementById("appWindow");
-    var appRight = appWindow.getBoundingClientRect().right;
+    var appRight = document.getElementById("appWindow").getBoundingClientRect().right;
     var cols = el.querySelectorAll(".column[data-col-key]");
-    var closingEls = [];
-    var survivingEls = [];
+    var closingEls = [], survivingEls = [];
     for (var i = 0; i < cols.length; i++) {
       var idx = parseInt(cols[i].getAttribute("data-col-index"), 10);
       if (idx >= fromColIndex) { closingEls.push(cols[i]); } else { survivingEls.push(cols[i]); }
     }
     if (!closingEls.length) { afterClose(); return; }
 
+    var oldRects = {};
+    for (var a = 0; a < cols.length; a++) {
+      var r = cols[a].getBoundingClientRect();
+      oldRects[cols[a].getAttribute("data-col-key")] = { left: r.left, width: r.width };
+    }
+
     var survivingCount = survivingEls.length || 1;
     var contentWidth = el.clientWidth;
     var newSurvivorWidth = Math.max(240, contentWidth / Math.min(survivingCount, 3));
-    var oldScrollLeft = el.scrollLeft;
+
+    // Commit the final layout instantly (temporary - afterClose() rebuilds
+    // the real DOM from state shortly), then FLIP-compensate every column
+    // back to how it looked a moment ago and animate to identity/exit.
+    for (var s = 0; s < survivingEls.length; s++) { survivingEls[s].style.flex = "0 0 " + newSurvivorWidth + "px"; }
     var newScrollWidth = survivingCount * newSurvivorWidth;
-    var targetScrollLeft = Math.max(0, newScrollWidth - contentWidth);
+    el.scrollLeft = Math.max(0, newScrollWidth - contentWidth);
 
     var plan = [];
-    for (var s = 0; s < survivingEls.length; s++) {
-      var sEl = survivingEls[s];
-      var curWidth = sEl.getBoundingClientRect().width;
-      if (Math.abs(curWidth - newSurvivorWidth) > 1) {
-        plan.push({ el: sEl, targetWidth: newSurvivorWidth });
+    for (var s2 = 0; s2 < survivingEls.length; s2++) {
+      var sEl = survivingEls[s2];
+      var oldS = oldRects[sEl.getAttribute("data-col-key")];
+      var rectS = sEl.getBoundingClientRect();
+      var deltaXs = oldS.left - rectS.left;
+      var scaleRatioS = oldS.width / rectS.width;
+      if (Math.abs(deltaXs) > 0.5 || Math.abs(scaleRatioS - 1) > 0.01) {
+        plan.push({
+          column: sEl,
+          colInner: sEl.querySelector(".col-inner"),
+          fromCol: "translateX(" + deltaXs + "px) scaleX(" + scaleRatioS + ")",
+          toCol: "translateX(0) scaleX(1)",
+          fromInner: "scaleX(" + (1 / scaleRatioS) + ")",
+          toInner: "scaleX(1)"
+        });
       }
     }
     for (var c = 0; c < closingEls.length; c++) {
       var cEl = closingEls[c];
-      var exitOffset = appRight - cEl.getBoundingClientRect().left;
+      var oldC = oldRects[cEl.getAttribute("data-col-key")];
+      var rectC = cEl.getBoundingClientRect();
+      var deltaXc = oldC.left - rectC.left;
+      var exitOffset = appRight - rectC.left;
       cEl.style.pointerEvents = "none";
-      plan.push({ el: cEl, isClosing: true, exitOffset: exitOffset });
+      plan.push({ column: cEl, colInner: null, fromCol: "translateX(" + deltaXc + "px)", toCol: "translateX(" + exitOffset + "px)" });
     }
 
-    void el.offsetWidth;
-    requestAnimationFrame(function () {
-      for (var p = 0; p < plan.length; p++) {
-        var item = plan[p];
-        item.el.classList.add("col-animating");
-        if (item.isClosing) { item.el.style.transform = "translateX(" + item.exitOffset + "px)"; }
-        else { item.el.style.flex = "0 0 " + item.targetWidth + "px"; }
-      }
-      if (Math.abs(oldScrollLeft - targetScrollLeft) > 1) { animateScrollLeft(el, oldScrollLeft, targetScrollLeft, 420); }
-      setTimeout(afterClose, 440);
-    });
+    runFlip(el, plan, afterClose);
   }
 
   function sizeColumns() {
