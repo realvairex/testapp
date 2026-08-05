@@ -121,3 +121,116 @@ durch Overengineering zu verkomplizieren (z.B. kein Multi-User-Backend nur
 für Backup-Zwecke, siehe Sharing-Entscheidung oben).
 
 ---
+
+## 2026-08-05 — Versionierung: Git-Tags statt Alpha/Beta-System
+
+**Kontext:** Nutzer fragte, ob eine Aufteilung in Alpha-/Beta-/Versions-
+Stände sinnvoll wäre, um später zu einem bestimmten Stand zurückspringen
+zu können.
+
+**Abgewogene Optionen:**
+1. Volles Versionsschema (Semantic Versioning, Changelog, Release-Prozess)
+   von Anfang an.
+2. Kein explizites Versionskonzept, nur normale Commits.
+3. Git-Tags an bedeutsamen Meilensteinen (z.B. `mockup-v1`), volles
+   Semantic-Versioning-Schema erst ab echtem App-Code/Release.
+
+**Entscheidung:** Option 3. Meilensteine werden per Git-Tag markiert,
+sobald sie erreicht sind (z.B. abgeschlossenes Mockup, erste lauffähige
+Version). Ein formales Versionsschema (v0.1.0 etc.) mit Changelog kommt,
+sobald echter App-Code existiert und erste Releases sinnvoll werden.
+
+**Begründung:** In der Konzept-/Mockup-Phase ist ein volles Release-
+Schema Overhead ohne Gegenwert. Git-Tags liefern denselben Kernnutzen
+(jederzeit zu einem markanten Stand zurückspringen können) praktisch ohne
+Zusatzaufwand und passen zur bestehenden Backup-Konvention (häufige,
+kleine Commits).
+
+---
+
+## 2026-08-05 — Name: Unfold
+
+**Kontext:** Erster Arbeitstitel "Branch" (Baum-Metapher für Verschachtelung)
+wurde vom Nutzer abgelehnt. Nutzer schlug stattdessen "Unfold" vor.
+
+**Entscheidung:** Arbeitstitel ist ab sofort **Unfold**.
+
+**Begründung:** Passt inhaltlich sehr gut zur überarbeiteten Panel-Mechanik
+(Aufgaben-Seiten "klappen sich auf"/"unfold" nebeneinander auf, siehe
+Eintrag zur Panel-Architektur unten) — Name und Kernmechanik verstärken
+sich gegenseitig.
+
+---
+
+## 2026-08-05 — Panel-Architektur überarbeitet: Seiten statt Baumliste, Mehrspalten-Drilldown
+
+**Kontext:** Erste Mockup-Iteration zeigte Unteraufgaben inline (auf-
+klappbar per Pfeil) direkt in der Hauptliste, plus ein einzelnes Detail-
+panel mit fest positioniertem Notizfeld über den Unteraufgaben. Nutzer-
+Feedback: Das trifft die Superlist-Mechanik noch nicht genau genug.
+
+**Anforderungen aus dem Feedback:**
+- Die Hauptliste zeigt **keine** verschachtelten Unteraufgaben inline an.
+  Legt man in einer geöffneten Aufgabe eine Unteraufgabe an, taucht diese
+  *nicht* in der übergeordneten Liste auf — sie existiert nur auf der
+  eigenen Seite der Aufgabe.
+- Jede Liste und jede Aufgabe ist wie eine "Word-Seite": Text, Bilder,
+  Links und Aufgaben/Unteraufgaben lassen sich frei und in beliebiger
+  Reihenfolge einfügen — kein starres, immer gleich angeordnetes
+  Notiz-Feld über einer starren Unteraufgaben-Sektion.
+- Klickt man eine Aufgabe an, öffnet sich ihre Seite als Panel. Klickt man
+  darin eine Unteraufgabe an, öffnet sich deren Seite als weiteres Panel
+  daneben — bis zu drei Seiten gleichzeitig sichtbar (Mehrspalten-
+  Drilldown, ähnlich der macOS-Finder-Spaltenansicht). Kommt eine vierte
+  hinzu, rücken die älteren Spalten nach links aus dem sichtbaren Bereich.
+
+**Entscheidung:** Datenmodell und Mockup wurden umgebaut: Jede Liste/
+Aufgabe hat neben der reinen Eltern-Kind-Hierarchie (für Fortschritts-
+berechnung, Fälligkeits-Aggregation) eine eigene `blocks`-Sequenz
+(Text-, Bild- und Aufgaben-Blöcke in frei gewählter Reihenfolge), die ihre
+"Seite" darstellt. Die Hauptliste rendert nur Top-Level-Blöcke, nie
+rekursiv. Ein horizontal scrollender Spalten-Stack (Miller-Columns) ersetzt
+das einzelne rechte Slide-in-Panel; Klick auf eine Aufgabe innerhalb einer
+Spalte kappt tiefere Spalten und öffnet die neue Seite direkt daneben.
+
+**Begründung:** Trifft das vom Nutzer explizit gewünschte Bild einer
+Aufgabe als eigenständige, frei gestaltbare Seite (nicht nur ein
+Formular mit festen Feldern) und macht die unendliche Verschachtelung
+räumlich nachvollziehbar, statt sie in einer wachsenden Baumliste zu
+verstecken.
+
+---
+
+## 2026-08-05 — Akzentfarbe: warmes Orange statt Violett-Blau
+
+**Kontext:** Erste Mockup-Version nutzte einen gedämpften Violett-Blau-Ton
+als Akzentfarbe. Nutzer-Feedback: soll wärmer sein.
+
+**Entscheidung:** Akzentfarbe umgestellt auf ein warmes, gedämpftes Orange
+(`#D9662E` hell / `#F2925C` dunkel). Die "Fällig heute"-Kennzeichnung nutzt
+bewusst eine eigene, unterscheidbare Rot-Beere-Farbe (`#C1443E`/`#E1746B`),
+damit Dringlichkeits-Signal und Marken-Akzent nicht verschmelzen.
+
+**Begründung:** Direktes Nutzer-Feedback. Semantische Farbe (dringend) und
+Marken-Akzent bewusst getrennt gehalten, um Verwirrung zu vermeiden.
+
+---
+
+## 2026-08-05 — Durchgängige, ruhige Animationen (Apple-artiges Gefühl)
+
+**Kontext:** Nutzer wünscht sich für alle Interaktionen (Öffnen, Schließen,
+Löschen, Panel-Wechsel) ein "smoothes, cleanes Apple-Gefühl", nicht nur an
+einzelnen Stellen.
+
+**Entscheidung:** Einheitliche Bewegungssprache im Mockup etabliert:
+gefederte Easing-Kurven (`cubic-bezier(0.32,0.72,0,1)` für Ein-/Ausblenden
+von Spalten, leichte Overshoot-Kurve für Checkbox-Feedback), animiertes
+Schließen von Panels statt hartem Verschwinden, Höhen-/Opacity-Animation
+beim Löschen von Aufgaben/Blöcken, sanfte Farbübergänge beim Theme-
+Wechsel. Durchgängig mit `prefers-reduced-motion`-Rücksicht.
+
+**Begründung:** Direkter Nutzerwunsch; konsistente, dezente Bewegung statt
+einzelner Spezialeffekte ist außerdem näher am tatsächlichen Apple-Gefühl,
+das als Design-Referenz genannt wurde.
+
+---

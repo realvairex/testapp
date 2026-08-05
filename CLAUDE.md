@@ -1,4 +1,4 @@
-# Projekt: Todo App (Arbeitstitel)
+# Projekt: Unfold (Todo App)
 
 Dieses Dokument wird von Claude Code automatisch bei jeder Session gelesen.
 Es ist der Einstiegspunkt in den Projektkontext — halte es aktuell.
@@ -47,6 +47,11 @@ Für dieses Projekt gilt durchgängig:
   Verbesserungen ("schlaue Sachen"), die während der Arbeit auffallen,
   werden dem Nutzer von sich aus mitgeteilt, ohne dass er danach fragen
   muss.
+- **Meilensteine:** Bedeutsame Zwischenstände (abgeschlossene
+  Mockup-Iterationen, erste lauffähige Version, etc.) werden selbstständig
+  per Git-Tag markiert — im Zweifel lieber häufiger als zu selten, ohne
+  dass der Nutzer danach fragen muss. Volles Semantic-Versioning-Schema
+  erst ab echtem App-Code (siehe `docs/decisions.md`).
 
 ## Status
 

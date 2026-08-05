@@ -1,4 +1,4 @@
-# Produktkonzept: Todo App
+# Produktkonzept: Unfold
 
 Stand: 2026-08-05 (Brainstorming-Phase, wird laufend aktualisiert)
 
@@ -24,20 +24,25 @@ kompliziert und überladen.
 
 ## Kernfunktionen (v1)
 
-### 1. Unendlich verschachtelte Aufgaben
-Jede Aufgabe ist im Grunde eine eigene Mini-Seite/Liste:
-- Kann Notizen, Bilder/Anhänge und wiederum Unteraufgaben enthalten.
-- Beliebig tief verschachtelbar (Unteraufgabe einer Unteraufgabe einer
-  Unteraufgabe, ...).
+### 1. Jede Liste und jede Aufgabe ist eine eigene Seite
+- Listen und Aufgaben funktionieren wie eine freie "Word-Seite": Text,
+  Bilder und Aufgaben/Unteraufgaben lassen sich frei und in beliebiger
+  Reihenfolge einfügen — kein starres Formular mit festen Feldern.
+- Die Hauptliste zeigt Unteraufgaben **nicht** inline/verschachtelt an.
+  Eine auf der eigenen Seite einer Aufgabe angelegte Unteraufgabe taucht
+  nur dort auf, nicht rückwirkend in der übergeordneten Liste.
+- Beliebig tief verschachtelbar (Aufgabe einer Aufgabe einer Aufgabe, ...).
 - Sobald eine Aufgabe Unteraufgaben hat, erscheint automatisch ein
   Fortschrittsbalken, der den Erledigungsgrad anzeigt.
 
-### 2. Slide-in-Detailpanel
-- Öffnet sich beim Klick/Wisch auf eine Aufgabe.
-- Desktop: Panel erscheint seitlich (Side-Panel).
-- Mobile: Wisch-Geste (rechts nach links) oder Pfeil-Icon öffnet die
-  Detailansicht.
-- Zeigt die volle Detail-/Unteraufgaben-Ansicht der jeweiligen Aufgabe.
+### 2. Mehrspalten-Drilldown (Miller-Columns)
+- Klick auf eine Aufgabe öffnet ihre Seite als neue Spalte direkt daneben.
+- Klick auf eine Unteraufgabe darin öffnet wiederum eine weitere Spalte —
+  bis zu drei Seiten gleichzeitig sichtbar (ähnlich der
+  macOS-Finder-Spaltenansicht).
+- Kommt eine vierte Spalte hinzu, rücken ältere Spalten aus dem sichtbaren
+  Bereich; über Zurückklicken in eine frühere Spalte lässt sich jederzeit
+  neu verzweigen (tiefere Spalten werden dabei ersetzt).
 
 ### 3. Quick Capture (Kernprinzip, hohe Priorität)
 - Neue Aufgabe muss in unter einer Sekunde erfassbar sein.
@@ -59,6 +64,11 @@ Apple-inspiriertes Design. Nicht so reduziert/nüchtern wie Xdo, aber auch
 nicht so bunt/verspielt wie Superlist in Reinform. Qualitätsanspruch:
 Apple Reminders/Notes-Niveau, mit eigenständigem Charakter.
 
+- **Akzentfarbe:** warmes, gedämpftes Orange (siehe `decisions.md`).
+- **Bewegung:** durchgängig ruhige, gefederte Animationen für alles
+  Interaktive (Öffnen/Schließen von Seiten, Löschen, Checkbox-Feedback,
+  Theme-Wechsel) — nicht nur punktuelle Effekte, siehe `decisions.md`.
+
 ## Out of scope für v1 (bewusst zurückgestellt)
 
 - Sharing/Kollaboration zwischen mehreren Nutzern (geplant für später,
@@ -67,6 +77,7 @@ Apple Reminders/Notes-Niveau, mit eigenständigem Charakter.
 
 ## Offene Punkte
 
-- Konkrete Akzentfarbe(n) / Farbpalette
-- Finaler App-Name (aktuell Arbeitstitel "Todo App")
-- Visueller Mockup zur Validierung der Design-Richtung (nächster Schritt)
+- Feinschliff des Desktop-Mockups im Dialog mit dem Nutzer (laufend)
+- Mobile-Ansicht mocken (noch nicht begonnen)
+- Endgültige Bestätigung des Namens "Unfold" (aktuell Arbeitstitel, wurde
+  vom Nutzer vorgeschlagen und positiv aufgenommen)
