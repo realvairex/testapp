@@ -43,6 +43,10 @@ Für dieses Projekt gilt durchgängig:
   ausführt.
 - **Diese Datei schlank halten:** Details gehören in `docs/`, nicht hier
   rein.
+- **Proaktive Hinweise:** Sicherheitsrelevante oder anderweitig sinnvolle
+  Verbesserungen ("schlaue Sachen"), die während der Arbeit auffallen,
+  werden dem Nutzer von sich aus mitgeteilt, ohne dass er danach fragen
+  muss.
 
 ## Status
 
