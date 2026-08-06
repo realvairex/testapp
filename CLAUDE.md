@@ -90,6 +90,8 @@ Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
 
 - `CLAUDE.md` — dieser Datei: Projektüberblick, Konventionen (dieses Dokument)
 - `docs/concept.md` — Produktvision, Inspiration, Feature-Liste, Design-Richtung
+- `docs/spec.md` — **Umsetzungsvorlage**: Datenmodell, Verhaltensregeln,
+  Design-Tokens. Das ist die Wahrheit für den Flutter-Bau, nicht das Mockup.
 - `docs/decisions.md` — laufendes Entscheidungsprotokoll
 - `docs/milestones.md` — Meilensteine mit Commit-Hash zum Zurückspringen
 - `docs/research-superlist.md` — Recherche zu Superlists Open-Source-Fundament
