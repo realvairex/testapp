@@ -658,7 +658,50 @@
         el.appendChild(makeInlineImageNode(b, owner.id));
       }
     }
+    ensureTrailingEditableLine(el);
     return el;
+  }
+
+  // A contenteditable whose last child is a contenteditable="false" block
+  // offers no caret position after it, so there is nowhere left to type at
+  // the end of the page. Clicking below the last task then snaps the caret
+  // all the way back to the start of the document and text appears at the
+  // top instead of where it was clicked. Keeping one editable line at the
+  // end fixes that. The newline is trimmed away again on serialize, so it
+  // never turns into a stray empty text block.
+  function ensureTrailingEditableLine(el) {
+    if (!el.lastChild || el.lastChild.nodeType !== 3) {
+      el.appendChild(document.createTextNode("\n"));
+    }
+  }
+
+  function placeCaretAtEnd(el) {
+    ensureTrailingEditableLine(el);
+    el.focus();
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  // Bottom edge of the editor's actual content, ignoring the empty area the
+  // editor stretches over (it is min-height: 100% of the column).
+  function editorContentBottom(el) {
+    var bottom = -Infinity;
+    for (var i = 0; i < el.childNodes.length; i++) {
+      var n = el.childNodes[i], r = null;
+      if (n.nodeType === 3) {
+        var rg = document.createRange();
+        rg.selectNode(n);
+        r = rg.getBoundingClientRect();
+      } else if (n.getBoundingClientRect) {
+        r = n.getBoundingClientRect();
+      }
+      if (r && r.height && r.bottom > bottom) bottom = r.bottom;
+    }
+    return bottom;
   }
 
   function mountEditors() {
@@ -739,6 +782,8 @@
     }
     range.deleteContents();
     range.insertNode(node);
+    // Keep a place to type after the embed if it landed at the very end.
+    ensureTrailingEditableLine(editorEl);
     range.setStartAfter(node);
     range.setEndAfter(node);
     range.collapse(true);
@@ -1248,6 +1293,20 @@
 
   document.addEventListener("mousedown", function (e) {
     if (e.target.closest("[data-insert-task-at], [data-insert-image-at]")) { e.preventDefault(); }
+  });
+
+  // Clicking the empty space under a page's content should continue writing
+  // at the end, which is what the blank area looks like it offers. Left to
+  // the browser it lands on whatever editable node happens to be nearest -
+  // from under a trailing task block, that is the very top of the page.
+  document.addEventListener("mousedown", function (e) {
+    if (!e.target.closest) return;
+    var editor = e.target.closest(".page-editor");
+    // e.target is the editor itself only when the click missed all content.
+    if (!editor || e.target !== editor) return;
+    if (e.clientY <= editorContentBottom(editor)) return;
+    e.preventDefault();
+    placeCaretAtEnd(editor);
   });
 
   document.addEventListener("keydown", function (e) {
