@@ -8,7 +8,9 @@
     --line-soft: #ece3cc;
     /* Eigener Ton fuers Ueberfahren in der Sidebar. --line-soft liegt auf
        dem Sandton der Sidebar praktisch unsichtbar (Kontrast 1,03). */
-    --nav-hover: #fdfbf6;
+    --nav-hover: #f2ecdf;
+    /* Strukturlinien der Gruppen: --line ist darauf zu leise (1,17). */
+    --tree-line: #c4b189;
     --ink: #293241;
     --ink-soft: #464d5b;
     --ink-faint: #5c626b;
@@ -39,6 +41,7 @@
     --line: #3c4454;
     --line-soft: #333a48;
     --nav-hover: #333a48;
+    --tree-line: #4a5468;
     --ink: #f2ede0;
     --ink-soft: #b6aea0;
     --ink-faint: #aca492;
@@ -66,6 +69,7 @@
       --line: #322f3a;
       --line-soft: #29272f;
       --nav-hover: #302d38;
+      --tree-line: #454150;
       --ink: #f2ede0;
       --ink-soft: #b6aea0;
       --ink-faint: #aca492;
@@ -176,14 +180,14 @@
   /* Durchgehende Senkrechte - nur solange noch Eintraege folgen. */
   .nav-item-wrap.in-group::before {
     content: ""; position: absolute; left: 13px; top: 0; bottom: 0; z-index: 1;
-    border-left: 1px solid var(--line); pointer-events: none;
+    border-left: 1px solid var(--tree-line); pointer-events: none;
   }
   .nav-item-wrap.in-group.last-in-group::before { display: none; }
   /* Der Bogen zur Zeile. Gerundet wie alles andere in der App. */
   .nav-item-wrap.in-group::after {
     content: ""; position: absolute; left: 13px; top: 0; height: 50%; width: 9px; z-index: 1;
-    border-left: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+    border-left: 1px solid var(--tree-line);
+    border-bottom: 1px solid var(--tree-line);
     border-bottom-left-radius: 7px;
     pointer-events: none;
   }
