@@ -1356,9 +1356,13 @@
     var groupTarget = e.target.closest('.group-row[data-drag-type="group"]');
     var listTarget = e.target.closest('.nav-item[data-drag-type="list"]');
 
+    // Clear first, unconditionally: dragging off a valid target onto empty
+    // sidebar space used to leave the last indicator stuck on screen,
+    // because clearing only happened on the way into a new valid target.
+    clearDropIndicator();
+
     if (drag.type === "list" && groupTarget) {
       e.preventDefault();
-      clearDropIndicator();
       groupTarget.classList.add("drop-into");
       dropIndicatorEl = groupTarget;
       return;
@@ -1367,7 +1371,6 @@
       e.preventDefault();
       var rect = listTarget.getBoundingClientRect();
       var pos = e.clientY < rect.top + rect.height / 2 ? "drop-before" : "drop-after";
-      clearDropIndicator();
       listTarget.classList.add(pos);
       dropIndicatorEl = listTarget;
       return;
@@ -1376,7 +1379,6 @@
       e.preventDefault();
       var grect = groupTarget.getBoundingClientRect();
       var gpos = e.clientY < grect.top + grect.height / 2 ? "drop-before" : "drop-after";
-      clearDropIndicator();
       groupTarget.classList.add(gpos);
       dropIndicatorEl = groupTarget;
       return;
