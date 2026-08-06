@@ -313,6 +313,26 @@ Mehr als eine Überschriftenebene ist für unsere Seitengrößen Overhead.
 Schnellerfassungsfeld direkt darunter deckt das ab, und das `/`-Menü den
 Rest. Übrig bleibt „+ Bild" als sichtbarer Einstieg.
 
+### 4.6 Suche / Befehlspalette (⌘K) — 📋 MERKLISTE
+
+**Noch nicht gebaut, aber beschlossen als Lücke.** Es gibt derzeit keine
+Suche. Bei unbegrenzt verschachtelten Aufgaben ist eine Aufgabe drei
+Ebenen tief nur durch Durchklicken auffindbar — das ist eine echte
+Funktionslücke, keine Verfeinerung.
+
+Vorgesehene Form (angeregt durch eine vom Nutzer gezeigte Referenz-App):
+- **⌘K** öffnet ein zentriertes Fenster, Esc schließt es.
+- Tippen sucht live über alle Listen und Aufgaben, mit Pfadangabe
+  (z.B. „Persönlich › Urlaub planen").
+- Enter springt hin: Liste öffnen und die Spalten bis zur Aufgabe
+  aufklappen.
+- **Findet die Suche nichts, bietet dasselbe Feld an, eine Aufgabe mit dem
+  eingegebenen Text anzulegen.** Damit sind Suche und Quick Capture ein
+  einziges Fenster — der Xdo-Gedanke in Reinform.
+
+Hängt eng mit 4.1 zusammen: Dasselbe Fenster sollte das globale
+Tastenkürzel bedienen, damit Erfassen von überall aus funktioniert.
+
 ### 4.5 Schicksal des Mockups
 Sobald diese Spezifikation vollständig ist, wird
 `design/mockups/v1-desktop.html` **eingefroren** und als historische
