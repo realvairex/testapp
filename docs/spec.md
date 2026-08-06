@@ -138,10 +138,15 @@ Reihenfolge und Position auf der Seite.
   aufnehmen) oder zwischen zwei Listen (= umsortieren).
 
 ### 2.5 Heute-Seite
-- Zeigt listenübergreifend alle Aufgaben mit Fälligkeitsdatum = heute.
+- Zeigt listenübergreifend alle Aufgaben mit Fälligkeitsdatum **heute oder
+  früher** (überfällig), sofern nicht erledigt.
 - Nur Aufgaben mit **eigenem** Datum. Eine übergeordnete Aufgabe erscheint
-  nur, wenn sie selbst ein Datum für heute hat.
-- Gruppiert nach Herkunftsliste.
+  nur, wenn sie selbst ein Datum hat.
+- Aufbau: zuerst der Abschnitt **„Überfällig"** (ältestes zuerst, jede
+  Zeile mit Punkt der Herkunftsliste), darunter **„Heute fällig"**,
+  gruppiert nach Herkunftsliste.
+- Der Zähler in der Sidebar umfasst beides.
+- Details und Begründung siehe 4.2.
 
 ---
 
@@ -217,17 +222,34 @@ schlecht nachrüsten.
 **Zu klären:** Welches Kürzel? Was passiert mit der erfassten Aufgabe —
 feste Eingangsliste, oder Listenauswahl im Eingabefeld?
 
-### 4.2 Datum und Zeitzonen
-**Zu klären:**
-- Wann beginnt „heute" — Mitternacht lokale Zeit?
-- Was passiert um Mitternacht bei geöffneter App (aktualisiert sich die
-  Heute-Seite von selbst)?
-- Was passiert mit **überfälligen** Aufgaben von gestern — verschwinden
-  sie oder erscheinen sie weiter in „Heute"?
-- Verhalten bei Zeitzonenwechsel auf Reisen.
+### 4.2 Datum und Zeitzonen — ✅ ENTSCHIEDEN (2026-08-06)
 
-Datumslogik ist eine der zuverlässigsten Fehlerquellen überhaupt, und die
-Heute-Seite ist eine der vier Kernfunktionen.
+- **Speicherung: reines Kalenderdatum**, kein Zeitstempel und keine
+  Zeitzone (`"2026-08-14"`). Eine Aufgabe, die am 14. fällig ist, ist
+  überall auf der Welt am 14. fällig. Damit entfällt die gesamte
+  Zeitzonen-Fehlerklasse, inklusive Reisen — es gibt schlicht nichts
+  umzurechnen. Verglichen wird per Zeichenkette.
+- **„Heute" beginnt um Mitternacht lokaler Zeit.**
+- **Überfälliges bleibt sichtbar.** Aufgaben mit Datum in der
+  Vergangenheit, die nicht erledigt sind, verschwinden nicht, sondern
+  erscheinen weiter auf der Heute-Seite — in einem **eigenen Abschnitt
+  ganz oben**, ältestes zuerst. Begründung: Eine Aufgabe stillschweigend
+  fallenzulassen ist bei einer Todo-App der schwerere Fehler als eine
+  volle Liste. Der Nutzer soll sehen, was liegengeblieben ist.
+- **Erledigtes zählt nie als überfällig**, unabhängig vom Datum.
+- **Kennzeichnung nicht allein über Farbe:** Die Überfällig-Markierung
+  trägt zusätzlich einen Rahmen, damit sie auch bei Farbfehlsichtigkeit
+  erkennbar bleibt.
+- **Bei geöffneter App um Mitternacht** muss sich die Heute-Seite
+  selbstständig aktualisieren (Zeitgeber auf den nächsten Tageswechsel).
+  ⚠️ Im Mockup nicht umgesetzt — das Datum ist dort fest verdrahtet,
+  damit die Demo reproduzierbar bleibt. **In Flutter zu implementieren.**
+
+**Datum setzen:** Im Kopf der Aufgabenseite. Ohne Datum eine Einladung
+(„Fällig am …"), mit Datum die Fälligkeits-Pille; beides öffnet dasselbe
+Menü: Heute · Morgen · Nächste Woche · Datum wählen · Entfernen. Die drei
+Schnellwahlen decken den Alltag ab, ohne den Kalender zu öffnen — das ist
+der Quick-Capture-Gedanke, angewandt auf Datumsvergabe.
 
 ### 4.3 Regeln fürs Löschen (referentielle Integrität)
 **Zu klären:**
