@@ -300,10 +300,15 @@
      between. Left at full line height it puts a blank line between every
      task and the list reads as loose, so it collapses to a thin strip and
      only opens up once the caret is actually in it. */
-  .pe-line.pe-gap { min-height: 0; height: 5px; overflow: hidden; }
+  /* Die Luecke nimmt gar keinen Platz ein, damit Aufgaben genauso dicht
+     stehen wie zwei Textzeilen (die haben 0px Abstand). Getroffen wird sie
+     trotzdem: ein unsichtbarer Streifen ueber der Blockgrenze faengt den
+     Klick ab, und beim Druecken klappt die Zeile auf volle Hoehe auf -
+     dadurch ist auch der Cursor nie kleiner als der Text. */
+  .pe-line.pe-gap { min-height: 0; height: 0; overflow: hidden; }
   .pe-line.pe-gap.pe-open { height: auto; min-height: 1.65em; overflow: visible; }
 
-  .inline-embed { position: relative; margin: 1px 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
+  .inline-embed { position: relative; margin: 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -966,10 +971,39 @@
   // Die Luecke bereits beim Druecken oeffnen, nicht erst wenn die Auswahl
   // gemeldet wird: sonst zeichnet der Browser den Cursor noch in der
   // zusammengeklappten Hoehe und er wirkt winzig gegenueber dem Text.
+  // Eine zusammengeklappte Luecke ist 0px hoch - der Browser kann sie also
+  // gar nicht treffen, und ein CSS-Klickstreifen wuerde vom overflow der
+  // Nachbarbloecke abgeschnitten. Deshalb hier selbst pruefen, ob der Klick
+  // dicht genug an einer Blockgrenze liegt.
+  function gapNearPoint(editor, x, y) {
+    var gaps = editor.querySelectorAll(".pe-gap:not(.pe-open)");
+    for (var i = 0; i < gaps.length; i++) {
+      var r = gaps[i].getBoundingClientRect();
+      if (Math.abs(y - r.top) <= 5 && x >= r.left && x <= r.right) return gaps[i];
+    }
+    return null;
+  }
+
   document.addEventListener("pointerdown", function (e) {
     if (!e.target.closest) return;
-    var gap = e.target.closest(".pe-gap");
-    if (gap) gap.classList.add("pe-open");
+    var ed = e.target.closest(".page-editor");
+    var gap = e.target.closest(".pe-gap") || (ed && gapNearPoint(ed, e.clientX, e.clientY));
+    if (!gap) return;
+    gap.classList.add("pe-open");
+    // Die Zeile war bis eben 0px hoch; die Trefferpruefung des Browsers
+    // wuerde den Cursor dort nicht zuverlaessig setzen. Also selbst setzen,
+    // aber erst nachdem der Browser seine eigene Behandlung erledigt hat -
+    // sonst ueberschreibt er die Auswahl gleich wieder.
+    var editor = gap.closest(".page-editor");
+    setTimeout(function () {
+      if (editor) editor.focus();
+      var r = document.createRange();
+      r.selectNodeContents(gap);
+      r.collapse(true);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }, 0);
   }, true);
 
   // --- Auswahl-Leiste ---------------------------------------------------
