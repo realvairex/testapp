@@ -290,6 +290,13 @@
   /* A paragraph block. Every top-level child of the editor is either one of
      these or an .inline-embed - see the block model note in the JS. */
   .pe-line { min-height: 1.65em; }
+  /* An empty paragraph sitting next to a task/image exists only so there is
+     a caret position there - tasks would otherwise be unreachable to type
+     between. Left at full line height it puts a blank line between every
+     task and the list reads as loose, so it collapses to a thin strip and
+     only opens up once the caret is actually in it. */
+  .pe-line.pe-gap { min-height: 0; height: 9px; overflow: hidden; }
+  .pe-line.pe-gap.pe-open { height: auto; min-height: 1.65em; overflow: visible; }
 
   .inline-embed { position: relative; margin: 3px 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
   .inline-embed.drag-ghost { opacity: 0.4; }
@@ -757,7 +764,50 @@
       if (isEmbed(kids4[m]) && isEmbed(kids4[m + 1])) el.insertBefore(makeLineNode(""), kids4[m + 1]);
     }
     if (isEmbed(el.lastChild)) el.appendChild(makeLineNode(""));
+
+    // 4. Empty paragraphs that only exist to sit next to an embed collapse
+    //    to a thin strip, so a run of tasks stays tight instead of being
+    //    spaced out by a blank line each.
+    var kids5 = Array.prototype.slice.call(el.childNodes);
+    for (var q = 0; q < kids5.length; q++) {
+      var line = kids5[q];
+      if (isEmbed(line)) continue;
+      var touchesEmbed = isEmbed(line.previousSibling) || isEmbed(line.nextSibling);
+      var empty = line.textContent === "";
+      line.classList.toggle("pe-gap", !!(empty && touchesEmbed));
+      if (!empty) line.classList.remove("pe-open");
+    }
   }
+
+  // Open the collapsed gap the caret is currently in, and close the others.
+  function syncGapForCaret() {
+    var sel = window.getSelection();
+    var active = null;
+    if (sel && sel.rangeCount) {
+      var n = sel.anchorNode;
+      while (n && n !== document.body) {
+        if (n.nodeType === 1 && n.classList && n.classList.contains("pe-gap")) { active = n; break; }
+        n = n.parentNode;
+      }
+    }
+    var gaps = document.querySelectorAll(".pe-gap.pe-open");
+    for (var i = 0; i < gaps.length; i++) { if (gaps[i] !== active) gaps[i].classList.remove("pe-open"); }
+    if (active) active.classList.add("pe-open");
+  }
+
+  document.addEventListener("selectionchange", syncGapForCaret);
+
+  // Once a gap has been typed into it is an ordinary paragraph - drop the
+  // collapsing, or it would fold back up (hiding the text) as soon as the
+  // caret moved away.
+  document.addEventListener("input", function (e) {
+    var editor = e.target.closest && e.target.closest(".page-editor");
+    if (!editor) return;
+    var gaps = editor.querySelectorAll(".pe-gap");
+    for (var i = 0; i < gaps.length; i++) {
+      if (gaps[i].textContent !== "") gaps[i].classList.remove("pe-gap", "pe-open");
+    }
+  });
 
   function placeCaretAtEnd(el) {
     normalizeEditor(el);
