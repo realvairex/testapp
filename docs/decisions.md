@@ -562,4 +562,77 @@ fällig und sollte dann in einem Zug für beide Bereiche gemacht werden
 (gemeinsamer, wiederverwendbarer Sortier-Mechanismus statt zweier
 paralleler Implementierungen).
 
+> **Nachtrag (gleicher Tag):** Überholt — der Nutzer meldete unmittelbar
+> danach denselben Freeze beim Verschieben in der Sidebar. Die
+> Umstellung wurde daraufhin sofort durchgeführt, siehe nächster
+> Eintrag.
+
+---
+
+## 2026-08-05 — Vereinheitlichung: ein gemeinsamer Pointer-Sortierer für Sidebar und Aufgaben
+
+**Kontext:** Direkt nach der obigen Bewertung meldete der Nutzer, dass
+sich die App **auch beim Verschieben in der Sidebar** komplett aufhängt —
+dasselbe Symptom wie zuvor bei den Aufgaben.
+
+**Analyse:** Ein Fuzz-Test über 220 Sidebar-Drag-Kombinationen (alle
+Kombinationen aus Listen, Gruppen, Leerraum, Navigationselementen und
+Bereichen außerhalb der Sidebar) lief headless **ohne einen einzigen
+Hang** durch — genau wie zuvor beim Aufgaben-Bug. Damit ist zum zweiten
+Mal belegt: Der Fehler tritt nur im echten Browser auf, nicht in der
+Headless-Automatisierung, und der einzige gemeinsame Nenner beider
+Freeze-Meldungen ist die **native HTML5-Drag-API**. Weiteres Nachjagen
+eines nicht reproduzierbaren Fehlers wäre unwirtschaftlich gewesen,
+zumal bereits im vorigen Eintrag festgehalten war, dass diese API für
+Mobile ohnehin ersetzt werden muss.
+
+**Entscheidung:** Die native Drag-API wird als **Drag-Quelle im gesamten
+Projekt aufgegeben**. Sidebar-Zeilen und Seiten-Embeds laufen jetzt über
+**einen einzigen gemeinsamen Pointer-Sortierer**; jeder Bereich liefert
+nur noch eine kleine Konfiguration (wie finde ich das gezogene Element,
+wo ist sein Container, wie bestimme ich die Drop-Position, was passiert
+beim Loslassen). Damit gibt es statt zweier paralleler Implementierungen
+nur noch eine — der im vorigen Eintrag empfohlene Zielzustand.
+
+Bedienung je Bereich bewusst unterschiedlich, weil der Kontext es
+verlangt:
+- **Sidebar:** Die Zeile selbst ist der Griff. Eine Berührung, die die
+  Bewegungsschwelle (4px) nie überschreitet, bleibt ein normaler Klick —
+  Navigation per Klick auf eine Liste funktioniert unverändert.
+  Gruppen lassen sich jetzt auch am Namensfeld anfassen; ein Druck auf
+  ein bereits fokussiertes Feld bearbeitet weiterhin nur den Text.
+- **Seiten-Embeds:** Expliziter Griff, weil die Zeile klickbar ist
+  (öffnet die Seite) und in editierbarem Text liegt.
+
+**Zwei zusätzliche Fehler, beim Testen der Umstellung gefunden und
+behoben:**
+1. Der Klick-Unterdrücker (verhindert, dass ein Drop zusätzlich als Klick
+   gewertet wird) konnte **scharf gestellt hängenbleiben**: Wenn der
+   Commit das DOM neu aufbaute, folgte gar kein Klick mehr — und der
+   Unterdrücker verschluckte dann später einen völlig unbeteiligten
+   Klick. Das ist exakt ein "App reagiert nicht mehr"-Symptom. Er wird
+   jetzt pro Drop registriert und im nächsten Event-Loop-Durchlauf wieder
+   abgebaut, kann also nicht mehr überdauern.
+2. Das Ziehen einer Gruppe am Namensfeld zog eine Textmarkierung über das
+   Feld; Fokus und Auswahl werden jetzt verworfen, sobald aus dem Druck
+   ein Ziehen wird.
+
+**Verifikation:** Fuzz-Test über **760 Drag-Kombinationen** quer über
+Sidebar *und* Seiteneditor (inkl. Griffen, Checkboxen, Eingabefeldern,
+Aufgabenzeilen, Bereichen außerhalb): kein Hang, keine zurückgebliebenen
+Drag-Zustände, App danach voll bedienbar, keine Konsolenfehler.
+Zusätzlich gezielt geprüft: Listen sortieren, Liste in Gruppe ziehen,
+Gruppen sortieren, Long-Press (1,5s) mit anschließendem Ziehen, Klick
+navigiert weiterhin, Ziehen navigiert *nicht*, Gruppe umbenennen,
+Gruppe ein-/ausklappen, Embed verschieben, Klick auf Aufgabenzeile
+öffnet weiterhin das Panel. Dazu der volle Regressionslauf
+(Checkbox-Kaskade, Tippen, Einfügen an Cursor, Quick-Add, Löschen,
+Escape, Heute-Ansicht) und die Panel-Animationsprüfung — alles grün.
+
+**Nebeneffekt:** Damit ist das Sortieren jetzt schon
+touch-tauglich aufgebaut, was für die geplante Mobile-Ansicht Voraussetzung
+war. Der externe Bild-Drop (Datei vom Betriebssystem in die Seite ziehen)
+nutzt weiterhin die native API — dort ist die Seite nur *Drop-Ziel*, nicht
+Drag-Quelle, und das ist unproblematisch.
+
 ---
