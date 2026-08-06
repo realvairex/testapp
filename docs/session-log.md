@@ -5,7 +5,7 @@ entschieden wurde, was offen blieb. Ergänzt die Git-Historie um das,
 was ein Commit nicht zeigt — verworfene Wege, Begründungen im Vorbeigehen,
 offene Fäden.
 
-Wird von `/ende` fortgeschrieben und von `scripts/session-check.sh`
+Wird von `ende unfold` fortgeschrieben und von `scripts/session-check.sh`
 eingefordert. Neueste Sitzung oben.
 
 ---
@@ -39,7 +39,7 @@ eingefordert. Neueste Sitzung oben.
   repariert; alle 40 laufen grün, inklusive Fuzz-Lauf über 760
   Drag-Kombinationen ohne Hänger.
 - Übergabe-Infrastruktur gebaut: `docs/status.md`, `docs/session-log.md`,
-  `scripts/session-check.sh`, die Befehle `/start` und `/ende`, sowie ein
+  `scripts/session-check.sh`, die Befehle `start unfold` und `ende unfold`, sowie ein
   Session-Start-Hook.
 
 **Entschieden**
@@ -66,6 +66,14 @@ eingefordert. Neueste Sitzung oben.
 - Kein automatisches Committen durch Hooks: Das würde die Git-Historie
   als Mittel der Nachvollziehbarkeit entwerten. Die Hooks melden, sie
   handeln nicht.
+
+- **Korrektur am selben Tag:** Die Auslöser waren als Slash-Befehle
+  gedacht. Der Nutzer probierte es und bekam „kein bekannter Befehl" —
+  eingecheckte Slash-Befehle stehen nur im Claude-Code-Terminal zur
+  Verfügung, nicht in der Web-Oberfläche. Umgestellt auf Text-Auslöser
+  (`start unfold` / `ende unfold`), verbindlich verankert in `CLAUDE.md`,
+  im Session-Start-Hook und in `status.md`. Lehre: eine empfohlene
+  Mechanik ohne Probe ist eine Vermutung.
 
 **Offen**
 

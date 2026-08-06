@@ -4,6 +4,14 @@
 wird.** Es beantwortet drei Fragen: Wo stehen wir, was ist als Nächstes
 dran, und was darf nicht noch einmal vorgeschlagen werden.
 
+> **Auslöser für den Sitzungswechsel:** Der Nutzer schreibt
+> **`start unfold`** bzw. **`ende unfold`** als normale Nachricht — das
+> sind **keine Slash-Befehle**. Eingecheckte Slash-Befehle kennt nur das
+> Claude-Code-Terminal; die Web- und App-Oberfläche antwortet darauf mit
+> „kein bekannter Befehl". Erkenne die Auslöser in beliebiger
+> Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
+> führe ihre Anweisung ohne Rückfrage aus.
+
 Stand: 2026-08-06
 
 ---

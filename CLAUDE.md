@@ -116,15 +116,28 @@ App-Code existiert noch nicht.
 
 ## Sitzungswechsel
 
-Der Session-Container ist temporär, der Chat ist es auch. Deshalb:
+Der Session-Container ist temporär, der Chat ist es auch. Deshalb gibt
+es zwei feste Auslöser:
 
-- **`/start unfold`** zu Beginn einer neuen Sitzung — lädt den
-  Projektkontext aus dem Repo.
-- **`/ende unfold`** vor dem Verlassen einer Sitzung — überführt alles
+- **`start unfold`** zu Beginn einer neuen Sitzung — lädt den
+  Projektkontext aus dem Repo. Anweisung: `.claude/commands/start.md`.
+- **`ende unfold`** vor dem Verlassen einer Sitzung — überführt alles
   Wissenswerte ins Repo und läuft dabei `scripts/session-check.sh`, das
-  mechanisch nachprüft, ob wirklich nichts verloren geht.
+  mechanisch nachprüft, ob wirklich nichts verloren geht. Anweisung:
+  `.claude/commands/ende.md`.
 
-Das Prüfskript kann jederzeit auch allein laufen:
+**Wichtig — diese Auslöser sind Text, kein Slash-Befehl.** Eingecheckte
+Slash-Befehle stehen nur im Claude-Code-Terminal zur Verfügung; in der
+Web- und App-Oberfläche kennt sie die Eingabezeile nicht. Der Nutzer
+schreibt sie deshalb als normale Nachricht.
+
+**Verbindlich:** Schreibt der Nutzer `start unfold` oder `ende unfold` —
+in beliebiger Schreibweise, mit oder ohne Schrägstrich, auch als
+`starte unfold`, `unfold start`, `session ende` oder ähnlich —, dann
+wird die zugehörige Datei unter `.claude/commands/` gelesen und ihre
+Anweisung vollständig ausgeführt. Nicht nachfragen, ob das gemeint war.
+
+Das Prüfskript läuft auch jederzeit allein:
 `bash scripts/session-check.sh`
 
 ## Tech-Stack

@@ -990,9 +990,16 @@ wurden.
 - **`docs/session-log.md`** — was in welcher Sitzung passiert ist.
   Ergänzt die Git-Historie um das, was ein Commit nicht zeigt:
   verworfene Wege, Begründungen im Vorbeigehen, offene Fäden.
-- **`/start unfold`** und **`/ende unfold`** als eingecheckte Befehle
+- **`start unfold`** und **`ende unfold`** als eingecheckte Anweisungen
   unter `.claude/commands/`. Sie liegen im Repo, gelten also für jede
-  Sitzung, nicht nur für diese Maschine.
+  Sitzung, nicht nur für diese Maschine. **Nachtrag vom selben Tag:**
+  Ursprünglich als Slash-Befehle gedacht — das war ein Fehler, den der
+  Nutzer sofort fand. Eingecheckte Slash-Befehle stehen nur im
+  Claude-Code-Terminal zur Verfügung; die Web- und App-Oberfläche kennt
+  sie nicht und antwortet mit „kein bekannter Befehl". Sie werden
+  deshalb als **Text-Auslöser** geschrieben. `CLAUDE.md` und der
+  Session-Start-Hook verpflichten ausdrücklich darauf, sie in beliebiger
+  Schreibweise zu erkennen und ohne Rückfrage auszuführen.
 - **`scripts/session-check.sh`** — prüft mechanisch nach: Arbeits-
   verzeichnis sauber, Branch gepusht, `status.md` so aktuell wie das
   Repo, Eintrag im Entscheidungsprotokoll, nichts Wiederverwendbares im
@@ -1033,7 +1040,7 @@ daran nichts geändert, weil das Anreizgefälle unverändert geblieben wäre.
 1. **Nur Konvention.** Billig, aber sie greift genau dann nicht, wenn es
    eilig ist — also immer.
 2. **Nur Prüfung am Sitzungsende.** Hilft, versagt aber, wenn eine
-   Sitzung abrupt endet (Kontextlimit, Container-Ende) und `/ende` nie
+   Sitzung abrupt endet (Kontextlimit, Container-Ende) und `ende unfold` nie
    läuft. Genau das war der Auslöser.
 3. **Konvention plus Prüfung an mehreren Stellen.**
 
@@ -1050,7 +1057,7 @@ hängt an vier Hooks:
 
 | Hook | Modus | Warum |
 |---|---|---|
-| `SessionStart` | Hinweis auf `status.md` | Kontext laden, auch ohne `/start` |
+| `SessionStart` | Hinweis auf `status.md` | Kontext laden, auch ohne `start unfold` |
 | `Stop` | `--drift` | nach jedem Schritt: liegt etwas Wiederverwendbares außerhalb des Repos? |
 | `PreCompact` | `--kurz` | die Verdichtung ist der Moment, in dem Kontext verloren geht |
 | `SessionEnd` | `--kurz` | letzter Halt, auch bei abruptem Ende |
