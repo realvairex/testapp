@@ -87,19 +87,16 @@ Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
 
-**Weiterhin offen — Hooks noch immer ungeprüft:** Ob die Hooks in
-`.claude/settings.json` tatsächlich feuern, ist **nach wie vor nicht
-nachgewiesen**. Am 2026-08-06 erschien die Zeile „=== Projekt Unfold ==="
-nicht — aber die Sitzung startete in `~/Documents/Claude`, also eine
-Ebene **über** dem Repo. Claude Code liest `.claude/settings.json` aus dem
-Projektverzeichnis; lag dieses nie vor, konnte der Hook gar nicht
-auslösen. Der Test hat damit **nicht stattgefunden**, statt
-fehlzuschlagen.
+**Erledigt — der Session-Start-Hook funktioniert nachweislich.** Am
+2026-08-06 startete eine Sitzung direkt in `~/Documents/Claude/testapp`,
+und die Zeile „=== Projekt Unfold ===" erschien mitsamt dem vollständigen
+Hook-Text (Projektregeln, Auslöser-Hinweis, letzte Commits). Der frühere
+Fehlschlag lag allein am falschen Startverzeichnis (`~/Documents/Claude`,
+eine Ebene **über** dem Repo) — Claude Code liest `.claude/settings.json`
+aus dem Projektverzeichnis.
 
-> **So wird richtig geprüft:** Eine Sitzung direkt in
-> `~/Documents/Claude/testapp` starten. Kommt die Zeile dann immer noch
-> nicht, ist der Hook wirklich defekt. Erst dann darf dieser Punkt
-> gestrichen werden.
+> **Merke:** Bleibt die Zeile künftig aus, ist zuerst das
+> Arbeitsverzeichnis zu prüfen, nicht der Hook. Er ist in Ordnung.
 
 ## 3. Festlegungen des Nutzers, die nicht neu aufgerollt werden
 
