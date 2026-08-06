@@ -155,7 +155,8 @@
   .nav-count { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: right; }
   .nav-item.active .nav-count { color: var(--accent); }
   .nav-item-indented { padding-left: 26px; }
-  .nav-item[draggable="true"], .group-row[draggable="true"] { cursor: grab; }
+  .nav-item[data-drag-type], .group-row[data-drag-type] { cursor: grab; }
+  .sidebar.is-sorting .nav-item[data-drag-type], .sidebar.is-sorting .group-row[data-drag-type] { cursor: grabbing; }
   .nav-item.drag-ghost { opacity: 0.35; }
 
   .nav-item-wrap { position: relative; }
@@ -441,7 +442,6 @@
   ];
 
   var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, optionsOpen: false };
-  var drag = { type: null, id: null, embedEl: null, embedOwnerId: null };
 
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
   function findGroup(id) { for (var i = 0; i < groups.length; i++) { if (groups[i].id === id) return groups[i]; } return null; }
@@ -992,13 +992,13 @@
     var c = countAll(l.tasks);
     var active = state.view === "list" && state.currentListId === l.id;
     return '<div class="nav-item-wrap">' +
-      '<button class="nav-item' + (active ? " active" : "") + (indented ? " nav-item-indented" : "") + '" data-nav="list" data-list="' + l.id + '" draggable="true" data-drag-type="list" data-drag-id="' + l.id + '" type="button"><span class="nav-dot" style="background:' + l.color + '"></span><span class="nav-name">' + escapeHtml(l.name) + '</span><span class="nav-count">' + (c.total - c.done) + "</span></button>" +
+      '<button class="nav-item' + (active ? " active" : "") + (indented ? " nav-item-indented" : "") + '" data-nav="list" data-list="' + l.id + '" data-drag-type="list" data-drag-id="' + l.id + '" type="button"><span class="nav-dot" style="background:' + l.color + '"></span><span class="nav-name">' + escapeHtml(l.name) + '</span><span class="nav-count">' + (c.total - c.done) + "</span></button>" +
       '<button class="nav-delete" data-delete-list="' + l.id + '" aria-label="Liste löschen" title="Liste löschen">' + svgTrash() + "</button>" +
       "</div>";
   }
 
   function groupHeader(g, collapsed, count) {
-    return '<div class="group-row" draggable="true" data-drag-type="group" data-drag-id="' + g.id + '">' +
+    return '<div class="group-row" data-drag-type="group" data-drag-id="' + g.id + '">' +
       '<button class="group-chevron' + (collapsed ? " collapsed" : "") + '" data-toggle-group="' + g.id + '" aria-label="Gruppe ein-/ausklappen">' + svgChevronDown() + "</button>" +
       '<input class="group-title" value="' + escapeHtml(g.name) + '" data-group-title-for="' + g.id + '" />' +
       '<span class="nav-count">' + count + "</span>" +
@@ -1248,7 +1248,7 @@
 
   document.addEventListener("dragover", function (e) {
     var editor = e.target.closest(".page-editor");
-    if (!editor || drag.type) return;
+    if (!editor) return;
     e.preventDefault();
     editor.classList.add("drag-over");
   });
@@ -1260,7 +1260,7 @@
 
   document.addEventListener("drop", function (e) {
     var editor = e.target.closest(".page-editor");
-    if (!editor || drag.type) return;
+    if (!editor) return;
     e.preventDefault();
     editor.classList.remove("drag-over");
     var ownerId = editor.getAttribute("data-editor-for");
@@ -1327,188 +1327,205 @@
     groups.splice(insertAt, 0, draggedGroup);
   }
 
-  var dropIndicatorEl = null;
-  function clearDropIndicator() {
-    if (dropIndicatorEl) { dropIndicatorEl.classList.remove("drop-before", "drop-after", "drop-into"); dropIndicatorEl = null; }
-  }
-
   var sidebarEl = document.getElementById("sidebar");
 
-  sidebarEl.addEventListener("dragstart", function (e) {
-    var handle = e.target.closest('[data-drag-type]');
-    if (!handle) return;
-    drag.type = handle.getAttribute("data-drag-type");
-    drag.id = handle.getAttribute("data-drag-id");
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", drag.id);
-    setTimeout(function () { handle.classList.add("drag-ghost"); }, 0);
-  });
+  // --- Shared pointer-based sorting ------------------------------------
+  // One mechanism for everything that can be reordered by dragging: sidebar
+  // lists and groups, and tasks/images embedded in a page.
+  //
+  // The native HTML5 drag-and-drop API is deliberately not used anywhere as
+  // a drag *source*. It froze the app in real browsers in both places, it
+  // fights the browser's own built-in drag behaviour inside contenteditable,
+  // it never fires from a touch gesture (so it could not survive the planned
+  // mobile view), and its drag image cannot be styled. Pointer events give
+  // us the whole gesture with no native path running alongside it.
+  //
+  // Each caller supplies a small config: how to find the dragged item from
+  // the pressed element, where its container is, how to resolve the drop
+  // spot under the pointer, and what to do on release.
 
-  sidebarEl.addEventListener("dragend", function (e) {
-    var handle = e.target.closest('[data-drag-type]');
-    if (handle) handle.classList.remove("drag-ghost");
-    clearDropIndicator();
-    drag.type = null; drag.id = null;
-  });
+  var sortDrag = null;      // active gesture, or null
 
-  sidebarEl.addEventListener("dragover", function (e) {
-    if (!drag.type) return;
-    var groupTarget = e.target.closest('.group-row[data-drag-type="group"]');
-    var listTarget = e.target.closest('.nav-item[data-drag-type="list"]');
-
-    // Clear first, unconditionally: dragging off a valid target onto empty
-    // sidebar space used to leave the last indicator stuck on screen,
-    // because clearing only happened on the way into a new valid target.
-    clearDropIndicator();
-
-    if (drag.type === "list" && groupTarget) {
-      e.preventDefault();
-      groupTarget.classList.add("drop-into");
-      dropIndicatorEl = groupTarget;
-      return;
+  var SORT_CONFIGS = [
+    {
+      // Sidebar lists + groups. The row itself is the handle: a press that
+      // never crosses the movement threshold stays an ordinary click, so
+      // navigating by clicking a list still works.
+      name: "sidebar",
+      itemFrom: function (t) { return t.closest('[data-drag-type][data-drag-id]'); },
+      containerFrom: function () { return sidebarEl; },
+      resolveSpot: function (container, x, y, el) {
+        var under = document.elementFromPoint(x, y);
+        if (!under || !container.contains(under)) return null;
+        var type = el.getAttribute("data-drag-type");
+        var id = el.getAttribute("data-drag-id");
+        var groupTarget = under.closest('.group-row[data-drag-type="group"]');
+        var listTarget = under.closest('.nav-item[data-drag-type="list"]');
+        if (type === "list" && groupTarget) return { target: groupTarget, pos: "into" };
+        if (type === "list" && listTarget && listTarget.getAttribute("data-drag-id") !== id) {
+          var r = listTarget.getBoundingClientRect();
+          return { target: listTarget, pos: y < r.top + r.height / 2 ? "before" : "after" };
+        }
+        if (type === "group" && groupTarget && groupTarget.getAttribute("data-drag-id") !== id) {
+          var gr = groupTarget.getBoundingClientRect();
+          return { target: groupTarget, pos: y < gr.top + gr.height / 2 ? "before" : "after" };
+        }
+        return null;
+      },
+      commit: function (el, spot) {
+        var type = el.getAttribute("data-drag-type");
+        var id = el.getAttribute("data-drag-id");
+        var targetId = spot.target.getAttribute("data-drag-id");
+        if (type === "list" && spot.pos === "into") moveListToGroupEnd(id, targetId);
+        else if (type === "list") moveList(id, targetId, spot.pos);
+        else if (type === "group") moveGroup(id, targetId, spot.pos);
+        renderSidebar();
+      }
+    },
+    {
+      // Embedded tasks/images. Dragged by an explicit grip, because the row
+      // itself is clickable (opens the page) and sits inside editable text
+      // where a press would otherwise start selecting.
+      name: "embed",
+      requiresGrip: "[data-embed-grip]",
+      itemFrom: function (t) { return t.closest(".inline-embed[data-embed-marker]"); },
+      containerFrom: function (el) { return el.closest(".page-editor"); },
+      resolveSpot: function (container, x, y, el) {
+        var all = container.querySelectorAll(".inline-embed[data-embed-marker]");
+        var others = [];
+        for (var i = 0; i < all.length; i++) { if (all[i] !== el) others.push(all[i]); }
+        if (!others.length) return null;
+        for (var j = 0; j < others.length; j++) {
+          var r = others[j].getBoundingClientRect();
+          if (y < r.top + r.height / 2) return { target: others[j], pos: "before" };
+        }
+        return { target: others[others.length - 1], pos: "after" };
+      },
+      commit: function (el, spot) {
+        var ownerId = spot.target.closest(".page-editor").getAttribute("data-editor-for");
+        if (spot.pos === "before") { spot.target.parentNode.insertBefore(el, spot.target); }
+        else { spot.target.parentNode.insertBefore(el, spot.target.nextSibling); }
+        serializeEditor(ownerId);
+        renderAll();
+      }
     }
-    if (drag.type === "list" && listTarget && listTarget.getAttribute("data-drag-id") !== drag.id) {
-      e.preventDefault();
-      var rect = listTarget.getBoundingClientRect();
-      var pos = e.clientY < rect.top + rect.height / 2 ? "drop-before" : "drop-after";
-      listTarget.classList.add(pos);
-      dropIndicatorEl = listTarget;
-      return;
+  ];
+
+  // Pressing these must never start a drag - they are their own controls.
+  // Text fields are deliberately NOT in this list: a group row is mostly
+  // taken up by its name field, so excluding it would leave almost nothing
+  // to grab the group by. Instead a press on a field that is already focused
+  // is left alone, so selecting and editing text still works normally.
+  var SORT_PRESS_EXCLUDE = ".group-chevron, .nav-delete, .row-delete, .check-btn";
+
+  function clearSortIndicator() {
+    if (sortDrag && sortDrag.spot) {
+      sortDrag.spot.target.classList.remove("drop-before", "drop-after", "drop-into");
     }
-    if (drag.type === "group" && groupTarget && groupTarget.getAttribute("data-drag-id") !== drag.id) {
-      e.preventDefault();
-      var grect = groupTarget.getBoundingClientRect();
-      var gpos = e.clientY < grect.top + grect.height / 2 ? "drop-before" : "drop-after";
-      groupTarget.classList.add(gpos);
-      dropIndicatorEl = groupTarget;
-      return;
-    }
-  });
-
-  sidebarEl.addEventListener("drop", function (e) {
-    if (!drag.type) return;
-    e.preventDefault();
-    var groupTarget = e.target.closest('.group-row[data-drag-type="group"]');
-    var listTarget = e.target.closest('.nav-item[data-drag-type="list"]');
-
-    if (drag.type === "list" && groupTarget) {
-      moveListToGroupEnd(drag.id, groupTarget.getAttribute("data-drag-id"));
-    } else if (drag.type === "list" && listTarget && listTarget.getAttribute("data-drag-id") !== drag.id) {
-      var rect = listTarget.getBoundingClientRect();
-      var pos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
-      moveList(drag.id, listTarget.getAttribute("data-drag-id"), pos);
-    } else if (drag.type === "group" && groupTarget && groupTarget.getAttribute("data-drag-id") !== drag.id) {
-      var grect = groupTarget.getBoundingClientRect();
-      var gpos = e.clientY < grect.top + grect.height / 2 ? "before" : "after";
-      moveGroup(drag.id, groupTarget.getAttribute("data-drag-id"), gpos);
-    }
-
-    clearDropIndicator();
-    drag.type = null; drag.id = null;
-    renderSidebar();
-  });
-
-  // --- Moving embedded tasks/images within a page ---
-  // Driven by pointer events rather than the native HTML5 drag API. These
-  // blocks sit inside a contenteditable, where the browser runs its own
-  // built-in drag/move behaviour for editable content; that native path
-  // competes with any custom handler (and a press-and-hold starts a native
-  // text-selection drag on the same gesture), which is what made moving a
-  // task unreliable and could wedge the editor. Pointer events give us the
-  // gesture outright, with no native fallback to fight.
-
-  var embedDropIndicatorEl = null;
-  function clearEmbedDropIndicator() {
-    if (embedDropIndicatorEl) { embedDropIndicatorEl.classList.remove("drop-before", "drop-after"); embedDropIndicatorEl = null; }
   }
 
-  var pdrag = { active: false, armed: false, el: null, editor: null, ownerId: null, grip: null, pointerId: null, startY: 0, target: null, pos: null };
-
-  function resetPointerDrag() {
-    if (pdrag.el) pdrag.el.classList.remove("drag-ghost");
-    if (pdrag.editor) pdrag.editor.classList.remove("embed-dragging");
-    if (pdrag.grip && pdrag.pointerId !== null && pdrag.grip.releasePointerCapture) {
-      try { pdrag.grip.releasePointerCapture(pdrag.pointerId); } catch (err) { /* already released */ }
+  function endSortDrag() {
+    if (!sortDrag) return;
+    clearSortIndicator();
+    sortDrag.el.classList.remove("drag-ghost");
+    if (sortDrag.container) sortDrag.container.classList.remove("is-sorting");
+    if (sortDrag.captureEl && sortDrag.captureEl.releasePointerCapture) {
+      try { sortDrag.captureEl.releasePointerCapture(sortDrag.pointerId); } catch (err) { /* already gone */ }
     }
-    clearEmbedDropIndicator();
-    pdrag = { active: false, armed: false, el: null, editor: null, ownerId: null, grip: null, pointerId: null, startY: 0, target: null, pos: null };
-  }
-
-  // Nearest insertion point for the current pointer Y, considering every
-  // sibling embed except the one being dragged. Landing above the first or
-  // below the last is handled too, so the drop zone covers the whole page
-  // rather than only the exact area of another embed.
-  function embedDropSpot(editor, clientY) {
-    var all = editor.querySelectorAll(".inline-embed[data-embed-marker]");
-    var others = [];
-    for (var i = 0; i < all.length; i++) { if (all[i] !== pdrag.el) others.push(all[i]); }
-    if (!others.length) return null;
-    for (var j = 0; j < others.length; j++) {
-      var r = others[j].getBoundingClientRect();
-      if (clientY < r.top + r.height / 2) return { target: others[j], pos: "before" };
-    }
-    return { target: others[others.length - 1], pos: "after" };
+    sortDrag = null;
   }
 
   document.addEventListener("pointerdown", function (e) {
-    if (e.button !== 0) return;
-    var grip = e.target.closest("[data-embed-grip]");
-    if (!grip) return;
-    var el = grip.closest(".inline-embed[data-embed-marker]");
-    var editor = el && el.closest(".page-editor");
-    if (!el || !editor) return;
-    e.preventDefault(); // no text selection, no native contenteditable drag
-    pdrag.armed = true;
-    pdrag.el = el;
-    pdrag.editor = editor;
-    pdrag.ownerId = editor.getAttribute("data-editor-for");
-    pdrag.grip = grip;
-    pdrag.pointerId = e.pointerId;
-    pdrag.startY = e.clientY;
-    if (grip.setPointerCapture) grip.setPointerCapture(e.pointerId);
+    if (e.button !== 0 || sortDrag) return;
+    if (!e.target.closest) return;
+    if (e.target.closest(SORT_PRESS_EXCLUDE)) return;
+    // Already editing this field? Then the press belongs to the text, not
+    // to a drag.
+    if (e.target === document.activeElement && e.target.closest("input, textarea")) return;
+
+    for (var i = 0; i < SORT_CONFIGS.length; i++) {
+      var cfg = SORT_CONFIGS[i];
+      var pressEl = e.target;
+      if (cfg.requiresGrip) {
+        pressEl = e.target.closest(cfg.requiresGrip);
+        if (!pressEl) continue;
+      }
+      var el = cfg.itemFrom(pressEl);
+      if (!el) continue;
+      var container = cfg.containerFrom(el);
+      if (!container) continue;
+
+      var captureEl = cfg.requiresGrip ? pressEl : el;
+      sortDrag = {
+        cfg: cfg, el: el, container: container, captureEl: captureEl,
+        pointerId: e.pointerId, startY: e.clientY, active: false, spot: null
+      };
+      // Only suppress the browser's default for grip drags. On the sidebar
+      // the press may still turn out to be a plain click, and preventing
+      // the default here would break focus/click behaviour.
+      if (cfg.requiresGrip) e.preventDefault();
+      if (captureEl.setPointerCapture) {
+        try { captureEl.setPointerCapture(e.pointerId); } catch (err) { /* not capturable */ }
+      }
+      return;
+    }
   });
 
   document.addEventListener("pointermove", function (e) {
-    if (!pdrag.armed || e.pointerId !== pdrag.pointerId) return;
-    if (!pdrag.active) {
-      if (Math.abs(e.clientY - pdrag.startY) < 4) return; // tolerate a shaky click
-      pdrag.active = true;
-      pdrag.el.classList.add("drag-ghost");
-      pdrag.editor.classList.add("embed-dragging");
+    if (!sortDrag || e.pointerId !== sortDrag.pointerId) return;
+    if (!sortDrag.active) {
+      if (Math.abs(e.clientY - sortDrag.startY) < 4) return; // still just a click
+      sortDrag.active = true;
+      // The press may have focused a text field inside the row (a group's
+      // name). Once it turns into a drag, drop that focus so the gesture
+      // doesn't smear a text selection across the field.
+      if (document.activeElement && sortDrag.el.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+      var sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      sortDrag.el.classList.add("drag-ghost");
+      sortDrag.container.classList.add("is-sorting");
     }
     e.preventDefault();
-    var spot = embedDropSpot(pdrag.editor, e.clientY);
-    clearEmbedDropIndicator();
-    pdrag.target = spot ? spot.target : null;
-    pdrag.pos = spot ? spot.pos : null;
+    clearSortIndicator();
+    var spot = sortDrag.cfg.resolveSpot(sortDrag.container, e.clientX, e.clientY, sortDrag.el);
+    sortDrag.spot = spot;
     if (spot) {
-      spot.target.classList.add(spot.pos === "before" ? "drop-before" : "drop-after");
-      embedDropIndicatorEl = spot.target;
+      spot.target.classList.add(spot.pos === "into" ? "drop-into" : "drop-" + spot.pos);
     }
   });
 
+  // A drag that ends over a clickable row would otherwise also fire a click
+  // (e.g. navigating to the list you just moved). Swallow that one click.
+  // Registered per drop and torn down on the next event-loop turn, so it can
+  // never linger and eat an unrelated click later on - a stale suppressor
+  // looks exactly like an app that has stopped responding.
+  function swallowNextClick() {
+    function onClick(ev) { ev.stopPropagation(); ev.preventDefault(); }
+    document.addEventListener("click", onClick, true);
+    setTimeout(function () { document.removeEventListener("click", onClick, true); }, 0);
+  }
+
   document.addEventListener("pointerup", function (e) {
-    if (!pdrag.armed || e.pointerId !== pdrag.pointerId) return;
-    if (pdrag.active && pdrag.target && pdrag.target !== pdrag.el) {
-      var el = pdrag.el, target = pdrag.target, pos = pdrag.pos, ownerId = pdrag.ownerId;
-      if (pos === "before") { target.parentNode.insertBefore(el, target); }
-      else { target.parentNode.insertBefore(el, target.nextSibling); }
-      resetPointerDrag();
-      serializeEditor(ownerId);
-      renderAll();
-      return;
+    if (!sortDrag || e.pointerId !== sortDrag.pointerId) return;
+    var cfg = sortDrag.cfg, el = sortDrag.el, spot = sortDrag.spot, wasActive = sortDrag.active;
+    endSortDrag();
+    if (wasActive) {
+      swallowNextClick();
+      if (spot && spot.target !== el) cfg.commit(el, spot);
     }
-    resetPointerDrag();
   });
 
   document.addEventListener("pointercancel", function (e) {
-    if (pdrag.armed && e.pointerId === pdrag.pointerId) resetPointerDrag();
+    if (sortDrag && e.pointerId === sortDrag.pointerId) endSortDrag();
   });
 
-  // Belt and braces: never let the browser start its own drag on anything
-  // inside a page editor, whichever element the gesture originates from.
+  // Belt and braces: the browser must never start a drag of its own on a
+  // sortable row or inside a page editor, whatever the gesture originates on.
   document.addEventListener("dragstart", function (e) {
-    if (e.target.closest && e.target.closest(".page-editor")) e.preventDefault();
+    if (!e.target.closest) return;
+    if (e.target.closest(".page-editor") || e.target.closest("[data-drag-type]")) e.preventDefault();
   });
 
   document.addEventListener("click", function (e) {
