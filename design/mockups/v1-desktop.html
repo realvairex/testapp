@@ -161,16 +161,25 @@
 
   .nav-item-wrap { position: relative; }
   .nav-item-wrap:hover .nav-count { opacity: 0; }
+  /* The delete button replaces the count on hover, so the two must sit on
+     exactly the same centre line - otherwise the icon appears to jump as
+     the number fades out. The "Heute" row's count is the reference every
+     other row is aligned to: its right edge is 23px from the sidebar edge
+     and it is 16px wide, so its centre is 31px in. right: 7px puts this
+     22px button on that same centre. */
   .nav-delete {
-    opacity: 0; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-    width: 20px; height: 20px; border: none; background: transparent; color: var(--ink-faint);
-    cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 5px;
+    opacity: 0; position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    width: 22px; height: 22px; padding: 0; border: none; background: transparent; color: var(--ink-faint);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px;
     transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease;
   }
+  .nav-delete svg { flex-shrink: 0; }
   .nav-item-wrap:hover .nav-delete, .group-row:hover .nav-delete { opacity: 1; }
   .nav-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
 
-  .group-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 4px 7px 6px; border-radius: 8px; margin-top: 2px; position: relative; }
+  /* padding-right matches .nav-item's, so a group's count lands on the same
+     line as every other row's count (see .nav-delete above). */
+  .group-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 10px 7px 6px; border-radius: 8px; margin-top: 2px; position: relative; }
   .group-row.drag-ghost { opacity: 0.35; }
   .group-row:hover .nav-count { opacity: 0; }
   .group-chevron { width: 16px; height: 16px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
@@ -240,7 +249,12 @@
   .col-title:focus { outline: none; }
   .col-meta { font-size: 12px; color: var(--ink-faint); margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-  .col-close { width: 22px; height: 22px; border-radius: 6px; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+  /* padding: 0 matters on every icon button here - a <button> carries the
+     browser's default 1px 6px padding, which was squeezing these 12px-wide
+     icons down to 6-10px and making them look undersized next to the
+     15px nav icons. */
+  .col-close { width: 22px; height: 22px; padding: 0; border-radius: 6px; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+  .col-close svg { flex-shrink: 0; }
   .col-close:hover { background: var(--line-soft); color: var(--ink); }
   .col-close:active { transform: scale(0.9); }
 
@@ -305,7 +319,8 @@
   .block-image { display: flex; align-items: center; gap: 8px; padding: 14px 12px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-faint); font-size: 12px; margin-right: 26px; }
   .block-image svg { flex-shrink: 0; }
 
-  .row-delete { opacity: 0; width: 18px; height: 18px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 5px; transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, transform 0.1s ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, transform 0.1s ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  .row-delete svg { flex-shrink: 0; }
   .inline-embed:hover .row-delete { opacity: 1; }
   .row-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
   .row-delete:active { transform: translateY(-50%) scale(0.88); }
@@ -543,7 +558,7 @@
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   function svgGearPath() { return '<path d="M7.5 5.3a2.2 2.2 0 100 4.4 2.2 2.2 0 000-4.4z" stroke="currentColor" stroke-width="1.1"/><path d="M7.5 1.5v1.3M7.5 12.2v1.3M13.5 7.5h-1.3M2.8 7.5H1.5M11.6 3.4l-.9.9M4.3 10.7l-.9.9M11.6 11.6l-.9-.9M4.3 4.3l-.9-.9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'; }
 
-  function svgTrash() { return '<svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M2.5 3.5h8M5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M3.5 3.5l.5 8a1 1 0 001 1h4a1 1 0 001-1l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  function svgTrash() { return '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M2.5 3.5h8M5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M3.5 3.5l.5 8a1 1 0 001 1h4a1 1 0 001-1l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
   function renderTaskRow(node, colIndex, listBadge, deleteCtx) {
     var prog = progress(node);
