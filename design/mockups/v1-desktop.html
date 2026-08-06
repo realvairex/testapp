@@ -152,7 +152,11 @@
   .nav-icon { width: 15px; height: 15px; flex-shrink: 0; color: var(--ink-soft); }
   .nav-item.active .nav-icon { color: var(--accent); }
   .nav-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .nav-count { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: right; }
+  /* Centred, not right-aligned: the delete button swaps in for this number
+     on hover, so the digit itself - not the box around it - has to sit on
+     the button's centre line. Right-aligned text put the glyph ~4px to the
+     right of that centre, which read as the two being right-edge aligned. */
+  .nav-count { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: center; }
   .nav-item.active .nav-count { color: var(--accent); }
   .nav-item-indented { padding-left: 26px; }
   .nav-item[data-drag-type], .group-row[data-drag-type] { cursor: grab; }
@@ -558,7 +562,22 @@
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   function svgGearPath() { return '<path d="M7.5 5.3a2.2 2.2 0 100 4.4 2.2 2.2 0 000-4.4z" stroke="currentColor" stroke-width="1.1"/><path d="M7.5 1.5v1.3M7.5 12.2v1.3M13.5 7.5h-1.3M2.8 7.5H1.5M11.6 3.4l-.9.9M4.3 10.7l-.9.9M11.6 11.6l-.9-.9M4.3 4.3l-.9-.9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'; }
 
-  function svgTrash() { return '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M2.5 3.5h8M5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5M3.5 3.5l.5 8a1 1 0 001 1h4a1 1 0 001-1l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  // Every part is drawn symmetrically about x = 6.5 so the icon sits dead
+  // centre in its button. The can body used to run 3.5 - 10.5, i.e. centred
+  // on 7.0, while the lid ran 2.5 - 10.5 (centred on 6.5). The icon's
+  // overall bounding box still measured as centred, because the lid sets
+  // its extents - but the body carries the visual mass, so the icon read as
+  // pushed to the right. The body keeps its width and is simply moved onto
+  // the centre line.
+  // viewBox y is offset by 0.25 because the drawing spans y 1 - 12.5, so its
+  // vertical centre is 6.75 rather than the viewBox's own 6.5.
+  function svgTrash() {
+    return '<svg width="14" height="14" viewBox="0 0.25 13 13" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M2.5 3.5h8"/>' +                             // lid:    2.5 - 10.5
+      '<path d="M5 3.5V2a1 1 0 011-1h1a1 1 0 011 1v1.5"/>' + // handle: 5   - 8
+      '<path d="M3 3.5l.5 8a1 1 0 001 1h4a1 1 0 001-1l.5-8"/>' + // body: 3 - 10
+      "</svg>";
+  }
 
   function renderTaskRow(node, colIndex, listBadge, deleteCtx) {
     var prog = progress(node);
