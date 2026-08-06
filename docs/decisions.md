@@ -636,3 +636,99 @@ nutzt weiterhin die native API — dort ist die Seite nur *Drop-Ziel*, nicht
 Drag-Quelle, und das ist unproblematisch.
 
 ---
+
+## 2026-08-06 — Editor-Datenmodell: Seite ist eine geordnete Block-Liste (Absatz ist ein Block)
+
+**Kontext:** Der Nutzer meldete vier Fehler auf einmal:
+1. Mehrzeiliger Text wird beim Verschieben einer Aufgabe in eine einzige
+   Zeile zusammengezogen.
+2. Aufgaben lassen sich nicht zwischen einzelne Textzeilen schieben.
+3. Man kann zwischen Aufgaben nachträglich weder Text noch Leerzeilen
+   einfügen.
+4. Über der ersten Aufgabe lässt sich per Enter keine Leerzeile zum
+   Schreiben öffnen.
+
+**Analyse:** Alle vier haben dieselbe Wurzel. Absätze waren bisher **lose
+Textknoten zwischen** den Blöcken, kein eigener Blocktyp, und die Seite
+wurde per `innerText` plus Trennzeichen-Split zurückgelesen. Diese
+Darstellung kann strukturell nicht abbilden:
+- eine Cursor-Position neben einem `contenteditable="false"`-Block
+  (daher 3 und 4 — zwischen zwei Aufgaben gibt es schlicht keine
+  Textposition),
+- eine leere Zeile (wird beim Serialisieren weggetrimmt),
+- einen Zeilenumbruch, der ein Neu-Rendern übersteht (daher 1).
+
+Dazu kommt: Chromes Standardverhalten bei Enter packt **alles nach dem
+Cursor** in das neu erzeugte `<div>` — im Test wurden dadurch die
+nachfolgenden Aufgaben-Blöcke in einen Absatz hineingezogen
+(`DIV("Zeile3Urlaub planenLaufschuhe")`), was die Blockstruktur zerstört.
+Bug 2 war zusätzlich eine Einschränkung der Drop-Logik: als Ablageziel
+galten nur andere Embeds, nie eine Textzeile.
+
+**Recherche (auf Nutzerhinweis "schau wie es Superlist gelöst hat"):**
+Superlist hat seinen Editor als Open Source veröffentlicht
+([superlistapp/super_editor](https://github.com/superlistapp/super_editor)).
+Er verwendet ein **Node-basiertes Dokumentmodell**: eine geordnete Liste
+diskreter Blöcke mit je eigener ID, wobei Absatz, Aufgabe und Bild
+gleichrangige Blocktypen sind. Ein Absatz ist dort also ein *eigener
+Block*, nicht Text zwischen Blöcken. Laut Superlist-Hilfe gibt es
+entsprechend die Blocktypen Aufgabe, Unterliste, Absatz, Überschrift,
+Trenner und Bild.
+
+**Entscheidung:** Übernahme genau dieses Modells. Jedes direkte Kind des
+Editors ist jetzt entweder ein `.inline-embed` (Aufgabe/Bild) oder eine
+`.pe-line` (Absatz). Konkret:
+- `serializeEditor()` liest die Blöcke **strukturell** aus dem DOM statt
+  über `innerText` — Zeilenumbrüche und Leerzeilen bleiben erhalten.
+- Enter wird selbst behandelt, damit der Browser die Blockstruktur nicht
+  mehr umbauen kann.
+- `normalizeEditor()` stellt das Modell nach Browser-Eingriffen wieder her
+  (hebt verschachtelte Embeds auf die oberste Ebene, macht aus
+  Block-Elementen echte Absätze) und garantiert einen Absatz vor einem
+  führenden Embed, zwischen zwei benachbarten Embeds und nach einem
+  abschließenden Embed — sonst gibt es dort keine Cursor-Position.
+- Als Drop-Ziel gilt jetzt **jeder** Block, nicht nur andere Embeds.
+
+**Verifikation:** Alle vier gemeldeten Fehler mit gezielten Tests zuerst
+reproduziert, dann als behoben nachgewiesen (mehrzeiliger Text überlebt
+das Verschieben; Aufgabe landet zwischen zwei Textzeilen; Text zwischen
+zwei Aufgaben übersteht das Neu-Rendern; Enter ganz oben erzeugt eine
+Zeile). Zusätzlich geprüft, dass sich die strukturell eingefügten
+Leerzeilen nicht ansammeln: über mehrere Quick-Adds, Toolbar-Einfügungen
+und sechs Neu-Render-Zyklen bleibt es bei genau einer Endzeile. Voller
+Regressions- und Drag-Test grün.
+
+---
+
+## 2026-08-06 — Superlists Editor nicht direkt übernehmbar; Kandidaten für die echte App
+
+**Kontext:** Nutzerfrage, ob wir Superlists Editor übernehmen und selbst
+verwenden können.
+
+**Befund:** Nein, nicht direkt. `super_editor` ist in **Dart/Flutter**
+geschrieben ("A Flutter toolkit for building document editors and
+readers"). Für die angedachte Richtung React/TypeScript (siehe
+Tech-Stack-Eintrag) ist er damit nicht nutzbar; ihn zu übernehmen hieße,
+die gesamte App auf Flutter festzulegen. Übernommen wurde daher nicht der
+Code, sondern das **Konzept** — das Node-basierte Blockmodell, siehe
+vorheriger Eintrag.
+
+**Für die echte App** gibt es im React/TS-Ökosystem ausgereifte
+Block-Editoren mit demselben Modell, die den Eigenbau ersetzen sollten:
+- **BlockNote** — block-first wie Notion, Drag&Drop-Sortierung und
+  Tastaturlogik bereits eingebaut, eigene Blocktypen (z.B. Aufgabe) mit
+  vollem TypeScript-Support definierbar. Aktuell der naheliegendste
+  Kandidat, weil er unserem Konzept am nächsten kommt.
+- **TipTap** (auf ProseMirror) — headless und sehr flexibel, größere
+  Erweiterungs-Bibliothek, mehr Eigenbau nötig.
+- **Lexical** (von Meta) — maximale Kontrolle, entsprechend mehr Aufwand.
+
+**Entscheidung:** Für das Mockup bleibt der Eigenbau (kein Build-Schritt,
+eine Datei). Die Wahl der Editor-Bibliothek wird bewusst erst mit dem
+echten App-Code getroffen, dann aber **nicht** als Eigenbau — ein
+Block-Editor mit Cursor-Handling, Undo, Copy&Paste und Kollaboration ist
+nichts, was man sinnvoll selbst schreibt. Diese Session hat genau das
+gezeigt: vier Fehler auf einmal, alle aus dem selbstgebauten
+Dokumentmodell.
+
+---
