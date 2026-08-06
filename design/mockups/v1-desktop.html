@@ -27,13 +27,62 @@
     --accent-line: #f5bda9;
     --urgent: #b83c36;
     --urgent-soft: #fbeae8;
-    --green: #3f8f62;
-    --list-inbox: #a39c8c;
-    --list-personal: #4fa6a0;
-    --list-work: #ee6c4d;
-    --list-groceries: #6e7fd1;
+    /* Erledigt trug bisher als einzige Stelle der App ein Gruen - ein
+       Fremdkoerper in einer Palette aus Orange, Sand und Navy, ausgerechnet
+       auf dem meistgesehenen Element. Jetzt Navy aus der Original-Palette:
+       ruhig, denn Erledigtes soll zuruecktreten, nicht rufen. */
+    /* Gedaempft statt volles Navy: Erledigtes soll zuruecktreten. Eine
+       dunkle Marke neben ausgegrautem Text zieht mehr Blick auf sich als
+       die offenen Aufgaben daneben. */
+    --done: #6f757e;
+    --done-ink: #ffffff;
+    /* Listenfarben als kuratierte Reihe aus derselben warmen Familie statt
+       zufaelliger Buntheit (vorher Petrol und Blauviolett). */
+    --list-inbox: #9c7f6b;
+    --list-personal: #6f8265;
+    --list-work: #c25a3a;
+    --list-groceries: #5b7183;
+    --list-5: #b8873a;
     --shadow-window: 0 30px 70px -25px rgba(41, 50, 65, 0.35), 0 2px 8px rgba(41, 50, 65, 0.06);
     --radius-window: 18px;
+
+    /* --- Skalen. Vorher waren es 12 Schriftgroessen, 8 Radien, 18 Abstaende
+       und 13 Uebergangsdauern, jede fuer sich gewachsen. Genau das laesst
+       eine Oberflaeche unruhig wirken, ohne dass man ein einzelnes Element
+       benennen koennte. Diese Werte gehen 1:1 nach Flutter. --- */
+    --fs-xs: 11px;      /* Rubriken, Kuerzel */
+    --fs-sm: 12px;      /* Metatext, Zaehler */
+    --fs-md: 13.5px;    /* Fliesstext, Standard */
+    --fs-lg: 15.5px;    /* Ueberschrift auf einer Seite */
+    --fs-xl: 22px;      /* Spaltentitel */
+
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-strong: 600;
+    --fw-bold: 700;
+
+    --r-sm: 6px;        /* kleine Schaltflaechen, Zeilen */
+    --r-md: 10px;       /* Karten, Eingabefelder */
+    --r-lg: 16px;       /* Menues, Overlays */
+    --r-pill: 100px;
+
+    --sp-1: 2px;
+    --sp-2: 4px;
+    --sp-3: 6px;
+    --sp-4: 8px;
+    --sp-5: 12px;
+    --sp-6: 16px;
+    --sp-7: 24px;
+
+    --dur-fast: 120ms;  /* Hover, Fokus */
+    --dur-base: 200ms;  /* Zustandswechsel */
+    --dur-slow: 400ms;  /* Panels, Sidebar */
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* Hoehen-Sprache: drei Ebenen statt beliebiger Schatten */
+    --el-1: 0 1px 2px rgba(41, 50, 65, 0.06);
+    --el-2: 0 18px 38px -14px rgba(41, 50, 65, 0.32);
+    --el-3: 0 40px 80px -24px rgba(41, 50, 65, 0.45);
     --col-w: 276px;
     color-scheme: light;
   }
@@ -58,11 +107,13 @@
     --accent-line: #5c3d2e;
     --urgent: #e1746b;
     --urgent-soft: #3a2321;
-    --green: #67b78c;
-    --list-inbox: #8f8a78;
-    --list-personal: #5cbdb6;
-    --list-work: #f38a6e;
-    --list-groceries: #8b98e8;
+    --done: #8d97ab;
+    --done-ink: #1f242e;
+    --list-inbox: #bb9c86;
+    --list-personal: #8fa383;
+    --list-work: #e07d5c;
+    --list-groceries: #7d95aa;
+    --list-5: #d4a457;
     --shadow-window: 0 30px 70px -25px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
     color-scheme: dark;
   }
@@ -88,11 +139,13 @@
       --accent-line: #5c3d2e;
       --urgent: #e1746b;
       --urgent-soft: #3a2321;
-      --green: #67b78c;
-      --list-inbox: #8f8a78;
-      --list-personal: #5cbdb6;
-      --list-work: #f38a6e;
-      --list-groceries: #8b98e8;
+      --done: #8d97ab;
+      --done-ink: #17161c;
+      --list-inbox: #bb9c86;
+      --list-personal: #8fa383;
+      --list-work: #e07d5c;
+      --list-groceries: #7d95aa;
+      --list-5: #d4a457;
       --shadow-window: 0 30px 70px -25px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
       color-scheme: dark;
     }
@@ -100,7 +153,32 @@
 
   * { box-sizing: border-box; }
 
+  /* Schaltflaechen und Eingabefelder erben die Schrift der App. Ohne das
+     traegt jedes davon die Browser-Vorgabe (13,33px) mit sich herum. */
+  button, input, textarea, select { font: inherit; color: inherit; }
+
+  /* Markierter Text lag bisher im Browser-Blau - mitten in einer warmen
+     Sandumgebung ein Fremdkoerper. */
+  ::selection { background: var(--accent-line); color: var(--ink); }
+
+  /* Tastaturbedienung sichtbar machen. :focus-visible trifft nur echte
+     Tastatur-Navigation, Mausklicks bekommen keinen Ring. */
+  :focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  /* Scrollleisten auch ausserhalb der Inhaltsflaeche gestalten. */
+  .sidebar::-webkit-scrollbar, .blocks::-webkit-scrollbar,
+  .cmdk-results::-webkit-scrollbar { width: 8px; height: 8px; }
+  .sidebar::-webkit-scrollbar-thumb, .blocks::-webkit-scrollbar-thumb,
+  .cmdk-results::-webkit-scrollbar-thumb { background: var(--line); border-radius: var(--r-pill); }
+  .sidebar::-webkit-scrollbar-track, .blocks::-webkit-scrollbar-track { background: transparent; }
+
   body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     margin: 0;
     background: var(--paper);
     color: var(--ink);
@@ -138,7 +216,7 @@
      freeze-frame between the two. */
   .sidebar-track {
     flex: 0 0 248px;
-    transition: flex-basis 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: flex-basis var(--dur-slow) var(--ease);
   }
   .app-window.sidebar-collapsed .sidebar-track { flex-basis: 0; }
   @media (prefers-reduced-motion: reduce) { .sidebar-track { transition: none; } }
@@ -148,7 +226,7 @@
     background: var(--surface-sunken); border-right: 1px solid var(--line);
     display: flex; flex-direction: column; padding: 18px 12px; overflow-y: auto;
     transform: translateX(0);
-    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform var(--dur-slow) var(--ease);
   }
   @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
 
@@ -165,12 +243,12 @@
   .brand { display: flex; align-items: center; gap: 9px; padding: 4px 8px 20px; }
   .brand-mark { display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--accent); }
   .brand-logo { height: 21px; width: auto; display: block; }
-  .brand-name { font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
-  .nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); padding: 14px 10px 6px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: none; background: transparent; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--ink); cursor: pointer; text-align: left; font-family: inherit; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+  .brand-name { font-size: var(--fs-lg); font-weight: var(--fw-strong); letter-spacing: -0.01em; }
+  .nav-label { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); padding: 14px 10px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: none; background: transparent; border-radius: var(--r-md); font-size: var(--fs-md); font-weight: var(--fw-medium); color: var(--ink); cursor: pointer; text-align: left; font-family: inherit; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .nav-item:hover { background: var(--nav-hover); }
   .nav-item:active { transform: scale(0.97); }
-  .nav-item.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
+  .nav-item.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: var(--fw-strong); }
   .nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .nav-icon { width: 15px; height: 15px; flex-shrink: 0; color: var(--ink-soft); }
   .nav-item.active .nav-icon { color: var(--accent-strong); }
@@ -179,7 +257,7 @@
      on hover, so the digit itself - not the box around it - has to sit on
      the button's centre line. Right-aligned text put the glyph ~4px to the
      right of that centre, which read as the two being right-edge aligned. */
-  .nav-count { font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: center; }
+  .nav-count { font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: center; }
   .nav-item.active .nav-count { color: var(--accent-strong); }
   .nav-item-indented { padding-left: 26px; }
   /* Feine L-Linie, die die Zugehoerigkeit zur Gruppe nachzieht. Beim
@@ -214,8 +292,8 @@
   .nav-delete {
     opacity: 0; position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
     width: 22px; height: 22px; padding: 0; border: none; background: transparent; color: var(--ink-faint);
-    cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px;
-    transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm);
+    transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease;
   }
   .nav-delete svg { flex-shrink: 0; }
   .group-actions {
@@ -233,14 +311,14 @@
 
   /* padding-right matches .nav-item's, so a group's count lands on the same
      line as every other row's count (see .nav-delete above). */
-  .group-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 10px 7px 6px; border-radius: 8px; margin-top: 2px; position: relative; }
+  .group-row { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 10px 7px 6px; border-radius: var(--r-md); margin-top: 2px; position: relative; }
   .group-row.drag-ghost { opacity: 0.35; }
   .group-row:hover { background: var(--nav-hover); }
   .group-row:hover .nav-count { opacity: 0; }
   .group-chevron { width: 16px; height: 16px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
-  .group-chevron svg { transition: transform 0.15s ease; }
+  .group-chevron svg { transition: transform var(--dur-fast) ease; }
   .group-chevron.collapsed svg { transform: rotate(-90deg); }
-  .group-title { flex: 1; min-width: 0; border: none; background: transparent; font: inherit; font-size: 12.5px; font-weight: 650; letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: 4px; }
+  .group-title { flex: 1; min-width: 0; border: none; background: transparent; font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: var(--r-sm); }
   .group-title:focus { outline: none; background: var(--surface); box-shadow: 0 0 0 1px var(--line); text-transform: none; }
 
   .drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
@@ -249,10 +327,10 @@
 
   .sidebar-spacer { flex: 1; }
   .sidebar-bottom-actions { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px 2px; flex-shrink: 0; }
-  .icon-action-btn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; }
+  .icon-action-btn { width: 30px; height: 30px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease; }
   .icon-action-btn:hover { background: var(--chip-hover); color: var(--ink); border-color: var(--ink-faint); }
   .icon-action-btn:active { transform: scale(0.92); }
-  .icon-action-btn.primary { width: 42px; height: 42px; border-radius: 13px; background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .icon-action-btn.primary { width: 42px; height: 42px; border-radius: var(--r-lg); background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .icon-action-btn.primary svg { width: 15px; height: 15px; }
   .icon-action-btn.primary:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
@@ -268,7 +346,7 @@
     background: var(--surface);
   }
   .content-area::-webkit-scrollbar { height: 8px; }
-  .content-area::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  .content-area::-webkit-scrollbar-thumb { background: var(--line); border-radius: var(--r-md); }
   /* Transformed elements (the FLIP translateX/scaleX below) count toward
      their scrolling ancestor's scrollable-overflow area even though they
      don't affect real layout - during the animation a column can briefly
@@ -293,35 +371,45 @@
     transform-origin: left center;
   }
   .column.col-animating, .col-inner.col-animating {
-    transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform var(--dur-slow) var(--ease);
     will-change: transform;
   }
 
   .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
   .col-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  .col-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 0; border: none; background: transparent; color: var(--ink); font-family: inherit; padding: 0; width: 100%; }
+  .col-title { font-size: var(--fs-xl); font-weight: var(--fw-bold); letter-spacing: -0.02em; line-height: 1.2; margin: 0; border: none; background: transparent; color: var(--ink); font-family: inherit; padding: 0; width: 100%; }
   .col-title.done { color: var(--ink-faint); text-decoration: line-through; }
   .col-title:focus { outline: none; }
-  .col-meta { font-size: 12px; color: var(--ink-faint); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .col-meta { font-size: var(--fs-sm); color: var(--ink-faint); margin-top: 4px; font-variant-numeric: tabular-nums; }
 
   /* padding: 0 matters on every icon button here - a <button> carries the
      browser's default 1px 6px padding, which was squeezing these 12px-wide
      icons down to 6-10px and making them look undersized next to the
      15px nav icons. */
-  .col-close { width: 22px; height: 22px; padding: 0; border-radius: 6px; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+  .col-close { width: 22px; height: 22px; padding: 0; border-radius: var(--r-sm); border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .col-close svg { flex-shrink: 0; }
   .col-close:hover { background: var(--line-soft); color: var(--ink); }
   .col-close:active { transform: scale(0.9); }
 
   .col-progress-row { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; }
 
-  .quick-add { margin: 8px 18px 12px; display: flex; align-items: center; gap: 8px; padding: 8px 11px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 10px; flex-shrink: 0; }
+  /* War das lauteste Element der Seite: eine gefuellte Sandflaeche mitten
+     in einer weissen Spalte, die die eigentlichen Aufgaben ueberstrahlt hat.
+     Jetzt nur eine feine Linie darueber; Flaeche erst beim Hineinklicken. */
+  .quick-add {
+    margin: 0 18px 12px; display: flex; align-items: center; gap: var(--sp-4);
+    padding: var(--sp-4) var(--sp-3); background: transparent;
+    border: 1px solid transparent; border-radius: var(--r-md); flex-shrink: 0;
+    transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+  .quick-add:hover { background: var(--line-soft); }
+  .quick-add:focus-within { background: var(--surface-sunken); border-color: var(--line); }
   .quick-add svg { color: var(--accent); flex-shrink: 0; }
-  .quick-add input { border: none; background: transparent; outline: none; font: inherit; font-size: 13px; color: var(--ink); flex: 1; min-width: 0; }
+  .quick-add input { border: none; background: transparent; outline: none; font: inherit; font-size: var(--fs-md); color: var(--ink); flex: 1; min-width: 0; }
   .quick-add input::placeholder { color: var(--ink-faint); }
 
   .editor-toolbar { display: flex; gap: 6px; margin: 0 18px; padding-top: 10px; border-top: 1px solid var(--line-soft); flex-shrink: 0; }
-  .insert-btn { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: 100px; padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
+  .insert-btn { display: flex; align-items: center; gap: 5px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill); padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .insert-btn:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .insert-btn:active { transform: scale(0.95); }
 
@@ -330,7 +418,7 @@
   .page-editor {
     min-height: 100%;
     padding: 10px 12px;
-    font-size: 13.5px;
+    font-size: var(--fs-md);
     line-height: 1.65;
     color: var(--ink);
     white-space: pre-wrap;
@@ -354,7 +442,7 @@
   .pe-line.pe-gap { min-height: 0; height: 0; overflow: hidden; }
   .pe-line.pe-gap.pe-open { height: auto; min-height: 1.65em; overflow: visible; }
 
-  .inline-embed { position: relative; margin: 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
+  .inline-embed { position: relative; margin: 0; padding-left: 15px; animation: block-in var(--dur-base) ease; overflow: hidden; }
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -369,7 +457,7 @@
     position: absolute; left: 0; top: 0; bottom: 0; width: 15px;
     display: flex; align-items: center; justify-content: center;
     color: var(--ink-faint); opacity: 0; cursor: grab;
-    transition: opacity 0.12s ease, color 0.12s ease;
+    transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
     touch-action: none; user-select: none;
   }
   .inline-embed:hover .embed-grip { opacity: 0.55; }
@@ -378,17 +466,17 @@
   .page-editor.embed-dragging { cursor: grabbing; }
   .page-editor.embed-dragging .inline-embed { cursor: grabbing; }
   @keyframes block-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-  .inline-embed.removing { animation: none; transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; margin: 0 !important; }
-  @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity 0.15s ease; } }
-  .removing { transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; overflow: hidden; }
-  @media (prefers-reduced-motion: reduce) { .removing { transition: opacity 0.15s ease; } }
+  .inline-embed.removing { animation: none; transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; margin: 0 !important; }
+  @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity var(--dur-fast) ease; } }
+  .removing { transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; overflow: hidden; }
+  @media (prefers-reduced-motion: reduce) { .removing { transition: opacity var(--dur-fast) ease; } }
 
   .inline-embed .task-row { padding-right: 26px; }
 
-  .block-image { display: flex; align-items: center; gap: 8px; padding: 14px 12px; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-faint); font-size: 12px; margin-right: 26px; }
+  .block-image { display: flex; align-items: center; gap: 8px; padding: 14px 12px; border: 1px dashed var(--line); border-radius: var(--r-md); color: var(--ink-faint); font-size: var(--fs-sm); margin-right: 26px; }
   .block-image svg { flex-shrink: 0; }
 
-  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease, transform 0.1s ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
   .row-delete svg { flex-shrink: 0; }
   .inline-embed:hover .row-delete { opacity: 1; }
   .row-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
@@ -396,25 +484,25 @@
 
   .page-editor.drag-over { background: var(--accent-soft); }
 
-  .task-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: 8px; cursor: pointer; transition: background-color 0.15s ease, transform 0.1s ease; }
+  .task-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: var(--r-md); cursor: pointer; transition: background-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .task-row:hover { background: var(--line-soft); }
   .task-row:active { transform: scale(0.985); }
 
-  .check-btn { width: 17px; height: 17px; flex-shrink: 0; border-radius: 6px; border: 1.5px solid var(--ink-faint); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  .check-btn.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .check-btn { width: 17px; height: 17px; flex-shrink: 0; border-radius: var(--r-sm); border: 1.5px solid var(--ink-faint); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .check-btn.done { background: var(--done); border-color: var(--done); color: var(--done-ink); }
   .check-btn:active { transform: scale(0.85); }
-  .check-btn svg { opacity: 0; transform: scale(0.4); transition: opacity 0.15s ease, transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .check-btn svg { opacity: 0; transform: scale(0.4); transition: opacity var(--dur-fast) ease, transform var(--dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1); }
   .check-btn.done svg { opacity: 1; transform: scale(1); }
 
-  .task-title { font-size: 13.3px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.2s ease; }
+  .task-title { font-size: var(--fs-md); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--dur-base) ease; }
   .task-row.done .task-title { color: var(--ink-faint); text-decoration: line-through; }
 
   .list-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-  .mini-progress { width: 34px; height: 5px; border-radius: 100px; background: var(--line); flex-shrink: 0; overflow: hidden; }
-  .mini-progress > span { display: block; height: 100%; background: var(--accent); border-radius: 100px; transition: width 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+  .mini-progress { width: 34px; height: 5px; border-radius: var(--r-pill); background: var(--line); flex-shrink: 0; overflow: hidden; }
+  .mini-progress > span { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); transition: width var(--dur-slow) var(--ease); }
 
-  .due-pill { font-size: 10.5px; font-weight: 600; padding: 3px 7px; border-radius: 100px; background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .due-pill { font-size: var(--fs-xs); font-weight: var(--fw-strong); padding: 3px 7px; border-radius: var(--r-pill); background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .due-pill.today { background: var(--urgent-soft); color: var(--urgent); }
   /* Überfällig traegt zusaetzlich einen Rahmen: Farbe allein darf nie der
      einzige Traeger einer Information sein (Farbfehlsichtigkeit). */
@@ -427,51 +515,51 @@
   button.due-pill { border: none; font-family: inherit; cursor: pointer; }
   .due-add {
     display: inline-flex; align-items: center; gap: 5px;
-    font-size: 11.5px; font-weight: 600; color: var(--ink-faint);
-    background: transparent; border: 1px dashed var(--line); border-radius: 100px;
-    padding: 3px 10px 3px 8px; transition: color 0.15s ease, border-color 0.15s ease;
+    font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint);
+    background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill);
+    padding: 3px 10px 3px 8px; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
   }
   .due-add:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .due-menu {
     position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 236px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: 0 18px 38px -14px rgba(41, 50, 65, 0.32); padding: 5px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--el-2); padding: 5px;
     display: flex; flex-direction: column; gap: 1px;
-    animation: due-menu-in 0.16s cubic-bezier(0.32, 0.72, 0, 1);
+    animation: due-menu-in var(--dur-fast) var(--ease);
   }
   @keyframes due-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
   .due-opt {
     display: flex; align-items: center; justify-content: space-between; gap: 10px; white-space: nowrap;
-    font: inherit; font-size: 12.5px; text-align: left; color: var(--ink);
-    background: transparent; border: none; border-radius: 8px; padding: 7px 9px; cursor: pointer;
+    font: inherit; font-size: var(--fs-sm); text-align: left; color: var(--ink);
+    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 9px; cursor: pointer;
   }
   .due-opt:hover { background: var(--line-soft); }
-  .due-pick input { font: inherit; font-size: 12px; border: none; background: transparent; color: var(--ink-soft); cursor: pointer; }
+  .due-pick input { font: inherit; font-size: var(--fs-sm); border: none; background: transparent; color: var(--ink-soft); cursor: pointer; }
   .due-clear { color: var(--urgent); }
   .due-clear:hover { background: var(--urgent-soft); }
   .col-progress-row:empty { display: none; }
 
   /* --- Überschrift und Trenner --- */
-  .pe-line.pe-h { font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); margin: 10px 0 2px; }
+  .pe-line.pe-h { font-size: var(--fs-lg); font-weight: var(--fw-bold); letter-spacing: -0.01em; color: var(--ink); margin: 10px 0 2px; }
   .pe-line.pe-h:first-child { margin-top: 0; }
   .pe-divider { height: 1px; background: var(--line); border: none; margin: 12px 2px; }
 
   /* --- Auswahl-Leiste (erscheint über markiertem Text) --- */
   .sel-bar {
     position: fixed; z-index: 60; display: flex; align-items: center; gap: 2px;
-    background: var(--ink); border-radius: 10px; padding: 3px;
-    box-shadow: 0 12px 28px -10px rgba(41, 50, 65, 0.5);
-    animation: sel-bar-in 0.13s cubic-bezier(0.32, 0.72, 0, 1);
+    background: var(--ink); border-radius: var(--r-md); padding: 3px;
+    box-shadow: var(--el-2);
+    animation: sel-bar-in var(--dur-fast) var(--ease);
   }
   @keyframes sel-bar-in { from { opacity: 0; transform: translateY(3px) scale(0.97); } to { opacity: 1; transform: none; } }
   .sel-btn {
     min-width: 27px; height: 27px; padding: 0 7px; border: none; background: transparent;
     color: var(--paper); border-radius: 7px; cursor: pointer; font-family: inherit;
-    font-size: 12.5px; display: flex; align-items: center; justify-content: center;
-    transition: background-color 0.12s ease;
+    font-size: var(--fs-sm); display: flex; align-items: center; justify-content: center;
+    transition: background-color var(--dur-fast) ease;
   }
   .sel-btn:hover { background: rgba(255, 255, 255, 0.16); }
-  .sel-btn.b { font-weight: 800; }
+  .sel-btn.b { font-weight: var(--fw-bold); }
   .sel-btn.i { font-style: italic; font-family: Georgia, serif; }
   .sel-btn.s { text-decoration: line-through; }
   .sel-sep { width: 1px; height: 15px; background: rgba(255, 255, 255, 0.2); margin: 0 3px; }
@@ -479,35 +567,41 @@
   /* --- "/"-Blockmenü --- */
   .slash-menu {
     position: fixed; z-index: 60; min-width: 208px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: 0 18px 38px -14px rgba(41, 50, 65, 0.32); padding: 5px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: var(--el-2); padding: 5px;
     display: flex; flex-direction: column; gap: 1px;
-    animation: due-menu-in 0.14s cubic-bezier(0.32, 0.72, 0, 1);
+    animation: due-menu-in var(--dur-fast) var(--ease);
   }
   .slash-opt {
     display: flex; align-items: center; gap: 9px; width: 100%;
-    font: inherit; font-size: 12.5px; text-align: left; color: var(--ink);
-    background: transparent; border: none; border-radius: 8px; padding: 7px 9px; cursor: pointer;
+    font: inherit; font-size: var(--fs-sm); text-align: left; color: var(--ink);
+    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 9px; cursor: pointer;
   }
   .slash-opt:hover, .slash-opt.active { background: var(--line-soft); }
   .slash-opt svg { color: var(--ink-faint); flex-shrink: 0; }
-  .slash-hint { font-size: 10.5px; color: var(--ink-faint); margin-left: auto; }
+  .slash-hint { font-size: var(--fs-xs); color: var(--ink-faint); margin-left: auto; }
 
-  .group-heading { display: flex; align-items: center; gap: 8px; padding: 14px 8px 6px; font-size: 11.5px; font-weight: 650; color: var(--ink-soft); }
+  .group-heading { display: flex; align-items: center; gap: 8px; padding: 14px 8px 6px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-soft); }
   .group-heading:first-child { padding-top: 4px; }
 
-  .empty-state { text-align: center; padding: 40px 16px; color: var(--ink-faint); font-size: 13px; }
+  .empty-state {
+    text-align: center; padding: 56px 24px; color: var(--ink-faint); font-size: var(--fs-md);
+    display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
+  }
+  .empty-state .empty-mark { color: var(--accent); opacity: 0.5; }
+  .empty-state .empty-mark .brand-logo { height: 34px; }
+  .empty-state .empty-sub { font-size: var(--fs-sm); color: var(--ink-faint); opacity: 0.8; }
 
   .options-wrap { position: relative; }
   .options-panel {
     position: absolute; left: 0; bottom: calc(100% + 8px); width: 224px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
     box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.28); padding: 12px; z-index: 20;
   }
   .options-panel[hidden] { display: none; }
-  .options-title { font-size: 11px; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 2px 2px 8px; }
-  .theme-segmented { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; }
-  .theme-seg-btn { flex: 1; border: none; background: transparent; color: var(--ink-soft); font: inherit; font-size: 12px; font-weight: 600; padding: 6px 4px; border-radius: 7px; cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }
+  .options-title { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 2px 2px 8px; }
+  .theme-segmented { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; gap: 3px; }
+  .theme-seg-btn { flex: 1; border: none; background: transparent; color: var(--ink-soft); font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); padding: 6px 4px; border-radius: 7px; cursor: pointer; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease; }
   .theme-seg-btn.active { background: var(--accent); color: var(--accent-ink); }
   .theme-seg-btn:not(.active):hover { background: var(--line-soft); color: var(--ink); }
 
@@ -1491,7 +1585,9 @@
       html += '<div class="blocks">';
       var items = collectToday();
       if (!items.length) {
-        html += '<div class="empty-state">Nichts für heute. Und nichts liegengeblieben.</div>';
+        html += '<div class="empty-state"><span class="empty-mark">' + svgLogo() + "</span>" +
+               "<span>Nichts für heute.</span>" +
+               '<span class="empty-sub">Und nichts liegengeblieben.</span></div>';
       } else {
         // Überfälliges bekommt einen eigenen Abschnitt ganz oben. Es geht ja
         // gerade darum, dass Liegengebliebenes auffällt statt sich unter den
