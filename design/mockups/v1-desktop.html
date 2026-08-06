@@ -400,6 +400,48 @@
   .due-clear:hover { background: var(--urgent-soft); }
   .col-progress-row:empty { display: none; }
 
+  /* --- Überschrift und Trenner --- */
+  .pe-line.pe-h { font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); margin: 10px 0 2px; }
+  .pe-line.pe-h:first-child { margin-top: 0; }
+  .pe-divider { height: 1px; background: var(--line); border: none; margin: 12px 2px; }
+
+  /* --- Auswahl-Leiste (erscheint über markiertem Text) --- */
+  .sel-bar {
+    position: fixed; z-index: 60; display: flex; align-items: center; gap: 2px;
+    background: var(--ink); border-radius: 10px; padding: 3px;
+    box-shadow: 0 12px 28px -10px rgba(41, 50, 65, 0.5);
+    animation: sel-bar-in 0.13s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @keyframes sel-bar-in { from { opacity: 0; transform: translateY(3px) scale(0.97); } to { opacity: 1; transform: none; } }
+  .sel-btn {
+    min-width: 27px; height: 27px; padding: 0 7px; border: none; background: transparent;
+    color: var(--paper); border-radius: 7px; cursor: pointer; font-family: inherit;
+    font-size: 12.5px; display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.12s ease;
+  }
+  .sel-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .sel-btn.b { font-weight: 800; }
+  .sel-btn.i { font-style: italic; font-family: Georgia, serif; }
+  .sel-btn.s { text-decoration: line-through; }
+  .sel-sep { width: 1px; height: 15px; background: rgba(255, 255, 255, 0.2); margin: 0 3px; }
+
+  /* --- "/"-Blockmenü --- */
+  .slash-menu {
+    position: fixed; z-index: 60; min-width: 208px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 18px 38px -14px rgba(41, 50, 65, 0.32); padding: 5px;
+    display: flex; flex-direction: column; gap: 1px;
+    animation: due-menu-in 0.14s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .slash-opt {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    font: inherit; font-size: 12.5px; text-align: left; color: var(--ink);
+    background: transparent; border: none; border-radius: 8px; padding: 7px 9px; cursor: pointer;
+  }
+  .slash-opt:hover, .slash-opt.active { background: var(--line-soft); }
+  .slash-opt svg { color: var(--ink-faint); flex-shrink: 0; }
+  .slash-hint { font-size: 10.5px; color: var(--ink-faint); margin-left: auto; }
+
   .group-heading { display: flex; align-items: center; gap: 8px; padding: 14px 8px 6px; font-size: 11.5px; font-weight: 650; color: var(--ink-soft); }
   .group-heading:first-child { padding-top: 4px; }
 
@@ -635,6 +677,10 @@
     return "";
   }
 
+  function svgCheckboxOutline() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2.5" y="2.5" width="10" height="10" rx="3"/></svg>'; }
+  function svgHeading() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 3v9M11.5 3v9M3.5 7.5h8"/></svg>'; }
+  function svgDividerIcon() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 7.5h11"/></svg>'; }
+
   function svgCalendar() { return '<svg width="13" height="13" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><rect x="2" y="3" width="11" height="10" rx="1.6"/><path d="M2 6.2h11M5 1.6v2.2M10 1.6v2.2"/></svg>'; }
 
   // Fälligkeits-Steuerung im Kopf einer Aufgabenseite: zeigt das Datum,
@@ -764,15 +810,28 @@
   // re-render, and pressing Enter let the browser wrap following blocks into
   // the new <div> it created, swallowing tasks into a paragraph.
 
-  function makeLineNode(text) {
+  function makeLineNode(text, kind) {
     var line = document.createElement("div");
-    line.className = "pe-line";
+    line.className = "pe-line" + (kind === "heading" ? " pe-h" : "");
     if (text) line.appendChild(document.createTextNode(text));
     else line.appendChild(document.createElement("br"));
     return line;
   }
 
+  function makeDividerNode() {
+    var d = document.createElement("div");
+    d.className = "pe-divider";
+    d.contentEditable = "false";
+    d.setAttribute("data-divider", "");
+    return d;
+  }
+
   function isEmbed(n) { return n && n.nodeType === 1 && n.classList && n.classList.contains("inline-embed"); }
+  function isDivider(n) { return n && n.nodeType === 1 && n.classList && n.classList.contains("pe-divider"); }
+  // Alles, was keine Schreibposition bietet und deshalb einen Absatz daneben
+  // braucht: Aufgaben, Bilder und Trenner.
+  function isSolidBlock(n) { return isEmbed(n) || isDivider(n); }
+  function isHeading(n) { return n && n.nodeType === 1 && n.classList && n.classList.contains("pe-h"); }
 
   function buildEditorDOM(owner, colIndex) {
     var el = document.createElement("div");
@@ -788,6 +847,10 @@
         // Legacy blocks may still carry embedded newlines; each becomes a line.
         var linesOfText = String(b.text).split("\n");
         for (var li = 0; li < linesOfText.length; li++) el.appendChild(makeLineNode(linesOfText[li]));
+      } else if (b.type === "heading") {
+        el.appendChild(makeLineNode(b.text, "heading"));
+      } else if (b.type === "divider") {
+        el.appendChild(makeDividerNode());
       } else if (b.type === "task") {
         var child = null;
         for (var k = 0; k < kids.length; k++) { if (kids[k].id === b.id) { child = kids[k]; break; } }
@@ -824,7 +887,7 @@
       function flush() { if (carry) { flat.push(carry); carry = null; } }
       for (var i = 0; i < kids.length; i++) {
         var k = kids[i];
-        if (isEmbed(k)) {
+        if (isSolidBlock(k)) {
           flush();
           flat.push(k);
         } else if (isBlockEl(k) && ((k.querySelector && k.querySelector(".inline-embed")) || hasBlockChild(k))) {
@@ -849,7 +912,7 @@
     var kids2 = Array.prototype.slice.call(el.childNodes);
     for (var j = 0; j < kids2.length; j++) {
       var n = kids2[j];
-      if (isEmbed(n)) continue;
+      if (isSolidBlock(n)) continue;
       if (n.nodeType === 3) {
         var wrapped = makeLineNode(n.textContent);
         el.replaceChild(wrapped, n);
@@ -861,12 +924,12 @@
 
     // 3. Guarantee a paragraph around every embed run.
     var kids3 = Array.prototype.slice.call(el.childNodes);
-    if (!kids3.length || isEmbed(kids3[0])) el.insertBefore(makeLineNode(""), el.firstChild);
+    if (!kids3.length || isSolidBlock(kids3[0])) el.insertBefore(makeLineNode(""), el.firstChild);
     var kids4 = Array.prototype.slice.call(el.childNodes);
     for (var m = 0; m < kids4.length - 1; m++) {
-      if (isEmbed(kids4[m]) && isEmbed(kids4[m + 1])) el.insertBefore(makeLineNode(""), kids4[m + 1]);
+      if (isSolidBlock(kids4[m]) && isSolidBlock(kids4[m + 1])) el.insertBefore(makeLineNode(""), kids4[m + 1]);
     }
-    if (isEmbed(el.lastChild)) el.appendChild(makeLineNode(""));
+    if (isSolidBlock(el.lastChild)) el.appendChild(makeLineNode(""));
 
     // 4. Empty paragraphs that only exist to sit next to an embed collapse
     //    to a thin strip, so a run of tasks stays tight instead of being
@@ -874,8 +937,8 @@
     var kids5 = Array.prototype.slice.call(el.childNodes);
     for (var q = 0; q < kids5.length; q++) {
       var line = kids5[q];
-      if (isEmbed(line)) continue;
-      var touchesEmbed = isEmbed(line.previousSibling) || isEmbed(line.nextSibling);
+      if (isSolidBlock(line)) continue;
+      var touchesEmbed = isSolidBlock(line.previousSibling) || isSolidBlock(line.nextSibling);
       var empty = line.textContent === "";
       line.classList.toggle("pe-gap", !!(empty && touchesEmbed));
       if (!empty) line.classList.remove("pe-open");
@@ -899,6 +962,204 @@
   }
 
   document.addEventListener("selectionchange", syncGapForCaret);
+
+  // --- Auswahl-Leiste ---------------------------------------------------
+  // Erscheint nur, wenn wirklich Text markiert ist, und verschwindet sonst.
+  // Bewusst keine dauerhafte Formatierungsleiste: Die kostet Platz und Ruhe,
+  // auch wenn man sie nie braucht. Auf Mobile bringt super_editor eine
+  // gleichwertige Popover-Leiste bereits mit.
+
+  var selBarEl = null;
+
+  function hideSelBar() {
+    if (selBarEl) { selBarEl.remove(); selBarEl = null; }
+  }
+
+  function showSelBar(rect) {
+    if (!selBarEl) {
+      selBarEl = document.createElement("div");
+      selBarEl.className = "sel-bar";
+      selBarEl.setAttribute("data-sel-bar", "");
+      selBarEl.innerHTML =
+        '<button class="sel-btn b" data-fmt="bold" title="Fett (Strg+B)">B</button>' +
+        '<button class="sel-btn i" data-fmt="italic" title="Kursiv (Strg+I)">I</button>' +
+        '<button class="sel-btn s" data-fmt="strikeThrough" title="Durchgestrichen">S</button>' +
+        '<span class="sel-sep"></span>' +
+        '<button class="sel-btn" data-fmt="link" title="Link einfügen">Link</button>';
+      document.body.appendChild(selBarEl);
+    }
+    var w = selBarEl.offsetWidth || 150;
+    var left = Math.max(8, Math.min(window.innerWidth - w - 8, rect.left + rect.width / 2 - w / 2));
+    var top = rect.top - (selBarEl.offsetHeight || 33) - 8;
+    if (top < 8) top = rect.bottom + 8;   // kein Platz oben: darunter zeigen
+    selBarEl.style.left = left + "px";
+    selBarEl.style.top = top + "px";
+  }
+
+  function syncSelBar() {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount || sel.isCollapsed) { hideSelBar(); return; }
+    var range = sel.getRangeAt(0);
+    var editor = range.startContainer.parentElement && range.startContainer.parentElement.closest(".page-editor");
+    if (!editor || !editor.contains(range.endContainer)) { hideSelBar(); return; }
+    if (!sel.toString().trim()) { hideSelBar(); return; }
+    showSelBar(range.getBoundingClientRect());
+  }
+
+  document.addEventListener("selectionchange", syncSelBar);
+  window.addEventListener("scroll", hideSelBar, true);
+
+  document.addEventListener("mousedown", function (e) {
+    // Klick auf Leiste oder Menü darf den Editor nicht entfokussieren.
+    if (e.target.closest && e.target.closest("[data-sel-bar], [data-slash-menu]")) e.preventDefault();
+  });
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest("[data-fmt]");
+    if (!btn) return;
+    e.preventDefault();
+    var sel = window.getSelection();
+    var editor = sel.rangeCount && sel.getRangeAt(0).startContainer.parentElement &&
+                 sel.getRangeAt(0).startContainer.parentElement.closest(".page-editor");
+    var fmt = btn.getAttribute("data-fmt");
+    if (fmt === "link") {
+      var url = window.prompt("Adresse des Links:", "https://");
+      if (url) document.execCommand("createLink", false, url);
+    } else {
+      document.execCommand(fmt, false, null);
+    }
+    if (editor) serializeEditor(editor.getAttribute("data-editor-for"));
+    syncSelBar();
+  });
+
+  // --- "/"-Blockmenü ----------------------------------------------------
+  // Wird ausgelöst, sobald eine Zeile nur aus "/" besteht. Unsichtbar, bis
+  // man es braucht - der Gegenentwurf zu einer Leiste voller Knöpfe.
+
+  var slashMenuEl = null, slashLine = null, slashCol = 0;
+
+  var SLASH_ITEMS = [
+    { key: "task",    label: "Aufgabe",    hint: "- ",  icon: function () { return svgCheckboxOutline(); } },
+    { key: "heading", label: "Überschrift", hint: "# ",  icon: function () { return svgHeading(); } },
+    { key: "divider", label: "Trenner",     hint: "---", icon: function () { return svgDividerIcon(); } },
+    { key: "image",   label: "Bild",        hint: "",    icon: function () { return svgImg(); } }
+  ];
+
+  function hideSlashMenu() {
+    if (slashMenuEl) { slashMenuEl.remove(); slashMenuEl = null; }
+    slashLine = null;
+  }
+
+  function showSlashMenu(line, colIndex) {
+    hideSlashMenu();
+    slashLine = line;
+    slashCol = colIndex;
+    slashMenuEl = document.createElement("div");
+    slashMenuEl.className = "slash-menu";
+    slashMenuEl.setAttribute("data-slash-menu", "");
+    var html = "";
+    for (var i = 0; i < SLASH_ITEMS.length; i++) {
+      var it = SLASH_ITEMS[i];
+      html += '<button class="slash-opt' + (i === 0 ? " active" : "") + '" data-slash="' + it.key + '">' +
+              it.icon() + "<span>" + it.label + "</span>" +
+              (it.hint ? '<span class="slash-hint">' + escapeHtml(it.hint) + "</span>" : "") +
+              "</button>";
+    }
+    slashMenuEl.innerHTML = html;
+    document.body.appendChild(slashMenuEl);
+    var r = line.getBoundingClientRect();
+    var top = r.bottom + 6;
+    if (top + slashMenuEl.offsetHeight > window.innerHeight - 8) top = r.top - slashMenuEl.offsetHeight - 6;
+    slashMenuEl.style.left = Math.min(r.left, window.innerWidth - slashMenuEl.offsetWidth - 8) + "px";
+    slashMenuEl.style.top = top + "px";
+  }
+
+  // Entfernt das ausloesende "/" bzw. Kuerzel aus der Zeile.
+  function clearTriggerLine(line) {
+    if (!line) return;
+    line.innerHTML = "";
+    line.appendChild(document.createElement("br"));
+  }
+
+  function runSlashAction(key) {
+    var line = slashLine, colIndex = slashCol;
+    var editor = line && line.closest(".page-editor");
+    hideSlashMenu();
+    if (!editor) return;
+    clearTriggerLine(line);
+    // Cursor zurueck in die geleerte Zeile, damit der Block dort landet.
+    editor.focus();
+    var sel = window.getSelection();
+    var r = document.createRange();
+    r.selectNodeContents(line);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+
+    if (key === "task") { insertTaskAt(colIndex); return; }
+    if (key === "divider") { insertDividerAt(colIndex); return; }
+    if (key === "heading") { setLineKindAtCaret(editor, "heading"); renderColumnsKeepingFocus(editor); return; }
+    if (key === "image") {
+      var owner = ownerAt(colIndex);
+      if (!owner) return;
+      insertEmbedInEditor(editor, makeInlineImageNode({ type: "image", id: "img" + Date.now(), caption: "Bild" }, owner.id));
+      serializeEditor(owner.id);
+      renderColumns();
+    }
+  }
+
+  // Nach einer reinen Umformatierung nicht neu rendern - das wuerde den
+  // Cursor verlieren. Nur die Sidebar-Zaehler koennen sich geaendert haben.
+  function renderColumnsKeepingFocus() { renderSidebar(); }
+
+  document.addEventListener("click", function (e) {
+    var opt = e.target.closest && e.target.closest("[data-slash]");
+    if (opt) { e.preventDefault(); runSlashAction(opt.getAttribute("data-slash")); return; }
+    if (slashMenuEl && !e.target.closest("[data-slash-menu]")) hideSlashMenu();
+  });
+
+
+  // --- Auslöser beim Tippen ---------------------------------------------
+  // "/" auf einer leeren Zeile öffnet das Blockmenü; die Markdown-Kürzel
+  // wandeln direkt um. Beides ist unsichtbar, bis man es benutzt - der
+  // Gegenentwurf zu einer dauerhaften Werkzeugleiste.
+
+  document.addEventListener("input", function (e) {
+    var editor = e.target.closest && e.target.closest(".page-editor");
+    if (!editor) return;
+    var sel = window.getSelection();
+    if (!sel.rangeCount) { hideSlashMenu(); return; }
+    var line = sel.getRangeAt(0).startContainer;
+    while (line && line.parentNode !== editor) line = line.parentNode;
+    if (!line || isSolidBlock(line)) { hideSlashMenu(); return; }
+
+    var colIndex = parseInt(editor.getAttribute("data-editor-col"), 10);
+    var text = line.textContent;
+
+    // Markdown-Kürzel
+    if (text === "# ") {
+      clearTriggerLine(line);
+      var r0 = document.createRange(); r0.selectNodeContents(line); r0.collapse(true);
+      sel.removeAllRanges(); sel.addRange(r0);
+      setLineKindAtCaret(editor, "heading");
+      hideSlashMenu();
+      return;
+    }
+    if (text === "- " || text === "[] ") {
+      slashLine = line; slashCol = colIndex;
+      runSlashAction("task");
+      return;
+    }
+    if (text === "---") {
+      slashLine = line; slashCol = colIndex;
+      runSlashAction("divider");
+      return;
+    }
+
+    // "/"-Menü
+    if (text === "/") { showSlashMenu(line, colIndex); return; }
+    hideSlashMenu();
+  });
 
   // Once a gap has been typed into it is an ordinary paragraph - drop the
   // collapsing, or it would fold back up (hiding the text) as soon as the
@@ -978,6 +1239,10 @@
           var oldImg = owner.blocks.filter(function (b) { return b.type === "image" && b.id === mid; })[0];
           newBlocks.push({ type: "image", id: mid, caption: oldImg ? oldImg.caption : "Bild" });
         }
+      } else if (isDivider(n)) {
+        newBlocks.push({ type: "divider" });
+      } else if (isHeading(n)) {
+        newBlocks.push({ type: "heading", text: n.textContent.replace(/\n/g, "") });
       } else {
         // A paragraph. Empty ones are kept - a blank line is real content.
         newBlocks.push({ type: "text", text: n.textContent.replace(/\n/g, "") });
@@ -1050,6 +1315,59 @@
     }
   }
 
+  // --- Blöcke an der Cursorposition einfügen -----------------------------
+  // Gemeinsamer Weg für das "/"-Menü und die Markdown-Kürzel.
+
+  function insertTaskAt(colIndex, opts) {
+    var owner = ownerAt(colIndex);
+    if (!owner) return null;
+    var editorEl = document.querySelector('[data-editor-for="' + owner.id + '"]');
+    var t = task((opts && opts.title) || "Neue Aufgabe");
+    childrenOf(owner).push(t);
+    if (owner.subtasks) { owner.done = false; recomputeAncestors(owner.id); }
+    if (editorEl) {
+      insertEmbedInEditor(editorEl, makeInlineTaskNode(t, colIndex, owner.id));
+      serializeEditor(owner.id);
+    } else {
+      owner.blocks.push({ type: "task", id: t.id });
+    }
+    // Eine neue Aufgabe öffnet ihre Seite gleich mit - sie ist ja selbst eine.
+    if (!opts || opts.open !== false) state.panelStack = state.panelStack.slice(0, colIndex).concat([t.id]);
+    renderAll();
+    return t;
+  }
+
+  function insertDividerAt(colIndex) {
+    var owner = ownerAt(colIndex);
+    var editorEl = owner && document.querySelector('[data-editor-for="' + owner.id + '"]');
+    if (!editorEl) return;
+    insertEmbedInEditor(editorEl, makeDividerNode());
+    serializeEditor(owner.id);
+    renderColumns();
+  }
+
+  // Wandelt den Absatz, in dem der Cursor steht, in eine Überschrift um
+  // (oder zurück). Der Text bleibt erhalten.
+  function setLineKindAtCaret(editorEl, kind) {
+    var sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    var host = sel.getRangeAt(0).startContainer;
+    while (host && host.parentNode !== editorEl) host = host.parentNode;
+    if (!host || isSolidBlock(host)) return;
+    host.classList.toggle("pe-h", kind === "heading");
+    // Erst speichern, dann den Cursor setzen: serializeEditor ruft
+    // normalizeEditor, das den Editor-Inhalt neu zusammensetzt und dabei
+    // jede bestehende Auswahl verwirft. Die Knoten selbst überleben, also
+    // lässt sich der Cursor danach wieder auf dieselbe Zeile setzen.
+    serializeEditor(editorEl.getAttribute("data-editor-for"));
+    editorEl.focus();
+    var r = document.createRange();
+    r.selectNodeContents(host);
+    r.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+
   var prevPanelStack = [];
 
   function renderColumns() {
@@ -1112,7 +1430,7 @@
       html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
       html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
-      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="0">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"0\">" + svgPlus() + " Bild</button></div>";
+      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-image-at="0">' + svgPlus() + " Bild</button></div>";
       html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Aufgabe hinzufügen …" data-quick-add="0" autocomplete="off" /></div>';
       html += "</div></div>";
     }
@@ -1130,7 +1448,7 @@
       html += '<div class="col-progress-row">' + dueControl(node) + "</div>";
       html += "</div>";
       html += '<div class="blocks"><div data-editor-slot="' + node.id + '" data-editor-col="' + colIndex + '"></div></div>';
-      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="' + colIndex + '">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"" + colIndex + "\">" + svgPlus() + " Bild</button></div>";
+      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-image-at="' + colIndex + '">' + svgPlus() + " Bild</button></div>";
       html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Unteraufgabe hinzufügen …" data-quick-add="' + colIndex + '" autocomplete="off" /></div>';
       html += "</div></div>";
     }
@@ -1549,25 +1867,6 @@
       return;
     }
 
-    el = e.target.closest("[data-insert-task-at]");
-    if (el) {
-      var colIndex1 = parseInt(el.getAttribute("data-insert-task-at"), 10);
-      var owner1 = ownerAt(colIndex1);
-      if (!owner1) return;
-      var editorEl1 = document.querySelector('[data-editor-for="' + owner1.id + '"]');
-      var t1 = task("Neue Aufgabe");
-      childrenOf(owner1).push(t1);
-      if (owner1.subtasks) { owner1.done = false; recomputeAncestors(owner1.id); }
-      if (editorEl1) {
-        insertEmbedInEditor(editorEl1, makeInlineTaskNode(t1, colIndex1, owner1.id));
-        serializeEditor(owner1.id);
-      } else {
-        owner1.blocks.push({ type: "task", id: t1.id });
-      }
-      state.panelStack = state.panelStack.slice(0, colIndex1).concat([t1.id]);
-      renderAll();
-      return;
-    }
 
     el = e.target.closest("[data-insert-image-at]");
     if (el) {
