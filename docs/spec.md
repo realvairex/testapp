@@ -131,10 +131,29 @@ Reihenfolge und Position auf der Seite.
 - `/` löst das Blockmenü **nur auf einer sonst leeren Zeile** aus, damit es
   beim normalen Schreiben nicht in die Quere kommt.
 
+**Abstände:** Aufeinanderfolgende Blöcke stehen genauso dicht wie zwei
+Textzeilen — **0px** zusätzlicher Abstand. Eine Aufgabenliste soll nicht
+lockerer wirken als der Fließtext darüber.
+
 > ⚠️ Umsetzungshinweis: Im Mockup baut das Speichern den Editor-Inhalt neu
 > zusammen und verwirft dabei die Auswahl — der Cursor muss danach von Hand
 > wiederhergestellt werden. In Flutter erledigt das der `DocumentComposer`,
 > der Auswahl und Inhalt getrennt hält (siehe `research-superlist.md`).
+
+> ⚠️ **Die ganze Konstruktion mit der eingeschobenen Leerzeile ist ein
+> Notbehelf von `contenteditable` und gehört NICHT ins Flutter-Modell.** Im
+> Browser gibt es neben einem nicht editierbaren Element schlicht keine
+> Cursor-Position, deshalb muss dort eine unsichtbare Zeile stehen — mit
+> allen Folgeproblemen (0px hohe Zeile ist nicht anklickbar, Cursor wird in
+> der eingeklappten Höhe gezeichnet, Backspace löscht den Block daneben).
+> `super_editor` hat dieses Problem nicht: Der Cursor sitzt dort auf einer
+> **Knotenposition** im Dokumentmodell, unabhängig davon, ob der Knoten
+> Text enthält, und wird selbst gezeichnet. Beim Umstieg entfallen also
+> ersatzlos: die Leerzeilen zwischen Blöcken, das Auf-/Zuklappen, die
+> eigene Trefferprüfung und der Backspace-Schutz.
+>
+> Übertragbar ist nur die **Regel**: Zwischen zwei Blöcken muss man Text
+> schreiben können, und die Blöcke stehen dabei so dicht wie Textzeilen.
 
 ### 2.4 Verschieben (Drag & Drop)
 - Verschiebbar sind: Listen und Gruppen in der Sidebar, sowie Blöcke
