@@ -881,3 +881,135 @@ unbenutzbar. Dieser Punkt darf nicht verloren gehen, deshalb steht er
 zusätzlich in `concept.md` unter den offenen Punkten.
 
 ---
+
+## 2026-08-06 — Unterer Sidebar-Bereich: vier Entwürfe, alle verworfen
+
+**Kontext:** Der Nutzer fragte, wie man den Bereich unten in der Sidebar
+(„Optionen", Knopf für neue Liste, Knopf für neue Gruppe) besser
+anordnen könnte, und wollte die Vorschläge als Bild sehen.
+
+**Abgewogene Optionen** (alle als gerenderte Screenshots vorgelegt):
+
+1. **Jetzt** — zwei unterschiedlich große runde Knöpfe. Ehrlich zur
+   Hierarchie, aber der große Knopf steht ohne Bezugskante im Raum.
+2. **A** — zwei gleichwertige Pillen mit Beschriftung („Liste",
+   „Gruppe"). Am klarsten benannt, macht aber „Gruppe" optisch genauso
+   wichtig wie „Liste", was der tatsächlichen Nutzungshäufigkeit
+   widerspricht.
+3. **B** — eine breite Haupt-Aktion („Neue Liste") plus quadratischer
+   Zweitknopf. Behält die Hierarchie, gibt der Haupt-Aktion eine Kante.
+   **Das war die Empfehlung.**
+4. **C** — „Optionen" als Zeile, beide Knöpfe rechts angedockt. Spart am
+   meisten Platz, versteckt die Aktionen aber neben einer Einstellung.
+
+**Entscheidung des Nutzers:** *„es überzeugt mich nichts"* — alle vier
+verworfen. Der Bereich bleibt unverändert.
+
+**Einzige übernommene Änderung:** Der kleinere Gruppen-Knopf stand auf
+`align-items: center` und schwebte damit neben der Mitte des großen
+Listen-Knopfes. Umgestellt auf `flex-end`, sodass beide auf derselben
+Grundlinie stehen (Unterkanten nachgemessen identisch). Die
+**unterschiedliche Größe der beiden Knöpfe bleibt bewusst bestehen** —
+das war bereits früher eine ausdrückliche Festlegung des Nutzers.
+
+**Begründung, warum das hier steht:** Ein späterer Durchgang durch die
+Gestaltung würde sonst mit hoher Wahrscheinlichkeit dieselben Vorschläge
+noch einmal machen. Der Eintrag steht zusätzlich verkürzt in
+`status.md`, damit er ohne Lektüre des gesamten Protokolls sichtbar ist.
+
+---
+
+## 2026-08-06 — Prüfskripte gehören ins Repo, nicht ins Scratchpad
+
+**Kontext:** Beim Vorbereiten eines Sitzungswechsels fiel auf, dass rund
+40 Playwright-Skripte ausschließlich im temporären Scratchpad-Verzeichnis
+lagen. Sie sind über mehrere Sitzungen entstanden, jedes gehört zu einem
+konkret gemeldeten Fehler oder einer Design-Festlegung, und sie sind der
+einzige Weg, eine Änderung am Mockup nachzumessen statt sie
+durchzuklicken. Mit dem Ende der Session wären sie ersatzlos weg gewesen.
+
+**Optionen:**
+
+1. Liegenlassen — sie hätten ihren Zweck ja erfüllt.
+2. Eine kuratierte Auswahl retten.
+3. Alle retten, lauffähig machen, dokumentieren.
+
+**Entscheidung: 3.** Alle 40 Skripte liegen jetzt unter
+`design/mockups/tests/` mit eigener README. Die Bildschirmfoto-Pfade
+zeigten auf das Scratchpad und wurden auf ein lokales, nicht
+versioniertes `out/` umgestellt. Zwei Skripte waren inhaltlich veraltet
+und wurden repariert:
+
+- `test_typing3.js` prüfte einen `+ Aufgabe`-Knopf, der auf Wunsch des
+  Nutzers entfernt worden war, und zählte abschließende Leerzeilen noch
+  als Textknoten statt als `.pe-line` — beides Überbleibsel aus der Zeit
+  vor dem Umbau auf das Blockmodell.
+- `test_fuzz_all.js` war nicht defekt, sondern nur langsam (760
+  Drag-Kombinationen). Läuft durch, 0 Hänger.
+
+Alle 40 laufen grün. Eine kuratierte Auswahl wäre billiger gewesen,
+aber die Entscheidung, welches Skript später einmal gebraucht wird,
+lässt sich heute nicht seriös treffen — und 100 KB Text kosten nichts.
+
+**Nachtrag zur Reichweite:** Diese Skripte prüfen das *Mockup*. Sobald
+der Flutter-Bau beginnt, sind sie Referenzmaterial, aber kein Teil der
+Test-Pipeline mehr; deren Zusicherungen gehören dann in Dart-Tests
+gegen `spec.md`.
+
+---
+
+## 2026-08-06 — Sitzungswechsel ohne Informationsverlust
+
+**Kontext:** Der Nutzer wollte in einen neuen Chat wechseln (wegen des
+Kontextlimits) und fragte, wie das ohne Informationsverlust gelingt.
+Bisher verließ sich die Übergabe darauf, dass `CLAUDE.md` gelesen wird
+und dort das Richtige steht — ein Verlass auf Sorgfalt, nicht auf
+Mechanik.
+
+**Das eigentliche Problem:** Wissen bestand in drei Zuständen — im Repo
+(sicher), im Chatverlauf (verloren beim Wechsel) und im Scratchpad
+(verloren beim Container-Ende). Nur der erste überlebt. Es gab keinen
+Punkt, an dem die anderen beiden systematisch in den ersten überführt
+wurden.
+
+**Optionen:**
+
+1. Ein einzelnes Übergabedokument, von Hand gepflegt. Billig, aber es
+   veraltet genau dann, wenn es gebraucht wird.
+2. Ein Startbefehl, der den Kontext lädt. Hilft am Anfang, sichert aber
+   nichts am Ende.
+3. Beides plus eine maschinelle Abschlussprüfung.
+
+**Entscheidung: 3.** Eingerichtet wurden:
+
+- **`docs/status.md`** — der Übergabestand. Beantwortet drei Fragen: Wo
+  stehen wir, was ist als Nächstes dran, was darf nicht noch einmal
+  vorgeschlagen werden. Der letzte Punkt ist der wertvollste: Er
+  verhindert, dass der Nutzer dieselbe Ablehnung zweimal aussprechen
+  muss.
+- **`docs/session-log.md`** — was in welcher Sitzung passiert ist.
+  Ergänzt die Git-Historie um das, was ein Commit nicht zeigt:
+  verworfene Wege, Begründungen im Vorbeigehen, offene Fäden.
+- **`/start unfold`** und **`/ende unfold`** als eingecheckte Befehle
+  unter `.claude/commands/`. Sie liegen im Repo, gelten also für jede
+  Sitzung, nicht nur für diese Maschine.
+- **`scripts/session-check.sh`** — prüft mechanisch nach: Arbeits-
+  verzeichnis sauber, Branch gepusht, `status.md` so aktuell wie das
+  Repo, Eintrag im Entscheidungsprotokoll, nichts Wiederverwendbares im
+  Scratchpad vergessen, Sitzungsprotokoll geschrieben. Rückgabewert 1,
+  solange etwas offen ist.
+- **Session-Start-Hook** in `.claude/settings.json`, der bei jedem
+  Sitzungsstart auf `status.md` verweist und die letzten Commits zeigt —
+  damit die Übergabe auch dann greift, wenn der Startbefehl vergessen
+  wird.
+
+**Begründung für die Prüfung per Skript statt per Checkliste:** Eine
+Checkliste in Prosa wird abgehakt, ohne sie auszuführen. `git status`
+lügt nicht. Das Skript fand beim ersten Lauf sofort vier reale Lücken,
+darunter die 40 ungeretteten Prüfskripte.
+
+**Bewusst nicht getan:** Den Chatverlauf selbst zu archivieren. Er ist
+zu unstrukturiert, um später gelesen zu werden; das Destillat in
+`status.md` und `session-log.md` ist mehr wert als das Rohmaterial.
+
+---

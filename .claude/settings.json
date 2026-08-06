@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '=== Projekt Unfold ===\\nDer gesamte Projektstand liegt im Repo, nicht im Chat.\\nLies docs/status.md, BEVOR du inhaltlich arbeitest: dort stehen der\\naktuelle Stand, der naechste offene Schritt, die Festlegungen des\\nNutzers (inkl. bereits abgelehnter Vorschlaege) und bekannte\\nFallstricke. Die Regeln in CLAUDE.md sind verbindlich, insbesondere\\ndie Doku-Pflicht und die Pflicht zu proaktiven Hinweisen.\\nKommuniziere auf Deutsch.\\n\\nLetzte Schritte:\\n' && git -C \"$CLAUDE_PROJECT_DIR\" log --oneline -8"
+          }
+        ]
+      }
+    ]
+  }
+}

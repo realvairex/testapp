@@ -3,6 +3,29 @@
 Dieses Dokument wird von Claude Code automatisch bei jeder Session gelesen.
 Es ist der Einstiegspunkt in den Projektkontext — halte es aktuell.
 
+## Grundhaltung: proaktiv arbeiten
+
+Der Nutzer soll nicht danach fragen müssen. Das ist keine Nettigkeit am
+Rande, sondern die wichtigste Erwartung an die Zusammenarbeit in diesem
+Projekt. Konkret heißt das:
+
+- **Auffälligkeiten sofort melden**, nicht auf Nachfrage warten:
+  Sicherheitsrisiken, Datenverlustgefahr, Widersprüche zwischen
+  Dokumenten, veralteter Stand, unsaubere Abhängigkeiten, Dinge die
+  später teuer werden.
+- **Mitdenken statt abarbeiten.** Wenn eine Aufgabe eine bessere Lösung
+  nahelegt als die wörtlich verlangte, wird sie genannt — und die
+  verlangte trotzdem geliefert, wenn der Nutzer dabei bleibt.
+- **Widersprechen, wenn etwas nicht stimmt.** Auch bei einer Bitte des
+  Nutzers. Einmal sagen, begründen, dann seiner Entscheidung folgen.
+- **Unnötige Arbeit abraten.** Wenn ein gemeldeter Fehler beim
+  anstehenden Umstieg ohnehin verschwindet, wird das gesagt, bevor Zeit
+  hineinfließt.
+- **Selbst dokumentieren, selbst committen, selbst Meilensteine setzen** —
+  ohne Aufforderung, siehe unten.
+- **Ehrlich berichten.** Was nicht geprüft wurde, wird nicht als geprüft
+  dargestellt. Fehlgeschlagenes wird benannt, nicht weggelassen.
+
 ## Arbeitsweise / Doku-Pflicht
 
 Für dieses Projekt gilt durchgängig:
@@ -71,9 +94,26 @@ Für dieses Projekt gilt durchgängig:
 
 ## Status
 
-Projekt befindet sich in der Brainstorming-/Konzeptphase. Noch kein Code
-geschrieben. Siehe `docs/concept.md` für den aktuellen Stand und
-`docs/decisions.md` für die bisherige Entscheidungshistorie.
+**➡︎ Der aktuelle Stand steht in `docs/status.md`. Diese Datei zuerst
+lesen** — dort stehen auch der nächste offene Schritt, die bereits
+getroffenen Festlegungen des Nutzers (inklusive abgelehnter Vorschläge)
+und die Fallstricke, die schon einmal Zeit gekostet haben.
+
+Grob: Konzept steht, das Mockup ist fertig iteriert und durchgemessen,
+App-Code existiert noch nicht.
+
+## Sitzungswechsel
+
+Der Session-Container ist temporär, der Chat ist es auch. Deshalb:
+
+- **`/start unfold`** zu Beginn einer neuen Sitzung — lädt den
+  Projektkontext aus dem Repo.
+- **`/ende unfold`** vor dem Verlassen einer Sitzung — überführt alles
+  Wissenswerte ins Repo und läuft dabei `scripts/session-check.sh`, das
+  mechanisch nachprüft, ob wirklich nichts verloren geht.
+
+Das Prüfskript kann jederzeit auch allein laufen:
+`bash scripts/session-check.sh`
 
 ## Tech-Stack
 
@@ -88,10 +128,15 @@ Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
 
 ## Doku-Struktur
 
-- `CLAUDE.md` — dieser Datei: Projektüberblick, Konventionen (dieses Dokument)
+- `CLAUDE.md` — diese Datei: Projektüberblick, Konventionen
+- `docs/status.md` — **zuerst lesen**: aktueller Stand, nächster Schritt,
+  Festlegungen des Nutzers, bekannte Fallstricke
+- `docs/session-log.md` — was in welcher Sitzung passiert ist
 - `docs/concept.md` — Produktvision, Inspiration, Feature-Liste, Design-Richtung
 - `docs/spec.md` — **Umsetzungsvorlage**: Datenmodell, Verhaltensregeln,
   Design-Tokens. Das ist die Wahrheit für den Flutter-Bau, nicht das Mockup.
 - `docs/decisions.md` — laufendes Entscheidungsprotokoll
 - `docs/milestones.md` — Meilensteine mit Commit-Hash zum Zurückspringen
 - `docs/research-superlist.md` — Recherche zu Superlists Open-Source-Fundament
+- `design/mockups/tests/` — Playwright-Prüfskripte zum Mockup (eigene README)
+- `scripts/session-check.sh` — Abschlussprüfung beim Sitzungswechsel
