@@ -14,6 +14,7 @@ Tag, nur ohne extra Git-Referenz.
 | 2026-08-05 | `badb471` | Push-Animation: App-Shell von Grid auf Flex umgebaut, Sidebar-Collapse-Snap/Standbild-Bug behoben (siehe `decisions.md`) |
 | 2026-08-05 | `1ef5e49` | Drag&Drop komplett auf einen gemeinsamen Pointer-Sortierer umgestellt (Sidebar + Aufgaben), App-Freeze behoben, touch-tauglich |
 | 2026-08-06 | `3891fed` | **↩︎ RÜCKKEHRPUNKT vor der Flutter-Entscheidung** — siehe eigener Abschnitt unten |
+| 2026-08-06 | `512cc9f` | Mockup fertig iteriert und durchgemessen; Uebergabe-Infrastruktur fuer Sitzungswechsel (`status.md`, `session-log.md`, `/start`, `/ende`, Pruefskript) |
 
 ---
 
