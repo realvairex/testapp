@@ -270,10 +270,29 @@
   .page-editor:empty::before { content: attr(data-placeholder); color: var(--ink-faint); pointer-events: none; }
   .page-editor div { min-height: 1.65em; }
 
-  .inline-embed { position: relative; margin: 3px 0; animation: block-in 0.18s ease; overflow: hidden; cursor: grab; }
-  .inline-embed.drag-ghost { opacity: 0.35; }
+  .inline-embed { position: relative; margin: 3px 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
+  .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
+
+  /* Explicit drag handle. Dragging embeds is driven by pointer events, not
+     the native HTML5 drag API: these blocks live inside a contenteditable,
+     where the browser runs its own built-in drag/move behaviour for editable
+     content and a long-press starts a native text-selection drag - both
+     hijack the same gesture and fight any custom handler. A dedicated grip
+     also keeps dragging from competing with clicking the row to open it. */
+  .embed-grip {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 15px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint); opacity: 0; cursor: grab;
+    transition: opacity 0.12s ease, color 0.12s ease;
+    touch-action: none; user-select: none;
+  }
+  .inline-embed:hover .embed-grip { opacity: 0.55; }
+  .embed-grip:hover { opacity: 1 !important; color: var(--ink-soft); }
+  .embed-grip:active { cursor: grabbing; }
+  .page-editor.embed-dragging { cursor: grabbing; }
+  .page-editor.embed-dragging .inline-embed { cursor: grabbing; }
   @keyframes block-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
   .inline-embed.removing { animation: none; transition: height 0.2s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.18s ease, margin 0.2s ease; opacity: 0 !important; margin: 0 !important; }
   @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity 0.15s ease; } }
@@ -462,7 +481,12 @@
 
   function recomputeAncestors(id) {
     var current = id;
+    var seen = {};
     while (true) {
+      // A malformed tree (a task reachable as its own ancestor) would make
+      // this walk loop forever and freeze the whole app. Bail out instead.
+      if (seen[current]) break;
+      seen[current] = true;
       var parent = findParentTask(current);
       if (!parent) break;
       parent.done = parent.subtasks.length > 0 && parent.subtasks.every(function (s) { return s.done; });
@@ -546,14 +570,26 @@
   // document instead of a fixed block list, so text can be typed anywhere
   // and tasks/images inserted at the cursor.
 
+  function svgGrip() { return '<svg width="8" height="13" viewBox="0 0 8 13" fill="currentColor" aria-hidden="true"><circle cx="2" cy="2.5" r="1.1"/><circle cx="6" cy="2.5" r="1.1"/><circle cx="2" cy="6.5" r="1.1"/><circle cx="6" cy="6.5" r="1.1"/><circle cx="2" cy="10.5" r="1.1"/><circle cx="6" cy="10.5" r="1.1"/></svg>'; }
+
+  function embedGripNode() {
+    var grip = document.createElement("span");
+    grip.className = "embed-grip";
+    grip.setAttribute("data-embed-grip", "");
+    grip.setAttribute("aria-label", "Zum Verschieben ziehen");
+    grip.setAttribute("title", "Zum Verschieben ziehen");
+    grip.innerHTML = svgGrip();
+    return grip;
+  }
+
   function makeInlineTaskNode(node, colIndex, ownerId) {
     var tmp = document.createElement("div");
     tmp.innerHTML = renderTaskRow(node, colIndex, null, { ownerId: ownerId });
     var wrap = document.createElement("div");
     wrap.className = "inline-embed";
     wrap.contentEditable = "false";
-    wrap.draggable = true;
     wrap.setAttribute("data-embed-marker", "task:" + node.id);
+    wrap.appendChild(embedGripNode());
     wrap.appendChild(tmp.firstElementChild);
     return wrap;
   }
@@ -562,9 +598,9 @@
     var wrap = document.createElement("div");
     wrap.className = "inline-embed";
     wrap.contentEditable = "false";
-    wrap.draggable = true;
     wrap.setAttribute("data-embed-marker", "image:" + block.id);
     wrap.innerHTML = '<div class="block-image">' + svgImg() + "<span>" + escapeHtml(block.caption || "Bild") + ' · Platzhalter</span></div><button class="row-delete" data-delete-owner="' + ownerId + '" data-delete-block="' + block.id + '" data-delete-kind="image" aria-label="Bild löschen">' + svgTrash() + "</button>";
+    wrap.insertBefore(embedGripNode(), wrap.firstChild);
     return wrap;
   }
 
@@ -1370,61 +1406,107 @@
     renderSidebar();
   });
 
+  // --- Moving embedded tasks/images within a page ---
+  // Driven by pointer events rather than the native HTML5 drag API. These
+  // blocks sit inside a contenteditable, where the browser runs its own
+  // built-in drag/move behaviour for editable content; that native path
+  // competes with any custom handler (and a press-and-hold starts a native
+  // text-selection drag on the same gesture), which is what made moving a
+  // task unreliable and could wedge the editor. Pointer events give us the
+  // gesture outright, with no native fallback to fight.
+
   var embedDropIndicatorEl = null;
   function clearEmbedDropIndicator() {
     if (embedDropIndicatorEl) { embedDropIndicatorEl.classList.remove("drop-before", "drop-after"); embedDropIndicatorEl = null; }
   }
 
-  document.addEventListener("dragstart", function (e) {
-    var handle = e.target.closest(".inline-embed[data-embed-marker]");
-    if (!handle) return;
-    var editor = handle.closest(".page-editor");
-    if (!editor) return;
-    drag.type = "embed";
-    drag.embedEl = handle;
-    drag.embedOwnerId = editor.getAttribute("data-editor-for");
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", handle.getAttribute("data-embed-marker"));
-    setTimeout(function () { handle.classList.add("drag-ghost"); }, 0);
-  });
+  var pdrag = { active: false, armed: false, el: null, editor: null, ownerId: null, grip: null, pointerId: null, startY: 0, target: null, pos: null };
 
-  document.addEventListener("dragover", function (e) {
-    if (drag.type !== "embed") return;
-    var target = e.target.closest(".inline-embed[data-embed-marker]");
-    if (!target || target === drag.embedEl) return;
-    var editor = target.closest(".page-editor");
-    if (!editor || editor.getAttribute("data-editor-for") !== drag.embedOwnerId) return;
-    e.preventDefault();
-    var rect = target.getBoundingClientRect();
-    var pos = e.clientY < rect.top + rect.height / 2 ? "drop-before" : "drop-after";
-    clearEmbedDropIndicator();
-    target.classList.add(pos);
-    embedDropIndicatorEl = target;
-  });
-
-  document.addEventListener("drop", function (e) {
-    if (drag.type !== "embed") return;
-    var target = e.target.closest(".inline-embed[data-embed-marker]");
-    if (target && target !== drag.embedEl) {
-      var editor = target.closest(".page-editor");
-      if (editor && editor.getAttribute("data-editor-for") === drag.embedOwnerId) {
-        e.preventDefault();
-        var rect = target.getBoundingClientRect();
-        var pos = e.clientY < rect.top + rect.height / 2 ? "before" : "after";
-        if (pos === "before") { target.parentNode.insertBefore(drag.embedEl, target); }
-        else { target.parentNode.insertBefore(drag.embedEl, target.nextSibling); }
-        serializeEditor(drag.embedOwnerId);
-        renderAll();
-      }
+  function resetPointerDrag() {
+    if (pdrag.el) pdrag.el.classList.remove("drag-ghost");
+    if (pdrag.editor) pdrag.editor.classList.remove("embed-dragging");
+    if (pdrag.grip && pdrag.pointerId !== null && pdrag.grip.releasePointerCapture) {
+      try { pdrag.grip.releasePointerCapture(pdrag.pointerId); } catch (err) { /* already released */ }
     }
     clearEmbedDropIndicator();
+    pdrag = { active: false, armed: false, el: null, editor: null, ownerId: null, grip: null, pointerId: null, startY: 0, target: null, pos: null };
+  }
+
+  // Nearest insertion point for the current pointer Y, considering every
+  // sibling embed except the one being dragged. Landing above the first or
+  // below the last is handled too, so the drop zone covers the whole page
+  // rather than only the exact area of another embed.
+  function embedDropSpot(editor, clientY) {
+    var all = editor.querySelectorAll(".inline-embed[data-embed-marker]");
+    var others = [];
+    for (var i = 0; i < all.length; i++) { if (all[i] !== pdrag.el) others.push(all[i]); }
+    if (!others.length) return null;
+    for (var j = 0; j < others.length; j++) {
+      var r = others[j].getBoundingClientRect();
+      if (clientY < r.top + r.height / 2) return { target: others[j], pos: "before" };
+    }
+    return { target: others[others.length - 1], pos: "after" };
+  }
+
+  document.addEventListener("pointerdown", function (e) {
+    if (e.button !== 0) return;
+    var grip = e.target.closest("[data-embed-grip]");
+    if (!grip) return;
+    var el = grip.closest(".inline-embed[data-embed-marker]");
+    var editor = el && el.closest(".page-editor");
+    if (!el || !editor) return;
+    e.preventDefault(); // no text selection, no native contenteditable drag
+    pdrag.armed = true;
+    pdrag.el = el;
+    pdrag.editor = editor;
+    pdrag.ownerId = editor.getAttribute("data-editor-for");
+    pdrag.grip = grip;
+    pdrag.pointerId = e.pointerId;
+    pdrag.startY = e.clientY;
+    if (grip.setPointerCapture) grip.setPointerCapture(e.pointerId);
   });
 
-  document.addEventListener("dragend", function (e) {
-    if (drag.type !== "embed") return;
-    if (drag.embedEl) drag.embedEl.classList.remove("drag-ghost");
+  document.addEventListener("pointermove", function (e) {
+    if (!pdrag.armed || e.pointerId !== pdrag.pointerId) return;
+    if (!pdrag.active) {
+      if (Math.abs(e.clientY - pdrag.startY) < 4) return; // tolerate a shaky click
+      pdrag.active = true;
+      pdrag.el.classList.add("drag-ghost");
+      pdrag.editor.classList.add("embed-dragging");
+    }
+    e.preventDefault();
+    var spot = embedDropSpot(pdrag.editor, e.clientY);
     clearEmbedDropIndicator();
-    drag.type = null; drag.embedEl = null; drag.embedOwnerId = null;
+    pdrag.target = spot ? spot.target : null;
+    pdrag.pos = spot ? spot.pos : null;
+    if (spot) {
+      spot.target.classList.add(spot.pos === "before" ? "drop-before" : "drop-after");
+      embedDropIndicatorEl = spot.target;
+    }
+  });
+
+  document.addEventListener("pointerup", function (e) {
+    if (!pdrag.armed || e.pointerId !== pdrag.pointerId) return;
+    if (pdrag.active && pdrag.target && pdrag.target !== pdrag.el) {
+      var el = pdrag.el, target = pdrag.target, pos = pdrag.pos, ownerId = pdrag.ownerId;
+      if (pos === "before") { target.parentNode.insertBefore(el, target); }
+      else { target.parentNode.insertBefore(el, target.nextSibling); }
+      resetPointerDrag();
+      serializeEditor(ownerId);
+      renderAll();
+      return;
+    }
+    resetPointerDrag();
+  });
+
+  document.addEventListener("pointercancel", function (e) {
+    if (pdrag.armed && e.pointerId === pdrag.pointerId) resetPointerDrag();
+  });
+
+  // Belt and braces: never let the browser start its own drag on anything
+  // inside a page editor, whichever element the gesture originates from.
+  document.addEventListener("dragstart", function (e) {
+    if (e.target.closest && e.target.closest(".page-editor")) e.preventDefault();
   });
 
   document.addEventListener("click", function (e) {
