@@ -49,6 +49,18 @@ Für dieses Projekt gilt durchgängig:
 - **Backup:** Regelmäßig committen und pushen (kleine, häufige Commits statt
   eines großen am Ende) — GitHub ist der einzige dauerhafte Speicher, der
   Session-Container ist temporär.
+- **Werkzeuge gehören ins Repo, nicht ins Scratchpad.** Ein Skript, das
+  **mehr als einmal** ausgeführt wird oder eine **Messung, Regel oder
+  Erkenntnis** festhält, wird von vornherein im Repo angelegt und
+  committet — nicht im temporären Verzeichnis. Das Scratchpad ist
+  ausschließlich für echten Wegwerf: ein einmaliger Bildschirmschuss,
+  eine Zwischenablage, ein Einzeiler zum Nachsehen. Faustregel: *Würde
+  ich das in vier Wochen noch einmal brauchen? Dann sofort ins Repo.*
+  Im Zweifel ins Repo — eine überflüssige Datei kostet nichts, eine
+  verlorene kostet die Arbeit, die in ihr steckt.
+  (Anlass: 40 Prüfskripte lagen ausschließlich im Scratchpad und wären
+  bei einem Sitzungswechsel ersatzlos verloren gewesen. Siehe
+  `docs/decisions.md`, 2026-08-06.)
 - **CI:** Sobald eine lauffähige Codebasis existiert, GitHub-Actions-Pipeline
   einrichten, die bei jedem Push Linting, Type-Checking und Tests laufen
   lässt.

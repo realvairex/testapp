@@ -50,9 +50,28 @@ eingefordert. Neueste Sitzung oben.
   erneut vorgeschlagen wird.
 - Die Prüfskripte gehören ins Repo, nicht ins temporäre Verzeichnis.
 
+- Nach der Rückfrage „wie verhindern wir das künftig?" eine dreistufige
+  Absicherung gebaut: Konvention („Werkzeuge gehören ins Repo") in
+  `CLAUDE.md`, Prüfung an vier Hooks (`SessionStart`, `Stop`,
+  `PreCompact`, `SessionEnd`), und zwei stille Kurzmodi
+  (`--kurz`, `--drift`), damit der Wächter nicht zum Hintergrundrauschen
+  wird. Dazu `scripts/scratchpad-ignore.txt`, damit einmal verworfene
+  Dateien verworfen bleiben.
+
+**Entschieden (Nachtrag)**
+
+- Der `Stop`-Hook fragt bewusst **nur** nach Dateien außerhalb des
+  Repos, nicht nach nicht committeten Änderungen — sonst würde er nach
+  jedem Arbeitsschritt anschlagen und binnen Tagen ignoriert.
+- Kein automatisches Committen durch Hooks: Das würde die Git-Historie
+  als Mittel der Nachvollziehbarkeit entwerten. Die Hooks melden, sie
+  handeln nicht.
+
 **Offen**
 
 - Löschregeln und Papierkorb (`spec.md` §4.3) — der nächste Schritt.
-- Ob der Session-Start-Hook tatsächlich feuert, ist noch unbewiesen: er
-  greift erst beim Start der *nächsten* Session, nicht in der laufenden.
-  Beim nächsten Sessionstart prüfen.
+- Ob die Hooks tatsächlich feuern, ist noch unbewiesen: Sie greifen erst
+  beim Start der *nächsten* Session bzw. beim nächsten Stop-Ereignis,
+  nicht in der laufenden. Die aufgerufenen Kommandos wurden einzeln
+  nachgestellt und laufen korrekt. Beim nächsten Sessionstart prüfen:
+  Erscheint die Zeile „=== Projekt Unfold ==="?

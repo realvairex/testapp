@@ -1013,3 +1013,75 @@ zu unstrukturiert, um später gelesen zu werden; das Destillat in
 `status.md` und `session-log.md` ist mehr wert als das Rohmaterial.
 
 ---
+
+## 2026-08-06 — Wie verhindert wird, dass Arbeit außerhalb des Repos versandet
+
+**Anlass:** Beim Vorbereiten des Sitzungswechsels lagen 40 Prüfskripte
+ausschließlich im temporären Scratchpad. Der Nutzer fragte daraufhin,
+wie so etwas künftig verhindert wird.
+
+**Ursachenanalyse — es war nicht Vergesslichkeit.** Das Scratchpad ist
+der Weg des geringsten Widerstands: Es braucht keine Rückfrage, die
+Umgebung weist aktiv darauf hin, und es gab kein Gegenstück — für ein
+Prüfskript existierte schlicht kein Platz im Repo. Also landete jedes
+dort, wo es am schnellsten ging. Und es gab keine Rückmeldeschleife, die
+jemals nachgefragt hätte. Eine Ermahnung („besser aufpassen") hätte
+daran nichts geändert, weil das Anreizgefälle unverändert geblieben wäre.
+
+**Optionen:**
+
+1. **Nur Konvention.** Billig, aber sie greift genau dann nicht, wenn es
+   eilig ist — also immer.
+2. **Nur Prüfung am Sitzungsende.** Hilft, versagt aber, wenn eine
+   Sitzung abrupt endet (Kontextlimit, Container-Ende) und `/ende` nie
+   läuft. Genau das war der Auslöser.
+3. **Konvention plus Prüfung an mehreren Stellen.**
+
+**Entscheidung: 3, in drei Ebenen.**
+
+**Ebene 1 — Vermeidung.** Neue Konvention in `CLAUDE.md`: Ein Skript,
+das mehr als einmal läuft oder eine Messung/Regel festhält, wird von
+vornherein im Repo angelegt. Das Scratchpad ist nur für echten Wegwerf.
+Zusätzlich existiert jetzt mit `design/mockups/tests/` ein offensicht-
+licher Ablageort — vorher fehlte er, und das war Teil der Ursache.
+
+**Ebene 2 — Erkennung an den Gefahrenpunkten.** `scripts/session-check.sh`
+hängt an vier Hooks:
+
+| Hook | Modus | Warum |
+|---|---|---|
+| `SessionStart` | Hinweis auf `status.md` | Kontext laden, auch ohne `/start` |
+| `Stop` | `--drift` | nach jedem Schritt: liegt etwas Wiederverwendbares außerhalb des Repos? |
+| `PreCompact` | `--kurz` | die Verdichtung ist der Moment, in dem Kontext verloren geht |
+| `SessionEnd` | `--kurz` | letzter Halt, auch bei abruptem Ende |
+
+**Ebene 3 — Ruhe bewahren.** Der `Stop`-Hook läuft bewusst im engsten
+Modus (`--drift`): Er fragt **ausschließlich** nach Dateien außerhalb des
+Repos, nicht nach nicht committeten Änderungen. Begründung: Während der
+Arbeit ist das Arbeitsverzeichnis fast immer unsauber. Ein Wächter, der
+nach jedem Schritt „nicht committet!" ruft, wird binnen zwei Tagen
+ignoriert — und ein ignorierter Wächter ist schlechter als keiner, weil
+er Sicherheit vortäuscht. Deshalb schweigt jeder Kurzmodus vollständig,
+solange nichts zu melden ist.
+
+Aus demselben Grund gibt es `scripts/scratchpad-ignore.txt`: Bewusst
+verworfene Dateien bleiben verworfen, statt bei jedem Lauf dieselbe
+längst getroffene Entscheidung erneut vorzulegen.
+
+**Nachgewiesen:** Der Wächter wurde gegengeprüft, indem eine Datei im
+Scratchpad angelegt wurde — er schlug an und schwieg nach dem Entfernen
+wieder.
+
+**Bewusst nicht getan:** Automatisch committen. Ein Hook, der ungefragt
+Commits erzeugt, macht die Git-Historie wertlos, und die Historie ist
+laut `CLAUDE.md` ausdrücklich ein Mittel der Nachvollziehbarkeit. Die
+Hooks melden, sie handeln nicht.
+
+**Bekannte Grenze:** Die Hooks konnten in der laufenden Sitzung nicht
+scharf geprüft werden — sie feuern erst beim nächsten Sitzungsstart bzw.
+Stop-Ereignis. Die aufgerufenen Kommandos wurden einzeln nachgestellt
+und laufen korrekt; ob Claude Code sie tatsächlich auslöst, ist beim
+nächsten Sitzungsstart zu prüfen. Steht als offener Punkt in
+`status.md`.
+
+---

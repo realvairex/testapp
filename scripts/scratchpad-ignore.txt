@@ -1,0 +1,26 @@
+# Dateien im Scratchpad, die bewusst NICHT ins Repo gehören.
+#
+# Damit hält eine einmal getroffene Entscheidung: Was hier steht, meldet
+# scripts/session-check.sh nicht mehr als Verlustgefahr. Eine Zeile pro
+# Muster, Shell-Globs erlaubt. Zeilen mit # sind Kommentare.
+#
+# WICHTIG: Nur eintragen, was wirklich wegwerfbar ist. Im Zweifel gehört
+# die Datei ins Repo, nicht in diese Liste (siehe CLAUDE.md,
+# "Werkzeuge gehören ins Repo").
+
+# Einmalige Bildschirmfoto-Helfer. Erzeugen nur ein Bild aus dem Mockup
+# und sind in zwei Minuten neu geschrieben; die eigentliche Prüflogik
+# liegt in design/mockups/tests/.
+shot_*.js
+
+# Reproduktion von Fehlern, die längst behoben und durch dauerhafte
+# Prüfskripte abgedeckt sind (test_4bugs.js).
+repro_*.js
+
+# Die vier verworfenen Entwürfe für den unteren Sidebar-Bereich und das
+# Werkzeug, das die Vergleichsbilder zusammensetzt. Der Nutzer hat alle
+# vier abgelehnt (siehe docs/decisions.md, 2026-08-06) - sie sollen
+# nicht wieder auftauchen.
+variants.js
+bottom_options.js
+combine.js

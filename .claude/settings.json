@@ -9,6 +9,36 @@
           }
         ]
       }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/session-check.sh\" --kurz; printf '\\nDer Kontext wird gleich verdichtet. Alles, was danach noch gebraucht wird,\\nmuss jetzt im Repo stehen - insbesondere Entscheidungen in docs/decisions.md\\nund der Stand in docs/status.md.\\n'; exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/session-check.sh\" --drift; exit 0"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/session-check.sh\" --kurz; exit 0"
+          }
+        ]
+      }
     ]
   }
 }

@@ -56,6 +56,14 @@ Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
 
+**Beim nächsten Sitzungsstart zu prüfen:** Ob die Hooks in
+`.claude/settings.json` tatsächlich feuern. Sie konnten in der Sitzung,
+in der sie entstanden sind, nicht scharf geprüft werden — die
+aufgerufenen Kommandos wurden einzeln nachgestellt und laufen korrekt,
+aber ob Claude Code sie auslöst, zeigt sich erst beim nächsten Start.
+Erscheint zu Beginn keine Zeile „=== Projekt Unfold ===", ist der Hook
+defekt und muss repariert werden.
+
 ## 3. Festlegungen des Nutzers, die nicht neu aufgerollt werden
 
 Diese Punkte sind entschieden. Sie hier zu wiederholen spart dem Nutzer,
