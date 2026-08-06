@@ -116,3 +116,19 @@ dieselbe Antwort noch einmal geben zu müssen.
 
 **Rückkehrpunkt vor der Flutter-Entscheidung:** Commit `3891fed`
 (siehe `docs/milestones.md`).
+
+## 6. Das veröffentlichte Mockup
+
+Das Mockup ist als Artifact veröffentlicht — das ist die Ansicht, in der
+der Nutzer es anschaut und beurteilt:
+
+```
+https://claude.ai/code/artifact/84d0d4a2-c9dc-4127-aa49-5f8f5f7e9cbc
+```
+
+**Wichtig für jede neue Sitzung:** Wer das Mockup ändert und neu
+veröffentlicht, muss **diese URL mitgeben** (Parameter `url` beim
+Artifact-Werkzeug). Sonst entsteht eine zweite, leere Adresse, und der
+Nutzer schaut weiter auf den alten Stand, während er glaubt, den neuen
+zu sehen — ein Fehler, der lange unbemerkt bleiben kann. Nur innerhalb
+derselben Sitzung, in der veröffentlicht wurde, genügt der Dateipfad.
