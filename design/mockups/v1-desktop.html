@@ -365,6 +365,40 @@
 
   .due-pill { font-size: 10.5px; font-weight: 600; padding: 3px 7px; border-radius: 100px; background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .due-pill.today { background: var(--urgent-soft); color: var(--urgent); }
+  /* Überfällig traegt zusaetzlich einen Rahmen: Farbe allein darf nie der
+     einzige Traeger einer Information sein (Farbfehlsichtigkeit). */
+  .due-pill.overdue { background: var(--urgent-soft); color: var(--urgent); box-shadow: inset 0 0 0 1px var(--urgent); }
+  .group-heading.overdue-heading { color: var(--urgent); }
+
+  /* --- Fälligkeits-Steuerung --- */
+  .due-wrap { position: relative; display: inline-flex; }
+  .due-trigger { border: none; font-family: inherit; cursor: pointer; }
+  button.due-pill { border: none; font-family: inherit; cursor: pointer; }
+  .due-add {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 600; color: var(--ink-faint);
+    background: transparent; border: 1px dashed var(--line); border-radius: 100px;
+    padding: 3px 10px 3px 8px; transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .due-add:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
+  .due-menu {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 236px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 18px 38px -14px rgba(41, 50, 65, 0.32); padding: 5px;
+    display: flex; flex-direction: column; gap: 1px;
+    animation: due-menu-in 0.16s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @keyframes due-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .due-opt {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; white-space: nowrap;
+    font: inherit; font-size: 12.5px; text-align: left; color: var(--ink);
+    background: transparent; border: none; border-radius: 8px; padding: 7px 9px; cursor: pointer;
+  }
+  .due-opt:hover { background: var(--line-soft); }
+  .due-pick input { font: inherit; font-size: 12px; border: none; background: transparent; color: var(--ink-soft); cursor: pointer; }
+  .due-clear { color: var(--urgent); }
+  .due-clear:hover { background: var(--urgent-soft); }
+  .col-progress-row:empty { display: none; }
 
   .group-heading { display: flex; align-items: center; gap: 8px; padding: 14px 8px 6px; font-size: 11.5px; font-weight: 650; color: var(--ink-soft); }
   .group-heading:first-child { padding-top: 4px; }
@@ -438,7 +472,7 @@
   var lists = [
     makeList("inbox", "Inbox", "var(--list-inbox)", [
       task("Zahnarzttermin verschieben", { due: "2026-08-05" }),
-      task("Rauchmelder in der Wohnung prüfen"),
+      task("Rauchmelder in der Wohnung prüfen", { due: "2026-08-01" }),
       task("Podcast-Folge zu Fokusarbeit hören", { done: true })
     ]),
     makeList("personal", "Persönlich", "var(--list-personal)", [
@@ -463,7 +497,7 @@
       task("Onboarding-Flow überarbeiten", {
         subtasks: [
           task("Wireframes im Team reviewen", { due: "2026-08-05" }),
-          task("Copy für Empty-States schreiben"),
+          task("Copy für Empty-States schreiben", { due: "2026-08-03" }),
           task("Mit Design-Team abstimmen", { done: true })
         ]
       }),
@@ -474,7 +508,7 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, optionsOpen: false };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, optionsOpen: false, dueMenuFor: null };
 
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
   function findGroup(id) { for (var i = 0; i < groups.length; i++) { if (groups[i].id === id) return groups[i]; } return null; }
@@ -545,23 +579,87 @@
     return { total: total, done: done };
   }
 
+  // --- Fälligkeitsdaten -------------------------------------------------
+  // Ein Fälligkeitsdatum ist ein reines Kalenderdatum ("2026-08-14"), kein
+  // Zeitstempel. Eine Aufgabe, die am 14. fällig ist, ist überall auf der
+  // Welt am 14. fällig - dadurch entfällt die gesamte Zeitzonen-Fehlerklasse.
+  // Verglichen wird deshalb per Zeichenkette, nicht über Date-Objekte.
+
+  function isoPlusDays(iso, days) {
+    var d = new Date(iso + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function isOverdue(node) { return !!node.due && node.due < TODAY_ISO && !node.done; }
+  function isDueToday(node) { return node.due === TODAY_ISO; }
+
+  // Die Heute-Seite zeigt fällige *und* überfällige Aufgaben. Überfälliges
+  // verschwindet bewusst nicht: eine Aufgabe stillschweigend fallenzulassen
+  // ist bei einer Todo-App der schlimmere Fehler als eine volle Liste.
+  // Erledigtes zählt nie als überfällig.
   function collectToday() {
     var out = [];
     function walk(nodes, list) {
       for (var i = 0; i < nodes.length; i++) {
-        if (nodes[i].due === TODAY_ISO) out.push({ node: nodes[i], list: list });
-        walk(nodes[i].subtasks, list);
+        var n = nodes[i];
+        if (isDueToday(n) || isOverdue(n)) out.push({ node: n, list: list, overdue: isOverdue(n) });
+        walk(n.subtasks, list);
       }
     }
     for (var i = 0; i < lists.length; i++) { walk(lists[i].tasks, lists[i]); }
+    // Überfälliges zuerst, ältestes oben - das Liegengebliebene soll auffallen.
+    out.sort(function (a, b) {
+      if (a.overdue !== b.overdue) return a.overdue ? -1 : 1;
+      return a.node.due < b.node.due ? -1 : a.node.due > b.node.due ? 1 : 0;
+    });
     return out;
   }
 
   function formatDue(iso) {
     if (iso === TODAY_ISO) return "Heute";
+    if (iso === isoPlusDays(TODAY_ISO, 1)) return "Morgen";
+    if (iso === isoPlusDays(TODAY_ISO, -1)) return "Gestern";
     var d = new Date(iso + "T00:00:00");
     var months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
-    return d.getDate() + ". " + months[d.getMonth()];
+    var s = d.getDate() + ". " + months[d.getMonth()];
+    // Jahr nur nennen, wenn es nicht das laufende ist - sonst nur Rauschen.
+    if (iso.slice(0, 4) !== TODAY_ISO.slice(0, 4)) s += " " + d.getFullYear();
+    return s;
+  }
+
+  // Klassen für die Fälligkeits-Pille an einer Aufgabe.
+  function duePillClass(node) {
+    if (isOverdue(node)) return " overdue";
+    if (isDueToday(node)) return " today";
+    return "";
+  }
+
+  function svgCalendar() { return '<svg width="13" height="13" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><rect x="2" y="3" width="11" height="10" rx="1.6"/><path d="M2 6.2h11M5 1.6v2.2M10 1.6v2.2"/></svg>'; }
+
+  // Fälligkeits-Steuerung im Kopf einer Aufgabenseite: zeigt das Datum,
+  // oder lädt ein, eines zu setzen. Beides öffnet dasselbe Menü.
+  function dueControl(node) {
+    var h = '<div class="due-wrap">';
+    if (node.due) {
+      h += '<button class="due-pill' + duePillClass(node) + ' due-trigger" data-due-menu="' + node.id + '" title="Fälligkeit ändern">' +
+           (isOverdue(node) ? "Überfällig · " : "") + formatDue(node.due) + "</button>";
+    } else {
+      h += '<button class="due-add due-trigger" data-due-menu="' + node.id + '">' + svgCalendar() + " Fällig am …</button>";
+    }
+    if (state.dueMenuFor === node.id) {
+      var tomorrow = isoPlusDays(TODAY_ISO, 1);
+      var nextWeek = isoPlusDays(TODAY_ISO, 7);
+      h += '<div class="due-menu" data-due-menu-panel>';
+      h += '<button class="due-opt" data-set-due="' + node.id + '" data-due-value="' + TODAY_ISO + '">Heute</button>';
+      h += '<button class="due-opt" data-set-due="' + node.id + '" data-due-value="' + tomorrow + '">Morgen</button>';
+      h += '<button class="due-opt" data-set-due="' + node.id + '" data-due-value="' + nextWeek + '">Nächste Woche</button>';
+      h += '<label class="due-opt due-pick">Datum wählen<input type="date" data-pick-due="' + node.id + '" value="' + (node.due || "") + '" /></label>';
+      if (node.due) h += '<button class="due-opt due-clear" data-set-due="' + node.id + '" data-due-value="">Fälligkeit entfernen</button>';
+      h += "</div>";
+    }
+    h += "</div>";
+    return h;
   }
 
   function escapeHtml(s) {
@@ -603,7 +701,7 @@
       var pct = Math.round((prog.done / prog.total) * 100);
       html += '<span class="mini-progress" title="' + prog.done + " von " + prog.total + ' erledigt"><span style="width:' + pct + '%"></span></span>';
     }
-    if (node.due) html += '<span class="due-pill' + (node.due === TODAY_ISO ? " today" : "") + '">' + formatDue(node.due) + "</span>";
+    if (node.due) html += '<span class="due-pill' + duePillClass(node) + '">' + formatDue(node.due) + "</span>";
     if (deleteCtx) html += '<button class="row-delete" data-delete-owner="' + deleteCtx.ownerId + '" data-delete-block="' + node.id + '" data-delete-kind="task" aria-label="Aufgabe löschen">' + svgTrash() + "</button>";
     html += "</div>";
     return html;
@@ -977,14 +1075,28 @@
       html += '<div class="blocks">';
       var items = collectToday();
       if (!items.length) {
-        html += '<div class="empty-state">Keine Aufgaben mit Fälligkeit heute.</div>';
+        html += '<div class="empty-state">Nichts für heute. Und nichts liegengeblieben.</div>';
       } else {
+        // Überfälliges bekommt einen eigenen Abschnitt ganz oben. Es geht ja
+        // gerade darum, dass Liegengebliebenes auffällt statt sich unter den
+        // Listen zu verteilen. Die Herkunftsliste steht als Punkt an der Zeile.
+        var overdue = items.filter(function (it) { return it.overdue; });
+        var todayItems = items.filter(function (it) { return !it.overdue; });
+
+        if (overdue.length) {
+          html += '<div class="group-heading overdue-heading">Überfällig · ' + overdue.length + "</div>";
+          for (var o = 0; o < overdue.length; o++) {
+            html += '<div class="block">' + renderTaskRow(overdue[o].node, 0, overdue[o].list) + "</div>";
+          }
+        }
+
         var byList = {}, order = [];
-        for (var i = 0; i < items.length; i++) {
-          var it = items[i];
+        for (var i = 0; i < todayItems.length; i++) {
+          var it = todayItems[i];
           if (!byList[it.list.id]) { byList[it.list.id] = []; order.push(it.list); }
           byList[it.list.id].push(it);
         }
+        if (order.length && overdue.length) html += '<div class="group-heading">Heute fällig</div>';
         for (var j = 0; j < order.length; j++) {
           var l = order[j];
           html += '<div class="group-heading"><span class="nav-dot" style="background:' + l.color + '"></span>' + escapeHtml(l.name) + "</div>";
@@ -1015,11 +1127,7 @@
       html += '<input class="col-title' + (node.done ? " done" : "") + '" value="' + escapeHtml(node.title) + '" data-title-for="' + node.id + '" />';
       html += '<button class="col-close" data-close-col="' + colIndex + '" aria-label="Seite schließen">' + svgClose() + "</button>";
       html += "</div>";
-      if (node.due) {
-        html += '<div class="col-progress-row">';
-        html += '<span class="due-pill' + (node.due === TODAY_ISO ? " today" : "") + '">' + formatDue(node.due) + "</span>";
-        html += "</div>";
-      }
+      html += '<div class="col-progress-row">' + dueControl(node) + "</div>";
       html += "</div>";
       html += '<div class="blocks"><div data-editor-slot="' + node.id + '" data-editor-col="' + colIndex + '"></div></div>';
       html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-task-at="' + colIndex + '">' + svgPlus() + " Aufgabe</button><button class=\"insert-btn\" data-insert-image-at=\"" + colIndex + "\">" + svgPlus() + " Bild</button></div>";
@@ -1393,6 +1501,34 @@
       return;
     }
 
+    // --- Fälligkeitsmenü ---
+    el = e.target.closest("[data-due-menu]");
+    if (el) {
+      var dueFor = el.getAttribute("data-due-menu");
+      state.dueMenuFor = state.dueMenuFor === dueFor ? null : dueFor;
+      renderColumns();
+      return;
+    }
+
+    el = e.target.closest("[data-set-due]");
+    if (el) {
+      var dNode = findTaskGlobal(el.getAttribute("data-set-due"));
+      if (dNode) {
+        var val = el.getAttribute("data-due-value");
+        dNode.due = val || null;
+      }
+      state.dueMenuFor = null;
+      renderAll();
+      return;
+    }
+
+    // Klick irgendwo sonst schließt ein offenes Fälligkeitsmenü.
+    if (state.dueMenuFor && !e.target.closest("[data-due-menu-panel]")) {
+      state.dueMenuFor = null;
+      renderColumns();
+      // kein return: der Klick soll trotzdem noch wirken
+    }
+
     el = e.target.closest("[data-open-task]");
     if (el) {
       var taskId = el.getAttribute("data-open-task");
@@ -1575,6 +1711,15 @@
     }
     serializeEditor(ownerId);
     renderColumns();
+  });
+
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-pick-due")) {
+      var pNode = findTaskGlobal(e.target.getAttribute("data-pick-due"));
+      if (pNode) pNode.due = e.target.value || null;
+      state.dueMenuFor = null;
+      renderAll();
+    }
   });
 
   document.addEventListener("input", function (e) {
