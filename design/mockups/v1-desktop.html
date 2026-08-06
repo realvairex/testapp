@@ -11,6 +11,10 @@
     --nav-hover: #f2ecdf;
     /* Strukturlinien der Gruppen: --line ist darauf zu leise (1,17). */
     --tree-line: #c4b189;
+    /* Flaeche kleiner Schaltflaechen in der Sidebar. --surface waere hier
+       reines Weiss und damit ein harter Sprung auf dem Sandton. */
+    --chip-bg: #f2ecdf;
+    --chip-hover: #fbf8f1;
     --ink: #293241;
     --ink-soft: #464d5b;
     --ink-faint: #5c626b;
@@ -42,6 +46,8 @@
     --line-soft: #333a48;
     --nav-hover: #333a48;
     --tree-line: #4a5468;
+    --chip-bg: #293241;
+    --chip-hover: #3a4457;
     --ink: #f2ede0;
     --ink-soft: #b6aea0;
     --ink-faint: #aca492;
@@ -70,6 +76,8 @@
       --line-soft: #29272f;
       --nav-hover: #302d38;
       --tree-line: #454150;
+      --chip-bg: #262430;
+      --chip-hover: #363343;
       --ink: #f2ede0;
       --ink-soft: #b6aea0;
       --ink-faint: #aca492;
@@ -210,6 +218,16 @@
     transition: opacity 0.12s ease, color 0.12s ease, background-color 0.12s ease;
   }
   .nav-delete svg { flex-shrink: 0; }
+  .group-actions {
+    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 1px;
+  }
+  /* In der Gruppe sitzen die Knoepfe im Fluss, nicht einzeln absolut -
+     so bleibt der Papierkorb auf derselben Achse wie die Zahl. */
+  .group-actions .nav-delete { position: static; transform: none; }
+  .group-actions .nav-delete:active { transform: scale(0.9); }
+  .group-row:hover .group-actions .nav-delete { opacity: 1; }
+  .group-actions [data-add-list-to]:hover { color: var(--accent-strong); background: var(--accent-soft); }
   .nav-item-wrap:hover .nav-delete, .group-row:hover .nav-delete { opacity: 1; }
   .nav-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
 
@@ -231,8 +249,8 @@
 
   .sidebar-spacer { flex: 1; }
   .sidebar-bottom-actions { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px 2px; flex-shrink: 0; }
-  .icon-action-btn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; }
-  .icon-action-btn:hover { background: var(--line-soft); color: var(--ink); border-color: var(--ink-faint); }
+  .icon-action-btn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; }
+  .icon-action-btn:hover { background: var(--chip-hover); color: var(--ink); border-color: var(--ink-faint); }
   .icon-action-btn:active { transform: scale(0.92); }
   .icon-action-btn.primary { width: 42px; height: 42px; border-radius: 13px; background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .icon-action-btn.primary svg { width: 15px; height: 15px; }
@@ -1747,7 +1765,10 @@
       '<button class="group-chevron' + (collapsed ? " collapsed" : "") + '" data-toggle-group="' + g.id + '" aria-label="Gruppe ein-/ausklappen">' + svgChevronDown() + "</button>" +
       '<input class="group-title" value="' + escapeHtml(g.name) + '" data-group-title-for="' + g.id + '" />' +
       '<span class="nav-count">' + count + "</span>" +
-      '<button class="nav-delete" data-delete-group="' + g.id + '" aria-label="Gruppe löschen" title="Gruppe löschen">' + svgTrash() + "</button>" +
+      '<span class="group-actions">' +
+        '<button class="nav-delete" data-add-list-to="' + g.id + '" aria-label="Liste in dieser Gruppe anlegen" title="Liste in dieser Gruppe anlegen">' + svgPlus() + "</button>" +
+        '<button class="nav-delete" data-delete-group="' + g.id + '" aria-label="Gruppe löschen" title="Gruppe löschen">' + svgTrash() + "</button>" +
+      "</span>" +
       "</div>";
   }
 
@@ -1808,6 +1829,20 @@
       var newList = makeList("list" + n, "Neue Liste", "var(--list-inbox)", []);
       lists.push(newList);
       state.view = "list"; state.currentListId = newList.id; state.panelStack = [];
+      renderAll();
+      return;
+    }
+
+    el = e.target.closest("[data-add-list-to]");
+    if (el) {
+      var toGroup = el.getAttribute("data-add-list-to");
+      var addedList = makeList("list" + Date.now(), "Neue Liste", "var(--list-inbox)", []);
+      addedList.groupId = toGroup;
+      lists.push(addedList);
+      // Eine eingeklappte Gruppe aufklappen, sonst landet die neue Liste
+      // unsichtbar darin.
+      state.collapsedGroups[toGroup] = false;
+      state.view = "list"; state.currentListId = addedList.id; state.panelStack = [];
       renderAll();
       return;
     }
