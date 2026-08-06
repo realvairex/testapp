@@ -37,7 +37,7 @@ Für dieses Projekt gilt durchgängig:
   aktuell gehalten, wenn sich der Scope ändert.
 - **Commits** bekommen aussagekräftige, nachvollziehbare Messages.
 - Alles, was über den aktuellen Chat hinaus Bestand haben soll, muss ins
-  Repo committed werden — die Session-Umgebung ist temporär.
+  Repo committed werden — der Chat ist temporär, das Repo ist es nicht.
 - Ziel: Jede Entscheidung und jeder Arbeitsschritt soll im Nachhinein aus
   dem Repo (Docs + Git-Historie) nachvollziehbar sein, auch ohne Zugriff auf
   den ursprünglichen Chat.
@@ -47,8 +47,9 @@ Für dieses Projekt gilt durchgängig:
 ## Entwicklungs-Konventionen
 
 - **Backup:** Regelmäßig committen und pushen (kleine, häufige Commits statt
-  eines großen am Ende) — GitHub ist der einzige dauerhafte Speicher, der
-  Session-Container ist temporär.
+  eines großen am Ende). Gearbeitet wird auf einem lokalen Klon; GitHub ist
+  die einzige Kopie außerhalb dieses einen Rechners. Ungepushtes überlebt
+  keinen Plattendefekt und keinen verlorenen Rechner.
 - **Werkzeuge gehören ins Repo, nicht ins Scratchpad.** Ein Skript, das
   **mehr als einmal** ausgeführt wird oder eine **Messung, Regel oder
   Erkenntnis** festhält, wird von vornherein im Repo angelegt und
@@ -99,10 +100,11 @@ Für dieses Projekt gilt durchgängig:
 - **Meilensteine:** Bedeutsame Zwischenstände (abgeschlossene
   Mockup-Iterationen, erste lauffähige Version, etc.) werden selbstständig
   in `docs/milestones.md` mit Commit-Hash festgehalten — im Zweifel lieber
-  häufiger als zu selten, ohne dass der Nutzer danach fragen muss. (Git-Tags
-  können in dieser Session-Umgebung nicht gepusht werden, siehe
-  `docs/decisions.md`.) Volles Semantic-Versioning-Schema erst ab echtem
-  App-Code.
+  häufiger als zu selten, ohne dass der Nutzer danach fragen muss. Git-Tags
+  **lassen sich inzwischen pushen** (am 2026-08-06 nachgewiesen), werden
+  aber bewusst noch nicht vergeben — die Tabelle trägt Beschreibungen, die
+  ein Tag-Name nicht fassen kann. Begründung: `docs/decisions.md`. Volles
+  Semantic-Versioning-Schema erst ab echtem App-Code.
 
 ## Status
 
@@ -116,8 +118,9 @@ App-Code existiert noch nicht.
 
 ## Sitzungswechsel
 
-Der Session-Container ist temporär, der Chat ist es auch. Deshalb gibt
-es zwei feste Auslöser:
+Der Chat ist temporär: Kein Wissen aus einer Sitzung ist in der nächsten
+noch da, wenn es nicht im Repo steht. Deshalb gibt es zwei feste
+Auslöser:
 
 - **`start unfold`** zu Beginn einer neuen Sitzung — lädt den
   Projektkontext aus dem Repo. Anweisung: `.claude/commands/start.md`.

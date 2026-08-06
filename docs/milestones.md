@@ -5,13 +5,18 @@ festgehalten. Damit lässt sich jederzeit per `git checkout <hash>` zu
 einem markanten Stand zurückspringen — genauso zuverlässig wie mit einem
 Tag, nur ohne extra Git-Referenz.
 
-> **Hinweis 2026-08-06:** Ursprünglich stand hier, Git-Tags ließen sich
-> nicht pushen. Das galt für die alte Container-Umgebung, in der nur der
-> Arbeits-Branch freigegeben war. Seit dem Umzug auf den lokalen Rechner
-> mit `gh`-Anmeldung (Scope `repo`) **wäre Taggen möglich**. Diese Tabelle
-> bleibt trotzdem die Wahrheit: Sie trägt Beschreibungen, die ein Tag-Name
-> nicht fassen kann, und ist ohne Git-Kenntnisse lesbar. Tags kommen erst
-> mit echtem App-Code und Semantic Versioning dazu, nicht vorher.
+> **Hinweis 2026-08-06 (nachgemessen):** Ursprünglich stand hier, Git-Tags
+> ließen sich nicht pushen. Das galt für die alte Container-Umgebung, in der
+> nur der Arbeits-Branch freigegeben war. Vom lokalen Klon mit
+> `gh`-Anmeldung aus **funktioniert Taggen** — nicht bloß vermutet, sondern
+> mit einem Wegwerf-Tag (`test-tag-push-probe`) geprüft: anlegen, pushen,
+> auf dem Server nachsehen, beidseitig wieder löschen. Alle vier Schritte
+> liefen durch, der Server ist danach wieder tag-frei.
+>
+> Diese Tabelle bleibt trotzdem die Wahrheit: Sie trägt Beschreibungen, die
+> ein Tag-Name nicht fassen kann, und ist ohne Git-Kenntnisse lesbar. Tags
+> kommen erst mit echtem App-Code und Semantic Versioning dazu — dann
+> **zusätzlich** zu dieser Tabelle, nicht an ihrer Stelle.
 
 | Datum | Commit | Beschreibung |
 |---|---|---|

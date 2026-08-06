@@ -160,6 +160,12 @@ normale, mitcommittete Datei, die Meilensteine mit Commit-Hash auflistet.
 Funktional gleichwertig (`git checkout <hash>` statt `git checkout <tag>`),
 aber zuverlässig persistent über den normalen Push-Weg.
 
+> **Nachtrag 2026-08-06:** Die technische Sperre ist mit dem Umzug auf den
+> lokalen Klon weggefallen — nachgemessen, siehe Eintrag „Umgebungsannahmen
+> nachgezogen" am Ende dieses Dokuments. Die Entscheidung für
+> `docs/milestones.md` bleibt trotzdem bestehen, jetzt aber aus inhaltlichen
+> Gründen statt aus technischem Zwang.
+
 ---
 
 ## 2026-08-05 — Name: Unfold
@@ -1166,3 +1172,51 @@ es nicht gab — und beim nächsten echten Verlust wäre der Grund unauffindbar.
 `~/Documents/Claude/testapp` starten und nachsehen, ob die Zeile kommt.
 
 ---
+
+## 2026-08-06 — Umgebungsannahmen nachgezogen: Hook geprüft, Tags geprüft
+
+**Kontext:** Am selben Tag zog das Projekt vom temporären Claude-Container
+auf einen lokalen Klon um. Zwei Festlegungen im Repo beriefen sich noch auf
+Eigenschaften der alten Umgebung, ohne dass jemand nachgesehen hätte, ob sie
+überhaupt noch gelten. Solche Sätze sind gefährlicher als offene Punkte: Sie
+sehen aus wie geprüftes Wissen und werden nicht mehr hinterfragt.
+
+**Beobachtung 1 — der Session-Start-Hook funktioniert.** Diese Sitzung
+startete direkt in `~/Documents/Claude/testapp`, und die Zeile
+`=== Projekt Unfold ===` erschien mitsamt dem vollständigen Hook-Text. Damit
+ist der Fehlschlag vom selben Tag erklärt: Er lag am Startverzeichnis eine
+Ebene über dem Repo, nicht am Hook. Der offene Punkt in `status.md` ist
+gestrichen; an seiner Stelle steht jetzt die Diagnoseregel — bleibt die Zeile
+künftig aus, ist **zuerst das Arbeitsverzeichnis** zu prüfen.
+
+**Beobachtung 2 — Git-Tags lassen sich pushen.** Bislang stand in
+`CLAUDE.md` und `milestones.md`, das ginge nicht (HTTP 403 in der
+Container-Umgebung). Geprüft statt vermutet, mit einem Wegwerf-Tag:
+`test-tag-push-probe` angelegt, gepusht, per `git ls-remote --tags` auf dem
+Server bestätigt, dann beidseitig gelöscht. Alle Schritte liefen fehlerfrei;
+der Server ist danach wieder tag-frei.
+
+**Entscheidungen:**
+
+1. **Tags bleiben trotzdem vorerst ungenutzt.** Der Grund ist jetzt ein
+   inhaltlicher, kein technischer: `docs/milestones.md` trägt zu jedem Stand
+   eine Beschreibung, die ein Tag-Name nicht fassen kann, und ist ohne
+   Git-Kenntnisse lesbar. Tags kommen mit echtem App-Code und Semantic
+   Versioning dazu — **zusätzlich** zur Tabelle, nicht an ihrer Stelle.
+   Wichtig ist die Unterscheidung: Eine Konvention, die aus einer
+   Einschränkung entstanden ist, muss neu begründet werden, sobald die
+   Einschränkung verschwindet — sonst schleppt das Projekt Regeln mit, deren
+   Grund niemand mehr kennt.
+
+2. **Die Begründungen in `CLAUDE.md` korrigiert.** An drei Stellen stützte
+   sich die Doku- und Push-Pflicht darauf, dass „der Session-Container
+   temporär" sei. Das trifft nicht mehr zu. Die Regeln selbst bleiben
+   unverändert richtig, sie schützen nur gegen ein anderes Risiko:
+   - Commit-Pflicht → weil der **Chat** flüchtig ist, nicht die Umgebung.
+   - Push-Pflicht → weil GitHub die einzige Kopie **außerhalb dieses einen
+     Rechners** ist; Ungepushtes überlebt keinen Plattendefekt.
+
+**Warum das dokumentiert wird:** Eine falsche Begründung unter einer
+richtigen Regel hält genau so lange, bis jemand die Regel hinterfragt — dann
+wirkt sie hinfällig, und die Regel fällt mit. Deshalb ist die Begründung
+nachzuziehen und nicht nur die Regel zu behalten.
