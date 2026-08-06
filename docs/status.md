@@ -16,6 +16,29 @@ Stand: 2026-08-06
 
 ---
 
+## 0. Wo das Projekt liegt und wie gearbeitet wird
+
+Seit 2026-08-06 gilt:
+
+- **Hauptstand ist `main`** im Repo `github.com/realvairex/testapp`.
+  Vorher lag alles nur im Branch `claude/todo-app-brainstorm-fmv1sd`,
+  während `main` bloß ein leeres README enthielt. Der Branch bleibt als
+  zweite Kopie bestehen und wird nicht gelöscht.
+- **Gearbeitet wird an einem lokalen Klon** (zuletzt
+  `~/Documents/Claude/testapp`), nicht im Browser auf GitHub. GitHub ist
+  Sicherungsort, keine Arbeitsfläche.
+- **Die Doku- und Push-Pflicht aus `CLAUDE.md` gilt unverändert.** Sie
+  schützt jetzt gegen „Rechner weg" statt gegen „Container weg" — der
+  Grund ist ein anderer, die Regel dieselbe.
+- **GitHub-Zugang** läuft über `gh`, angemeldet als `realvairex`. Die
+  Commit-Identität ist **repo-lokal** gesetzt; die globale Git-Konfiguration
+  zeigt auf einen älteren Account des Nutzers und bleibt unangetastet.
+  Bei Push-Fehlern zuerst `gh auth status` prüfen.
+
+Begründung und Hergang: `docs/decisions.md`, Einträge vom 2026-08-06.
+
+---
+
 ## 1. Wo wir stehen
 
 **Phase:** Konzept abgeschlossen, Mockup fertig iteriert, Umsetzung noch
@@ -64,13 +87,19 @@ Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
 
-**Beim nächsten Sitzungsstart zu prüfen:** Ob die Hooks in
-`.claude/settings.json` tatsächlich feuern. Sie konnten in der Sitzung,
-in der sie entstanden sind, nicht scharf geprüft werden — die
-aufgerufenen Kommandos wurden einzeln nachgestellt und laufen korrekt,
-aber ob Claude Code sie auslöst, zeigt sich erst beim nächsten Start.
-Erscheint zu Beginn keine Zeile „=== Projekt Unfold ===", ist der Hook
-defekt und muss repariert werden.
+**Weiterhin offen — Hooks noch immer ungeprüft:** Ob die Hooks in
+`.claude/settings.json` tatsächlich feuern, ist **nach wie vor nicht
+nachgewiesen**. Am 2026-08-06 erschien die Zeile „=== Projekt Unfold ==="
+nicht — aber die Sitzung startete in `~/Documents/Claude`, also eine
+Ebene **über** dem Repo. Claude Code liest `.claude/settings.json` aus dem
+Projektverzeichnis; lag dieses nie vor, konnte der Hook gar nicht
+auslösen. Der Test hat damit **nicht stattgefunden**, statt
+fehlzuschlagen.
+
+> **So wird richtig geprüft:** Eine Sitzung direkt in
+> `~/Documents/Claude/testapp` starten. Kommt die Zeile dann immer noch
+> nicht, ist der Hook wirklich defekt. Erst dann darf dieser Punkt
+> gestrichen werden.
 
 ## 3. Festlegungen des Nutzers, die nicht neu aufgerollt werden
 

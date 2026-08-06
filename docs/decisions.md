@@ -1092,3 +1092,77 @@ nächsten Sitzungsstart zu prüfen. Steht als offener Punkt in
 `status.md`.
 
 ---
+
+## 2026-08-06 — Hauptstand nach `main`, Arbeit auf einem lokalen Klon
+
+**Kontext:** Der gesamte Projektstand lag ausschließlich im Branch
+`claude/todo-app-brainstorm-fmv1sd`. `main` enthielt nur den
+Initial-Commit mit einem 9-Byte-README. Automatisch benannte
+`claude/…`-Branches sind Wegwerf-Namen; verschwindet so einer bei einer
+Aufräumaktion, ist die gesamte bisherige Arbeit weg. Gleichzeitig wechselte
+die Arbeitsumgebung: Statt im temporären Claude-Container läuft die Sitzung
+jetzt auf dem Rechner des Nutzers, in einem geklonten Repo unter
+`~/Documents/Claude/testapp`.
+
+**Optionen:**
+
+1. *Alles auf dem Feature-Branch lassen.* Kein Aufwand, aber die
+   Verwundbarkeit bleibt, und ein Besucher des Repos sieht ein leeres
+   Projekt.
+2. *Pull Request von Branch nach `main`.* Sauber im Team, hier aber
+   Zeremonie ohne Gegenüber — es gibt keinen zweiten Prüfer.
+3. *Fast-Forward von `main` auf den Branchstand.* Gewählt.
+
+**Entscheidung:** `main` wurde per Fast-Forward auf `4374af9` gezogen und
+ist Default-Branch. Der Feature-Branch **bleibt unverändert bestehen** und
+dient als zweite Kopie; er wird nicht gelöscht.
+
+**Begründung:** `main` war ein direkter Vorfahr des Branches, also war der
+Fast-Forward verlustfrei — kein Merge, kein Konflikt, keine Möglichkeit,
+dabei etwas zu überschreiben. Vor dem Eingriff wurde zusätzlich ein
+`git bundle --all` außerhalb des Repos abgelegt und mit `git bundle verify`
+geprüft ("records a complete history"). Damit lag der Stand während des
+Umbaus dreifach vor: Feature-Branch, Bundle, lokaler Klon.
+
+**Folge für die Arbeitsweise:** Gearbeitet wird am lokalen Klon, GitHub ist
+Sicherungsort, keine Arbeitsfläche. Die Regel aus `CLAUDE.md` — alles
+Dauerhafte gehört ins Repo und gepusht — bleibt vollständig gültig; nur der
+Notfall, gegen den sie schützt, heißt jetzt "Rechner weg" statt
+"Container weg".
+
+**Nebenbefund GitHub-Zugang:** Git griff auf einen abgelaufenen
+Schlüsselbund-Eintrag des alten Accounts `SchnapsideeAT` zurück
+("Invalid username or token"). Behoben durch `gh` (per Homebrew
+installiert), angemeldet als `realvairex`; `gh` ist jetzt
+Credential-Helper und geht am Schlüsselbund vorbei. Der alte Eintrag wurde
+bewusst **nicht** gelöscht — er könnte anderswo noch gebraucht werden.
+Die Commit-Identität (`realvairex` / `vvairexx@gmail.com`) ist **repo-lokal**
+gesetzt, damit die globale Konfiguration anderer Projekte unberührt bleibt.
+
+**Offen geblieben:** Ob die Hooks feuern, ist weiterhin **ungeprüft** —
+siehe nächster Eintrag.
+
+---
+
+## 2026-08-06 — Hook-Prüfung: weiterhin offen, mit bekannter Ursache
+
+**Kontext:** `status.md` trug den offenen Punkt, beim nächsten
+Sitzungsstart zu prüfen, ob die Hooks aus `.claude/settings.json`
+tatsächlich auslösen. Erkennungszeichen: die Zeile `=== Projekt Unfold ===`
+zu Sitzungsbeginn.
+
+**Beobachtung:** Die Zeile erschien **nicht**. Daraus folgt aber *nicht*,
+dass der Hook defekt ist: Die Sitzung wurde in `~/Documents/Claude`
+gestartet — eine Ebene **über** dem Repo. Claude Code liest
+`.claude/settings.json` aus dem Projektverzeichnis; lag dieses nie vor,
+konnte der Hook gar nicht ausgelöst werden. Der Test hat also nicht
+stattgefunden, statt fehlzuschlagen.
+
+**Entscheidung:** Der offene Punkt bleibt offen und wird **nicht** als
+erledigt vermerkt. Ihn jetzt abzuhaken, würde eine Prüfung behaupten, die
+es nicht gab — und beim nächsten echten Verlust wäre der Grund unauffindbar.
+
+**Nächster Prüfschritt:** Eine Sitzung direkt in
+`~/Documents/Claude/testapp` starten und nachsehen, ob die Zeile kommt.
+
+---

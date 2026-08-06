@@ -83,3 +83,47 @@ eingefordert. Neueste Sitzung oben.
   nicht in der laufenden. Die aufgerufenen Kommandos wurden einzeln
   nachgestellt und laufen korrekt. Beim nächsten Sessionstart prüfen:
   Erscheint die Zeile „=== Projekt Unfold ==="?
+
+---
+
+## Sitzung 2026-08-06 (später Abend) — Umzug auf den lokalen Rechner
+
+**Ausgangslage:** Der Nutzer schrieb `start unfold`, aber die Sitzung lief
+erstmals **nicht** im Claude-Container, sondern auf seinem Mac in einem
+leeren Verzeichnis. Kein Repo, kein Kontext — der Auslöser lief ins Leere.
+Nach Nennung der Repo-Adresse geklont und den Kontext von dort geladen.
+
+**Getan**
+
+- Repo `github.com/realvairex/testapp` nach `~/Documents/Claude/testapp`
+  geklont; Projektkontext aus `status.md`, `CLAUDE.md` und `spec.md`
+  geladen.
+- **Sicherung vor jedem Eingriff:** `git bundle --all` außerhalb des Repos
+  abgelegt und mit `git bundle verify` geprüft.
+- **`main` per Fast-Forward auf `4374af9`** gezogen und gepusht. Vorher
+  lag der gesamte Stand nur im Branch `claude/todo-app-brainstorm-fmv1sd`
+  — ein Wegwerf-Name, dessen Löschung die komplette Arbeit vernichtet
+  hätte. Der Branch bleibt als zweite Kopie bestehen.
+- **GitHub-Zugang repariert:** Git zog einen abgelaufenen
+  Schlüsselbund-Eintrag des alten Accounts `SchnapsideeAT`. `gh`
+  installiert, als `realvairex` angemeldet; Commit-Identität repo-lokal
+  gesetzt, damit andere Projekte des Nutzers unberührt bleiben.
+- Ergebnis serverseitig gegengeprüft (`gh api`), nicht nur lokal:
+  beide Branches auf `4374af9`, `main` ist Default, Dateien liegen oben.
+
+**Lehre**
+
+Der Projektstand war die ganze Zeit an einem automatisch benannten Branch
+aufgehängt, ohne dass es jemandem auffiel — inklusive aller Dokumente, die
+genau vor solchen Verlusten schützen sollten. Die Absicherung galt dem
+Inhalt der Sitzung, nicht der Frage, ob der Ort selbst haltbar ist.
+Nachgezogen in `status.md` §0.
+
+**Offen**
+
+- Löschregeln und Papierkorb (`spec.md` §4.3) — weiterhin der nächste
+  inhaltliche Schritt.
+- **Hooks bleiben ungeprüft.** Die Zeile „=== Projekt Unfold ===" kam
+  nicht, aber die Sitzung startete eine Ebene über dem Repo — der Hook
+  konnte gar nicht auslösen. Der Test hat nicht stattgefunden, statt
+  fehlzuschlagen. Richtige Probe: Sitzung direkt in `testapp/` starten.

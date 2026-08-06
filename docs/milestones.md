@@ -1,11 +1,17 @@
 # Meilensteine
 
-Da Git-Tags in dieser Session-Umgebung nicht gepusht werden können (nur
-der Arbeits-Branch selbst ist freigegeben), werden bedeutsame
-Zwischenstände stattdessen hier mit dem jeweiligen Commit-Hash
+Bedeutsame Zwischenstände werden hier mit dem jeweiligen Commit-Hash
 festgehalten. Damit lässt sich jederzeit per `git checkout <hash>` zu
 einem markanten Stand zurückspringen — genauso zuverlässig wie mit einem
 Tag, nur ohne extra Git-Referenz.
+
+> **Hinweis 2026-08-06:** Ursprünglich stand hier, Git-Tags ließen sich
+> nicht pushen. Das galt für die alte Container-Umgebung, in der nur der
+> Arbeits-Branch freigegeben war. Seit dem Umzug auf den lokalen Rechner
+> mit `gh`-Anmeldung (Scope `repo`) **wäre Taggen möglich**. Diese Tabelle
+> bleibt trotzdem die Wahrheit: Sie trägt Beschreibungen, die ein Tag-Name
+> nicht fassen kann, und ist ohne Git-Kenntnisse lesbar. Tags kommen erst
+> mit echtem App-Code und Semantic Versioning dazu, nicht vorher.
 
 | Datum | Commit | Beschreibung |
 |---|---|---|
