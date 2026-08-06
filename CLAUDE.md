@@ -74,3 +74,4 @@ Code im Browser) und Mobile (PWA oder React Native). Siehe
 - `docs/concept.md` — Produktvision, Inspiration, Feature-Liste, Design-Richtung
 - `docs/decisions.md` — laufendes Entscheidungsprotokoll
 - `docs/milestones.md` — Meilensteine mit Commit-Hash zum Zurückspringen
+- `docs/research-superlist.md` — Recherche zu Superlists Open-Source-Fundament
