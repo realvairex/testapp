@@ -792,3 +792,48 @@ Rückkehrpunkt wurde testweise ausgecheckt und das Mockup dort
 gegengeprüft, ist also nachweislich funktionsfähig und nicht nur notiert.
 
 ---
+
+## 2026-08-06 — Umgang mit Abhängigkeiten und Schutz der Nutzerdaten
+
+**Kontext:** Mit der Festlegung auf Flutter hängen wir an Fremdcode, unter
+anderem an `super_editor` in einer **Vorabversion** (0.3.0-dev.x). Zugleich
+ist die App local-first — die Nutzerdaten liegen ausschließlich auf dem
+Gerät des Nutzers. Beides sind Risiken, die man am billigsten vor der
+ersten Zeile App-Code adressiert.
+
+**Entscheidung 1 — Abhängigkeiten:** Jede Fremdbibliothek wird auf eine
+**exakte Version** festgenagelt, keine Versionsbereiche; das Lockfile wird
+mitcommittet. Ein Update ist nie ein Nebenbei-Schritt, sondern ein eigener
+Vorgang: in einer abgesicherten Umgebung (eigener Branch bzw. Worktree)
+einspielen, Funktionsfähigkeit prüfen, und **erst nach bestandener
+Prüfung** in den Hauptstand übernehmen.
+
+**Begründung:** Vorabversionen geben keinerlei Stabilitätsgarantie. Mit
+einem Versionsbereich könnte ein neuer Dev-Release den Build von einem Tag
+auf den anderen brechen, ohne dass wir selbst etwas geändert haben — und
+die Ursache wäre dann schwer zu finden, weil unser eigener Stand
+unverändert ist. Ein gepinntes Lockfile macht Builds reproduzierbar und
+verlegt jede Änderung an Fremdcode in einen bewussten, prüfbaren Schritt.
+Nebeneffekt: schützt auch gegen kompromittierte Paketversionen, da nichts
+unbemerkt nachgezogen wird.
+
+**Entscheidung 2 — Nutzerdaten:** Ab der ersten lauffähigen Version gilt:
+- **Offenes, dokumentiertes Speicherformat** (JSON oder SQLite), kein
+  undurchsichtiges Binärformat.
+- **Export-Funktion** von Anfang an, nicht "später".
+- **Schema-Version** in den gespeicherten Daten, dazu Migrationen bei
+  Modelländerungen.
+- **Atomares Schreiben**: erst in eine temporäre Datei schreiben, dann
+  umbenennen.
+
+**Begründung:** Bei einer local-first-App gibt es keinen Server, der die
+Daten im Zweifel noch hat — ein Defekt oder ein Fehler beim Speichern
+bedeutet Totalverlust. Ein offenes Format hält die Daten notfalls von Hand
+lesbar und verhindert Herstellerbindung; der Export macht Sicherungen
+überhaupt erst möglich. Die Schema-Version lässt sich später kaum
+nachrüsten, weil bereits gespeicherte Daten dann nicht mehr zuzuordnen
+sind. Atomares Schreiben verhindert, dass ein Absturz mitten im
+Speichervorgang eine halb geschriebene, unbrauchbare Datei hinterlässt —
+ein klassischer und billig vermeidbarer Datenverlust.
+
+---

@@ -43,6 +43,20 @@ Für dieses Projekt gilt durchgängig:
   ausführt.
 - **Diese Datei schlank halten:** Details gehören in `docs/`, nicht hier
   rein.
+- **Abhängigkeiten:** Jede Fremdbibliothek auf eine **exakte Version**
+  festnageln (keine Versionsbereiche), Lockfile mitcommitten. Updates
+  passieren nie nebenbei: erst in einer abgesicherten Umgebung
+  (eigener Branch/Worktree) einspielen, Funktionsfähigkeit prüfen, und
+  **erst nach bestandener Prüfung** in den Hauptstand übernehmen. Gilt
+  besonders für Vorabversionen (z.B. `super_editor` vor 1.0), bei denen
+  es keine Stabilitätsgarantie gibt.
+- **Datensicherheit der Nutzerdaten:** Die App ist local-first, die Daten
+  liegen also nur auf dem Gerät. Deshalb ab der ersten lauffähigen
+  Version: offenes, dokumentiertes Speicherformat (JSON/SQLite, nichts
+  Undurchsichtiges), eine Export-Funktion, Schema-Version in den
+  gespeicherten Daten plus Migrationen, und atomares Schreiben
+  (erst in temporäre Datei, dann umbenennen), damit ein Absturz während
+  des Speicherns den Bestand nicht zerstört.
 - **Proaktive Hinweise:** Sicherheitsrelevante oder anderweitig sinnvolle
   Verbesserungen ("schlaue Sachen"), die während der Arbeit auffallen,
   werden dem Nutzer von sich aus mitgeteilt, ohne dass er danach fragen
