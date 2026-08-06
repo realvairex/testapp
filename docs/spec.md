@@ -59,11 +59,15 @@ Blocktyp, kein Text zwischen Blöcken. (Übernommen von Superlists
 | Typ | Felder |
 |---|---|
 | `text` | `text: String` — genau eine Absatzzeile, darf leer sein |
+| `heading` | `text: String` — eine Ebene, bewusst nicht mehr |
+| `divider` | — |
 | `task` | `id: String` — verweist auf eine Aufgabe in `subtasks`/`tasks` |
 | `image` | `id: String`, `caption: String` |
 
-Geplant, noch nicht spezifiziert: `heading`, `divider` (siehe offene
-Punkte).
+Bewusst **nicht** vorgesehen: Aufzählungslisten (Aufgaben *sind* bei uns
+die Aufzählungspunkte — zwei gleich aussehende Dinge wären verwirrend),
+Zitate, Tabellen, Code und Textfarben. Das ist Notion-Gebiet und
+widerspricht dem Konzept.
 
 **Wichtig:** Ein `task`-Block ist eine *Referenz*. Die Aufgabe selbst lebt
 in `subtasks` bzw. `tasks` des Besitzers. Die Blockliste bestimmt nur
@@ -124,6 +128,13 @@ Reihenfolge und Position auf der Seite.
 - Eine neue Aufgabe wird **an der Cursorposition** eingefügt; ist der
   Cursor nicht auf der Seite, ganz oben.
 - Ein Klick in die leere Fläche unter dem Inhalt setzt den Cursor ans Ende.
+- `/` löst das Blockmenü **nur auf einer sonst leeren Zeile** aus, damit es
+  beim normalen Schreiben nicht in die Quere kommt.
+
+> ⚠️ Umsetzungshinweis: Im Mockup baut das Speichern den Editor-Inhalt neu
+> zusammen und verwirft dabei die Auswahl — der Cursor muss danach von Hand
+> wiederhergestellt werden. In Flutter erledigt das der `DocumentComposer`,
+> der Auswahl und Inhalt getrennt hält (siehe `research-superlist.md`).
 
 ### 2.4 Verschieben (Drag & Drop)
 - Verschiebbar sind: Listen und Gruppen in der Sidebar, sowie Blöcke
@@ -261,14 +272,27 @@ der Quick-Capture-Gedanke, angewandt auf Datumsvergabe.
 - Zusammenspiel mit dem beschlossenen **Papierkorb**: Ist Gelöschtes
   wiederherstellbar, und wie lange?
 
-### 4.4 Formatierung und weitere Blocktypen
-Vorgeschlagen, noch nicht entschieden (siehe Chatverlauf):
-- **Textauswahl → schwebende Leiste**: Fett, Kursiv, Durchgestrichen, Link.
-  Auf Mobile bringt `super_editor` das bereits mit (Lupe + Popover).
-- **`/` am Zeilenanfang → Blockmenü**: Aufgabe, Überschrift, Trenner, Bild.
-- **Markdown-Kürzel**: `# ` Überschrift, `- ` Aufgabe, `---` Trenner.
-- Zusätzliche Blocktypen: **Überschrift** (nur eine Ebene) und **Trenner**
-  ja; Aufzählung, Zitat, Tabellen, Code, Farben bewusst nein.
+### 4.4 Formatierung und weitere Blocktypen — ✅ ENTSCHIEDEN (2026-08-06)
+
+**Leitgedanke: keine dauerhafte Werkzeugleiste.** Eine Leiste kostet
+Platz und Ruhe, auch wenn man sie nie benutzt. Alle drei Zugänge sind
+unsichtbar, bis man sie braucht:
+
+1. **Textauswahl → schwebende Leiste** mit Fett, Kursiv,
+   Durchgestrichen, Link. Erscheint über der Auswahl, verschwindet beim
+   Abwählen. Auf Mobile bringt `super_editor` eine gleichwertige
+   Popover-Leiste inklusive Lupe bereits mit.
+2. **`/` auf einer sonst leeren Zeile → Blockmenü**: Aufgabe,
+   Überschrift, Trenner, Bild.
+3. **Markdown-Kürzel, ganz ohne Oberfläche**: `# ` Überschrift,
+   `- ` Aufgabe, `---` Trenner.
+
+**Bewusst nicht enthalten:** Schriftgrößen, Schriftarten und Textfarben.
+Mehr als eine Überschriftenebene ist für unsere Seitengrößen Overhead.
+
+**Untere Leiste:** Der Knopf „+ Aufgabe" wurde entfernt — das
+Schnellerfassungsfeld direkt darunter deckt das ab, und das `/`-Menü den
+Rest. Übrig bleibt „+ Bild" als sichtbarer Einstieg.
 
 ### 4.5 Schicksal des Mockups
 Sobald diese Spezifikation vollständig ist, wird
