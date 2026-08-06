@@ -224,7 +224,7 @@
   .sidebar {
     position: absolute; left: 0; top: 0; bottom: 0; width: 248px; z-index: 30;
     background: var(--surface-sunken); border-right: 1px solid var(--line);
-    display: flex; flex-direction: column; padding: 18px 12px; overflow-y: auto;
+    display: flex; flex-direction: column; padding: 16px 12px; overflow-y: auto;
     transform: translateX(0);
     transition: transform var(--dur-slow) var(--ease);
   }
@@ -240,16 +240,20 @@
   .app-window.sidebar-collapsed .sidebar:hover {
     transform: translateX(0);
   }
-  .brand { display: flex; align-items: center; gap: 9px; padding: 4px 8px 20px; }
+  .brand { display: flex; align-items: center; gap: 8px; padding: 4px 8px 24px; }
   .brand-mark { display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--accent); }
   .brand-logo { height: 21px; width: auto; display: block; }
   .brand-name { font-size: var(--fs-lg); font-weight: var(--fw-strong); letter-spacing: -0.01em; }
-  .nav-label { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); padding: 14px 10px 6px; }
+  .nav-label { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); padding: 12px 10px 6px; }
   .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: none; background: transparent; border-radius: var(--r-md); font-size: var(--fs-md); font-weight: var(--fw-medium); color: var(--ink); cursor: pointer; text-align: left; font-family: inherit; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .nav-item:hover { background: var(--nav-hover); }
   .nav-item:active { transform: scale(0.97); }
   .nav-item.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: var(--fw-strong); }
-  .nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  /* Der Punkt belegt dieselbe Breite wie ein Icon, sonst beginnen die
+     Beschriftungen von "Heute" (Icon) und "Inbox" (Punkt) an
+     unterschiedlichen Stellen - hier waren es 7px Versatz. */
+  .nav-dot { width: 15px; height: 8px; border-radius: 50%; flex-shrink: 0;
+             background-clip: content-box; padding: 0 3.5px; }
   .nav-icon { width: 15px; height: 15px; flex-shrink: 0; color: var(--ink-soft); }
   .nav-item.active .nav-icon { color: var(--accent-strong); }
   .nav-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -259,7 +263,7 @@
      right of that centre, which read as the two being right-edge aligned. */
   .nav-count { font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: center; }
   .nav-item.active .nav-count { color: var(--accent-strong); }
-  .nav-item-indented { padding-left: 26px; }
+  .nav-item-indented { padding-left: 24px; }
   /* Feine L-Linie, die die Zugehoerigkeit zur Gruppe nachzieht. Beim
      letzten Eintrag endet die Senkrechte auf halber Hoehe. */
   .nav-item-wrap.in-group { position: relative; }
@@ -298,7 +302,7 @@
   .nav-delete svg { flex-shrink: 0; }
   .group-actions {
     position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
-    display: flex; align-items: center; gap: 1px;
+    display: flex; align-items: center; gap: 2px;
   }
   /* In der Gruppe sitzen die Knoepfe im Fluss, nicht einzeln absolut -
      so bleibt der Papierkorb auf derselben Achse wie die Zahl. */
@@ -307,6 +311,10 @@
   .group-row:hover .group-actions .nav-delete { opacity: 1; }
   .group-actions [data-add-list-to]:hover { color: var(--accent-strong); background: var(--accent-soft); }
   .nav-item-wrap:hover .nav-delete, .group-row:hover .nav-delete { opacity: 1; }
+  /* Bei Tastaturbedienung muss der Knopf sichtbar sein, sonst steht der
+     Fokus auf einem unsichtbaren Element - das gilt besonders hier, wo
+     Enter eine Liste loescht. */
+  .nav-delete:focus-visible, .row-delete:focus-visible { opacity: 1; }
   .nav-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
 
   /* padding-right matches .nav-item's, so a group's count lands on the same
@@ -318,8 +326,9 @@
   .group-chevron { width: 16px; height: 16px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
   .group-chevron svg { transition: transform var(--dur-fast) ease; }
   .group-chevron.collapsed svg { transform: rotate(-90deg); }
-  .group-title { flex: 1; min-width: 0; border: none; background: transparent; font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: var(--r-sm); }
-  .group-title:focus { outline: none; background: var(--surface); box-shadow: 0 0 0 1px var(--line); text-transform: none; }
+  .group-title { flex: 1; min-width: 0; text-overflow: ellipsis; border: none; background: transparent; font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: var(--r-sm); }
+  .group-title:focus { background: var(--surface); text-transform: none; }
+  .group-title:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 1px; }
 
   .drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -375,7 +384,7 @@
     will-change: transform;
   }
 
-  .col-header { padding: 18px 18px 4px; flex-shrink: 0; }
+  .col-header { padding: 16px 16px 4px; flex-shrink: 0; }
   .col-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .col-title { font-size: var(--fs-xl); font-weight: var(--fw-bold); letter-spacing: -0.02em; line-height: 1.2; margin: 0; border: none; background: transparent; color: var(--ink); font-family: inherit; padding: 0; width: 100%; }
   .col-title.done { color: var(--ink-faint); text-decoration: line-through; }
@@ -397,7 +406,7 @@
      in einer weissen Spalte, die die eigentlichen Aufgaben ueberstrahlt hat.
      Jetzt nur eine feine Linie darueber; Flaeche erst beim Hineinklicken. */
   .quick-add {
-    margin: 0 18px 12px; display: flex; align-items: center; gap: var(--sp-4);
+    margin: 0 16px 12px; display: flex; align-items: center; gap: var(--sp-4);
     padding: var(--sp-4) var(--sp-3); background: transparent;
     border: 1px solid transparent; border-radius: var(--r-md); flex-shrink: 0;
     transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
@@ -408,8 +417,8 @@
   .quick-add input { border: none; background: transparent; outline: none; font: inherit; font-size: var(--fs-md); color: var(--ink); flex: 1; min-width: 0; }
   .quick-add input::placeholder { color: var(--ink-faint); }
 
-  .editor-toolbar { display: flex; gap: 6px; margin: 0 18px; padding-top: 10px; border-top: 1px solid var(--line-soft); flex-shrink: 0; }
-  .insert-btn { display: flex; align-items: center; gap: 5px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill); padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
+  .editor-toolbar { display: flex; gap: 6px; margin: 0 16px; padding-top: 10px; border-top: 1px solid var(--line-soft); flex-shrink: 0; }
+  .insert-btn { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill); padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .insert-btn:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .insert-btn:active { transform: scale(0.95); }
 
@@ -417,6 +426,9 @@
 
   .page-editor {
     min-height: 100%;
+    /* Begrenzte Zeilenlaenge: lange Zeilen sind schwer zu lesen, und die
+       Faelligkeits-Pillen driften sonst weit vom Aufgabentitel weg. */
+    max-width: 680px;
     padding: 10px 12px;
     font-size: var(--fs-md);
     line-height: 1.65;
@@ -442,7 +454,7 @@
   .pe-line.pe-gap { min-height: 0; height: 0; overflow: hidden; }
   .pe-line.pe-gap.pe-open { height: auto; min-height: 1.65em; overflow: visible; }
 
-  .inline-embed { position: relative; margin: 0; padding-left: 15px; animation: block-in var(--dur-base) ease; overflow: hidden; }
+  .inline-embed { position: relative; margin: 0; padding-left: 16px; animation: block-in var(--dur-base) ease; overflow: hidden; }
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -471,9 +483,9 @@
   .removing { transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; overflow: hidden; }
   @media (prefers-reduced-motion: reduce) { .removing { transition: opacity var(--dur-fast) ease; } }
 
-  .inline-embed .task-row { padding-right: 26px; }
+  .inline-embed .task-row { padding-right: 24px; }
 
-  .block-image { display: flex; align-items: center; gap: 8px; padding: 14px 12px; border: 1px dashed var(--line); border-radius: var(--r-md); color: var(--ink-faint); font-size: var(--fs-sm); margin-right: 26px; }
+  .block-image { display: flex; align-items: center; gap: 8px; padding: 12px 12px; border: 1px dashed var(--line); border-radius: var(--r-md); color: var(--ink-faint); font-size: var(--fs-sm); margin-right: 24px; }
   .block-image svg { flex-shrink: 0; }
 
   .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
@@ -502,7 +514,7 @@
   .mini-progress { width: 34px; height: 5px; border-radius: var(--r-pill); background: var(--line); flex-shrink: 0; overflow: hidden; }
   .mini-progress > span { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); transition: width var(--dur-slow) var(--ease); }
 
-  .due-pill { font-size: var(--fs-xs); font-weight: var(--fw-strong); padding: 3px 7px; border-radius: var(--r-pill); background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .due-pill { font-size: var(--fs-xs); font-weight: var(--fw-strong); padding: 4px 7px; border-radius: var(--r-pill); background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .due-pill.today { background: var(--urgent-soft); color: var(--urgent); }
   /* Überfällig traegt zusaetzlich einen Rahmen: Farbe allein darf nie der
      einzige Traeger einer Information sein (Farbfehlsichtigkeit). */
@@ -514,24 +526,24 @@
   .due-trigger { border: none; font-family: inherit; cursor: pointer; }
   button.due-pill { border: none; font-family: inherit; cursor: pointer; }
   .due-add {
-    display: inline-flex; align-items: center; gap: 5px;
+    display: inline-flex; align-items: center; gap: 6px;
     font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint);
     background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill);
-    padding: 3px 10px 3px 8px; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+    padding: 4px 10px 4px 8px; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
   }
   .due-add:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .due-menu {
     position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 236px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-    box-shadow: var(--el-2); padding: 5px;
-    display: flex; flex-direction: column; gap: 1px;
+    box-shadow: var(--el-2); padding: 6px;
+    display: flex; flex-direction: column; gap: 2px;
     animation: due-menu-in var(--dur-fast) var(--ease);
   }
   @keyframes due-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
   .due-opt {
     display: flex; align-items: center; justify-content: space-between; gap: 10px; white-space: nowrap;
     font: inherit; font-size: var(--fs-sm); text-align: left; color: var(--ink);
-    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 9px; cursor: pointer;
+    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 8px; cursor: pointer;
   }
   .due-opt:hover { background: var(--line-soft); }
   .due-pick input { font: inherit; font-size: var(--fs-sm); border: none; background: transparent; color: var(--ink-soft); cursor: pointer; }
@@ -547,7 +559,7 @@
   /* --- Auswahl-Leiste (erscheint über markiertem Text) --- */
   .sel-bar {
     position: fixed; z-index: 60; display: flex; align-items: center; gap: 2px;
-    background: var(--ink); border-radius: var(--r-md); padding: 3px;
+    background: var(--ink); border-radius: var(--r-md); padding: 4px;
     box-shadow: var(--el-2);
     animation: sel-bar-in var(--dur-fast) var(--ease);
   }
@@ -562,26 +574,26 @@
   .sel-btn.b { font-weight: var(--fw-bold); }
   .sel-btn.i { font-style: italic; font-family: Georgia, serif; }
   .sel-btn.s { text-decoration: line-through; }
-  .sel-sep { width: 1px; height: 15px; background: rgba(255, 255, 255, 0.2); margin: 0 3px; }
+  .sel-sep { width: 1px; height: 15px; background: rgba(255, 255, 255, 0.2); margin: 0 4px; }
 
   /* --- "/"-Blockmenü --- */
   .slash-menu {
     position: fixed; z-index: 60; min-width: 208px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-    box-shadow: var(--el-2); padding: 5px;
-    display: flex; flex-direction: column; gap: 1px;
+    box-shadow: var(--el-2); padding: 6px;
+    display: flex; flex-direction: column; gap: 2px;
     animation: due-menu-in var(--dur-fast) var(--ease);
   }
   .slash-opt {
-    display: flex; align-items: center; gap: 9px; width: 100%;
+    display: flex; align-items: center; gap: 8px; width: 100%;
     font: inherit; font-size: var(--fs-sm); text-align: left; color: var(--ink);
-    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 9px; cursor: pointer;
+    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 8px; cursor: pointer;
   }
   .slash-opt:hover, .slash-opt.active { background: var(--line-soft); }
   .slash-opt svg { color: var(--ink-faint); flex-shrink: 0; }
   .slash-hint { font-size: var(--fs-xs); color: var(--ink-faint); margin-left: auto; }
 
-  .group-heading { display: flex; align-items: center; gap: 8px; padding: 14px 8px 6px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-soft); }
+  .group-heading { display: flex; align-items: center; gap: 8px; padding: 12px 8px 6px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-soft); }
   .group-heading:first-child { padding-top: 4px; }
 
   .empty-state {
@@ -600,7 +612,7 @@
   }
   .options-panel[hidden] { display: none; }
   .options-title { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 2px 2px 8px; }
-  .theme-segmented { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; gap: 3px; }
+  .theme-segmented { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 4px; gap: 4px; }
   .theme-seg-btn { flex: 1; border: none; background: transparent; color: var(--ink-soft); font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); padding: 6px 4px; border-radius: 7px; cursor: pointer; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease; }
   .theme-seg-btn.active { background: var(--accent); color: var(--accent-ink); }
   .theme-seg-btn:not(.active):hover { background: var(--line-soft); color: var(--ink); }
