@@ -459,3 +459,107 @@ funktioniert weiterhin korrekt (Push-Animation, `prevPanelStack`-Buchhaltung
 sauber).
 
 ---
+
+## 2026-08-05 — Aufgaben-Verschieben: Umstieg von nativem HTML5-Drag&Drop auf Pointer-Events
+
+**Kontext:** Nutzer meldete, dass das Verschieben von Aufgaben per
+Drag&Drop "noch nicht so gut" funktioniert und dass sich die **ganze App
+aufhängt**, wenn man versucht, eine Aufgabe zu bewegen (anfangs auf
+Long-Press eingegrenzt, später präzisiert: passiert generell beim
+Verschieben).
+
+**Root Cause:** Die eingebetteten Aufgaben-/Bild-Blöcke liegen innerhalb
+eines `contenteditable`-Elements (der Freitext-Seite). Dort hat der Browser
+eine **eigene, eingebaute Drag&Drop-Logik für editierbare Inhalte**, die
+mit jedem selbst geschriebenen Handler konkurriert: Der Browser verschiebt/
+kopiert den Knoten selbst, serialisiert ihn ggf. zu HTML und fügt ihn neu
+ein. Zusätzlich startet ein Gedrückthalten im `contenteditable` eine native
+**Text-Auswahl-Drag**, die exakt dieselbe Geste kapert — ein anderer
+Code-Pfad, den die eigenen Handler gar nicht abdecken. Native HTML5-DnD
+und `contenteditable` sind eine bekannt schlechte Kombination.
+
+Zwei konkrete Folgefehler waren messbar reproduzierbar:
+1. Ein Drop, der nicht **exakt** auf einem anderen Embed landete (also auf
+   Text oder Leerraum), rief nie `e.preventDefault()` auf → es passierte
+   entweder gar nichts, oder der Browser führte seinen nativen Drop aus.
+2. `recomputeAncestors()` enthielt die einzige unbegrenzte Schleife der
+   Datei (`while (true)`), die den Elternbaum hochläuft. Ein durch die
+   nativen Eingriffe inkonsistent gewordener Baum (eine Aufgabe als
+   eigener Vorfahre erreichbar) lässt diese Schleife ewig laufen und
+   friert den kompletten Browser-Tab ein — genau das gemeldete Aufhängen.
+
+**Entscheidung:**
+- Das Verschieben von Embeds läuft jetzt vollständig über **Pointer-Events**
+  (`pointerdown`/`pointermove`/`pointerup`/`pointercancel` mit
+  `setPointerCapture`) statt über die native HTML5-Drag-API. Damit gehört
+  die Geste komplett uns, es gibt keinen nativen Pfad mehr, der dagegen
+  arbeitet.
+- Neuer **expliziter Griff** (Grip-Icon links am Block, erscheint bei
+  Hover). Das trennt "Verschieben" sauber von "Aufgabe anklicken zum
+  Öffnen" und von Textauswahl — dieselbe Lösung, die Notion/Superlist
+  verwenden.
+- Zusätzlich wird ein nativer `dragstart` innerhalb einer `.page-editor`
+  jetzt grundsätzlich unterbunden (`preventDefault`), egal von welchem
+  Element die Geste ausgeht.
+- **Drop-Ziel großzügiger:** Es wird die nächstgelegene Einfügeposition
+  aller Geschwister-Embeds bestimmt (inkl. oberhalb des ersten und
+  unterhalb des letzten), statt nur exakt über einem anderen Embed zu
+  reagieren.
+- `recomputeAncestors()` bekommt einen **Zyklus-Schutz** (`seen`-Set) und
+  bricht ab, statt endlos zu laufen — unabhängig davon, ob der Baum je
+  wieder inkonsistent wird.
+
+**Verifikation:** Per Playwright: Verschieben nach ganz oben, nach ganz
+unten und in die Mitte funktioniert; Long-Press (1,5s) mit anschließendem
+Ziehen hängt die App nicht mehr auf und verschiebt korrekt; ein reiner
+Klick auf den Griff verschiebt nichts und öffnet die Aufgabe nicht; ein
+Klick auf die Aufgabenzeile öffnet weiterhin das Panel; keine
+zurückgebliebenen Drag-Zustände. Zusätzliche Regressionsprüfung über
+Checkbox-Kaskade, Tippen, Aufgabe-an-Cursor-einfügen, Quick-Add, Löschen,
+Escape und Heute-Ansicht — alles grün, keine Konsolenfehler.
+
+---
+
+## 2026-08-05 — Bewertung des Sidebar-Drag&Drop: funktioniert, ist aber mittelfristig eine Sackgasse
+
+**Kontext:** Nutzer bat darum zu prüfen, ob das Drag&Drop der Sidebar
+(Listen/Gruppen sortieren, Liste in Gruppe ziehen) gut ist und man es für
+die Aufgaben übernehmen könnte — oder ob es ebenfalls überarbeitet werden
+muss.
+
+**Befund:** Funktional ist es in Ordnung — per Playwright verifiziert:
+Listen umsortieren, Liste in eine Gruppe ziehen und Gruppen umsortieren
+funktionieren alle korrekt, Navigation per Klick bleibt intakt, es bleiben
+keine Drag-Zustände zurück. Die Ursache des Aufgaben-Bugs (Konflikt mit
+`contenteditable`) trifft hier **nicht** zu, weil die Sidebar kein
+editierbares Feld ist. Es gibt also keinen akuten Fehler.
+
+Trotzdem drei substantielle Schwächen:
+1. **Kein Touch-Support — und das ist prinzipbedingt.** Die native
+   HTML5-Drag-API wird auf Touchgeräten (iOS Safari, Android Chrome)
+   grundsätzlich nicht ausgelöst; es gibt kein `dragstart` aus einer
+   Berührung. Da laut `concept.md` ausdrücklich Desktop → **Mobile** → Web
+   geplant ist, müsste das für Mobile ohnehin komplett neu geschrieben
+   werden.
+2. **Zwei unterschiedliche Bedienmodelle in einer App.** Aufgaben werden
+   jetzt über einen expliziten Griff verschoben, Listen dagegen durch
+   Ziehen an beliebiger Stelle der Zeile.
+3. **Der Drag-Ghost gehört dem Browser** und lässt sich nicht gestalten —
+   passt nicht zum angestrebten Apple-Qualitätsanspruch.
+
+Ein konkreter Fehler wurde dabei gefunden und sofort behoben: Der
+Drop-Indikator blieb hängen, wenn man von einem gültigen Ziel auf leeren
+Sidebar-Bereich zog, weil `clearDropIndicator()` nur beim Betreten eines
+neuen gültigen Ziels lief.
+
+**Entscheidung / Empfehlung:** Die Richtung ist **umgekehrt** zur
+ursprünglichen Frage — nicht das Sidebar-System auf die Aufgaben
+übertragen, sondern das neue Pointer-Event-System der Aufgaben auf die
+Sidebar. Die Umstellung ist bewusst **noch nicht** durchgeführt, da die
+Sidebar aktuell fehlerfrei funktioniert und der Umbau bestehende,
+funktionierende Logik anfasst; er wird vor der Mobile-Ansicht ohnehin
+fällig und sollte dann in einem Zug für beide Bereiche gemacht werden
+(gemeinsamer, wiederverwendbarer Sortier-Mechanismus statt zweier
+paralleler Implementierungen).
+
+---
