@@ -300,10 +300,10 @@
      between. Left at full line height it puts a blank line between every
      task and the list reads as loose, so it collapses to a thin strip and
      only opens up once the caret is actually in it. */
-  .pe-line.pe-gap { min-height: 0; height: 9px; overflow: hidden; }
+  .pe-line.pe-gap { min-height: 0; height: 5px; overflow: hidden; }
   .pe-line.pe-gap.pe-open { height: auto; min-height: 1.65em; overflow: visible; }
 
-  .inline-embed { position: relative; margin: 3px 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
+  .inline-embed { position: relative; margin: 1px 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -962,6 +962,15 @@
   }
 
   document.addEventListener("selectionchange", syncGapForCaret);
+
+  // Die Luecke bereits beim Druecken oeffnen, nicht erst wenn die Auswahl
+  // gemeldet wird: sonst zeichnet der Browser den Cursor noch in der
+  // zusammengeklappten Hoehe und er wirkt winzig gegenueber dem Text.
+  document.addEventListener("pointerdown", function (e) {
+    if (!e.target.closest) return;
+    var gap = e.target.closest(".pe-gap");
+    if (gap) gap.classList.add("pe-open");
+  }, true);
 
   // --- Auswahl-Leiste ---------------------------------------------------
   // Erscheint nur, wenn wirklich Text markiert ist, und verschwindet sonst.
@@ -1904,6 +1913,56 @@
     placeCaretAtEnd(editor);
   });
 
+  // --- Backspace am Zeilenanfang -----------------------------------------
+  // Standardmaessig verschmilzt Backspace am Zeilenanfang die Zeile mit dem
+  // vorherigen Block - und weil ein Aufgaben-/Bild-/Trenner-Block nicht
+  // editierbar ist, loescht der Browser ihn stattdessen komplett. Eine
+  // Aufgabe darf aber niemals nebenbei verschwinden, nur weil jemand eine
+  // Leerzeile darunter wegnimmt. Loeschen laeuft ausschliesslich ueber den
+  // dafuer vorgesehenen Knopf.
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Backspace" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!e.target.closest) return;
+    var editor = e.target.closest(".page-editor");
+    if (!editor) return;
+    var sel = window.getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return;   // Auswahl loeschen bleibt normal
+    var range = sel.getRangeAt(0);
+    if (!editor.contains(range.startContainer)) return;
+
+    var host = range.startContainer;
+    while (host && host.parentNode !== editor) host = host.parentNode;
+    if (!host || isSolidBlock(host)) return;
+
+    // Steht der Cursor wirklich ganz am Zeilenanfang?
+    var probe = document.createRange();
+    probe.selectNodeContents(host);
+    probe.setEnd(range.startContainer, range.startOffset);
+    if (probe.toString().length > 0) return;   // es steht noch Text davor
+
+    var prev = host.previousSibling;
+    if (!prev || !isSolidBlock(prev)) return;  // normaler Fall, Browser machen lassen
+
+    e.preventDefault();
+
+    // Naechste beschreibbare Zeile oberhalb des Blocks suchen - dorthin
+    // wandert der Cursor.
+    var target = prev.previousSibling;
+    while (target && isSolidBlock(target)) target = target.previousSibling;
+
+    if (!target) return;   // Block steht ganz oben: Zeile behalten, sonst
+                           // gaebe es darueber keine Schreibposition mehr.
+
+    // Die leere Zeile darf weg - der Block darueber niemals.
+    if (host.textContent === "") host.remove();
+
+    var r = document.createRange();
+    r.selectNodeContents(target);
+    r.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  });
+
   // Enter is handled here rather than left to the browser: Chrome's default
   // splits the current block by wrapping everything that follows into the
   // new <div> it creates, which pulled the tasks below the caret inside a
@@ -1934,7 +1993,9 @@
       var moved = tail.extractContents();
       line.innerHTML = "";
       line.appendChild(moved);
-      if (line.textContent === "") line.appendChild(document.createElement("br"));
+      // Der verschobene Rest bringt oft schon ein <br> mit. Ein zweites
+      // ergaebe eine doppelt hohe Zeile.
+      if (line.textContent === "" && !line.querySelector("br")) line.appendChild(document.createElement("br"));
       if (host.textContent === "" && !host.querySelector("br")) host.appendChild(document.createElement("br"));
       editor.insertBefore(line, host.nextSibling);
     }
