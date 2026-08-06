@@ -75,6 +75,11 @@ bestätigt, offen z.B. ob Electron oder Tauri für die Desktop-Verpackung.
 Anpassungen), vermeidet das Pflegen von drei komplett getrennten
 Codebasen bei geringer Programmiererfahrung.
 
+> ⚠️ **ÜBERHOLT (2026-08-06).** Diese Richtung wurde nicht weiterverfolgt.
+> Der Stack ist inzwischen auf **Flutter** festgelegt — siehe den Eintrag
+> "Tech-Stack festgelegt: Flutter, mit super_editor als Editor-Fundament"
+> am Ende dieses Dokuments. Ausschlaggebend war die Mobile-Perspektive.
+
 ---
 
 ## 2026-08-05 — Feature-Scope v1
@@ -730,5 +735,60 @@ Block-Editor mit Cursor-Handling, Undo, Copy&Paste und Kollaboration ist
 nichts, was man sinnvoll selbst schreibt. Diese Session hat genau das
 gezeigt: vier Fehler auf einmal, alle aus dem selbstgebauten
 Dokumentmodell.
+
+---
+
+## 2026-08-06 — Tech-Stack festgelegt: Flutter, mit super_editor als Editor-Fundament
+
+**Kontext:** Der Nutzer fragte mehrfach, ob wir Superlists Editor
+übernehmen können. Ausschlaggebende Nachfrage: "was wäre langfristig
+besser, denk auch an die Mobile-Version". Damit löst dieser Eintrag den
+bisher offenen Tech-Stack-Eintrag ab (dort stand React/TypeScript +
+Electron/Tauri als unverbindlicher Vorschlag).
+
+**Abgewogene Optionen:**
+
+1. **Flutter + `super_editor`** — Superlists eigenes Editor-Fundament
+   (MIT-Lizenz, siehe `research-superlist.md`), dazu ihre Bibliotheken
+   für lange Listen und natives Drag&Drop.
+2. **React/TypeScript + BlockNote** — der bisher angedachte Stack mit
+   einem ausgereiften, stabilen Block-Editor.
+3. Beide Varianten erst als Prototyp bauen und vergleichen.
+
+**Entscheidung: Flutter (Option 1).**
+
+**Begründung — der Ausschlag kommt von Mobile:** Bei React/TypeScript
+ist die Mobile-Version faktisch ein **zweites Projekt**. Eine PWA ist auf
+iOS spürbar eingeschränkt, und React Native teilt sich mit React im Web
+*keine* UI-Komponenten. Der Editor — das Herzstück dieser App — müsste
+für Mobile also komplett neu gebaut werden; BlockNote ist ein reiner
+Web-Editor und läuft auf React Native gar nicht. Bei Flutter läuft
+derselbe Editor auf macOS, Windows, iOS, Android und im Web aus einer
+Codebasis. Das entspricht exakt der Prioritätenreihenfolge des Nutzers
+(Desktop → Mobile → Web).
+
+Dazu kommt: Superlist selbst ist eine Flutter-App. Die App, deren
+Qualität und Feeling das erklärte Ziel ist, wird auf genau diesem Stack
+ausgeliefert — das ist der stärkste verfügbare Beleg, dass der Anspruch
+damit erreichbar ist. Und mit `super_native_extensions` und
+`super_sliver_list` liegen Lösungen für zwei Probleme bereit, die uns in
+dieser Session bereits Zeit gekostet haben (Drag&Drop, lange Listen).
+
+**Bekanntes Risiko:** `super_editor` ist vor 1.0. Die letzte stabile
+Version (0.2.7) ist rund zwei Jahre alt, aktiv entwickelt wird an
+Vorabversionen, und **Undo/Redo ist dort noch nicht fertig**.
+
+**Ausstiegsweg, bewusst mitentschieden:** Plattform- und
+Editor-Entscheidung sind **trennbar**. Sollte sich `super_editor` als zu
+unfertig erweisen, bleiben wir bei Flutter und wechseln den Editor (oder
+bauen auf Flutters eigener Texteingabe auf) — wir verlieren dann den
+Editor, nicht die Plattform. Für den Fall, dass sich *Flutter selbst* als
+Fehlentscheidung erweist, wurde auf ausdrücklichen Wunsch des Nutzers ein
+verifizierter Rückkehrpunkt angelegt: Commit `3891fed`, dokumentiert in
+`milestones.md`. Dieser Stand enthält das vollständige Mockup und die
+gesamte Konzeptarbeit, aber noch keine Festlegung auf eine Plattform —
+von dort aus ist Option 2 jederzeit ohne Verlust erreichbar. Der
+Rückkehrpunkt wurde testweise ausgecheckt und das Mockup dort
+gegengeprüft, ist also nachweislich funktionsfähig und nicht nur notiert.
 
 ---

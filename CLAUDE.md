@@ -63,10 +63,14 @@ geschrieben. Siehe `docs/concept.md` für den aktuellen Stand und
 
 ## Tech-Stack
 
-Noch nicht final festgelegt. Vorschlag in Diskussion: React/TypeScript als
-Basis, verpackt als Desktop-App (Electron oder Tauri), später Web (gleicher
-Code im Browser) und Mobile (PWA oder React Native). Siehe
-`docs/decisions.md` für den Stand der Diskussion.
+**Flutter** (Dart) — eine Codebasis für Desktop, Mobile und Web. Als
+Editor-Fundament ist `super_editor` vorgesehen (MIT, von Superlist
+mitentwickelt). Ausschlaggebend war die Mobile-Perspektive; Begründung,
+bekannte Risiken und Ausstiegsweg siehe `docs/decisions.md`, Recherche
+zum Superlist-Fundament siehe `docs/research-superlist.md`.
+
+Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
+`docs/milestones.md`.
 
 ## Doku-Struktur
 
