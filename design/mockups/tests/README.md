@@ -44,6 +44,13 @@ Screenshots landen in `out/` (nicht im Git).
 | Formatierung, Fälligkeit | `test_fmt`, `test_fmt2`, `test_due`, `test_regression` |
 | Ausrichtung, Icons, Kontrast | `test_align`, `test_measure`, `test_svg`, `test_contrast`, `test_addlist` |
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
+| Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
+
+Die vier `measure_`/`verify_`-Skripte messen nach, ob ein Icon
+tatsächlich mittig in seinem Knopf sitzt — das war ein hartnäckiger
+Fehler, weil `getBBox()` ein Motiv als zentriert meldet, sobald ein
+äußeres Element (der Deckel des Papierkorbs) die Ausmaße bestimmt. Wer
+ein Icon neu zeichnet, prüft damit nach.
 
 `test_fuzz_all.js` ist mit Absicht langsam (mehrere hundert
 Drag-Kombinationen, mehrere Minuten Laufzeit) — es war das Werkzeug, mit
