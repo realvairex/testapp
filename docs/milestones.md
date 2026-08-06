@@ -21,6 +21,7 @@ Tag, nur ohne extra Git-Referenz.
 | 2026-08-05 | `1ef5e49` | Drag&Drop komplett auf einen gemeinsamen Pointer-Sortierer umgestellt (Sidebar + Aufgaben), App-Freeze behoben, touch-tauglich |
 | 2026-08-06 | `3891fed` | **↩︎ RÜCKKEHRPUNKT vor der Flutter-Entscheidung** — siehe eigener Abschnitt unten |
 | 2026-08-06 | `512cc9f` | Mockup fertig iteriert und durchgemessen; Uebergabe-Infrastruktur fuer Sitzungswechsel (`status.md`, `session-log.md`, `start unfold`, `ende unfold`, Pruefskript) |
+| 2026-08-06 | `5f5c161` | **Projekt auf sicheren Boden gestellt:** Hauptstand von einem automatisch benannten Branch nach `main` ueberfuehrt, Arbeit auf lokalem Klon, GitHub-Zugang auf `realvairex` repariert. Erster Stand, der beim Loeschen des `claude/…`-Branches nicht verloren waere. |
 
 ---
 
