@@ -182,24 +182,73 @@ lockerer wirken als der Fließtext darüber.
 
 ## 3. Design-Tokens
 
-Direkt nach Flutter übertragbar.
+Direkt nach Flutter übertragbar — aus jeder Tabelle werden dort Konstanten.
+
+> **Warum Skalen:** Eine Messung des Mockups ergab 12 Schriftgrößen (darunter
+> 13, 13,3, 13,33 und 13,5 — vier, die niemand unterscheidet), 8 Radien und
+> 13 Übergangsdauern, jede für sich gewachsen. Genau das lässt eine
+> Oberfläche unruhig wirken, ohne dass man ein einzelnes falsches Element
+> benennen könnte. **Keine neuen Werte einführen, immer eine Stufe wählen.**
+
+### Schrift
+| Stufe | Wert | Verwendung |
+|---|---|---|
+| `fs-xs` | 11px | Rubriken, Tastenkürzel, Zähler |
+| `fs-sm` | 12px | Metatext, Fälligkeits-Pillen |
+| `fs-md` | 13,5px | Fließtext, Standard |
+| `fs-lg` | 15,5px | Überschrift auf einer Seite |
+| `fs-xl` | 22px | Spaltentitel (Laufweite −0,02em) |
+
+Stärken: `400` normal · `500` medium · `600` betont · `700` fett.
+
+### Radien
+| Stufe | Wert | Verwendung |
+|---|---|---|
+| `r-sm` | 6px | kleine Schaltflächen, Zeilen |
+| `r-md` | 10px | Karten, Eingabefelder |
+| `r-lg` | 16px | Menüs, Overlays |
+| `r-pill` | 100px | Pillen |
+| — | 18px | nur das App-Fenster |
+
+### Abstände
+`2 · 4 · 6 · 8 · 12 · 16 · 24` px.
+
+### Bewegung
+| Stufe | Wert | Verwendung |
+|---|---|---|
+| `dur-fast` | 120ms | Hover, Fokus |
+| `dur-base` | 200ms | Zustandswechsel |
+| `dur-slow` | 400ms | Panels, Sidebar |
+| Kurve | `cubic-bezier(0.32, 0.72, 0, 1)` → Flutter `Cubic(0.32, 0.72, 0.0, 1.0)` | überall dieselbe |
+
+Alle Bewegungen animieren ausschließlich `transform`, nie Layout-Eigenschaften.
+
+### Höhen (Schatten)
+| Stufe | Verwendung |
+|---|---|
+| `el-1` | leicht abgehobene Fläche |
+| `el-2` | schwebendes Menü (Fälligkeit, „/", Auswahl-Leiste) |
+| `el-3` | Overlay, App-Fenster |
 
 ### Farben — Hell
 | Token | Wert | Verwendung |
 |---|---|---|
 | `paper` | `#faf7f1` | Hintergrund außerhalb des Fensters |
 | `surface` | `#ffffff` | Spaltenflächen |
-| `surface-sunken` | `#eae0cc` | Sidebar, Eingabefelder |
+| `surface-sunken` | `#eae0cc` | Sidebar |
+| `nav-hover` | `#f2ecdf` | Zeile beim Überfahren — **hellt auf**, in beiden Modi |
+| `chip-bg` / `chip-hover` | `#f2ecdf` / `#fbf8f1` | kleine Schaltflächen |
+| `tree-line` | `#c4b189` | Verbindungslinien der Gruppen |
 | `line` | `#ddd0af` | Rahmen |
 | `line-soft` | `#ece3cc` | leichte Trenner |
 | `ink` | `#293241` | Haupttext |
 | `ink-soft` | `#464d5b` | Sekundärtext |
 | `ink-faint` | `#5c626b` | Zähler, Meta, Platzhalter |
-| `accent` | `#ee6c4d` | Flächen, Icons, Dekoration |
+| `accent` | `#ee6c4d` | Flächen, Icons, Logo, Dekoration |
 | `accent-strong` | `#b32f10` | **Akzentfarbe für Text** |
 | `accent-soft` | `#fce7e0` | Hintergrund aktiver Zustände |
-| `urgent` | `#b83c36` | überfällig/heute |
-| `green` | `#3f8f62` | erledigt |
+| `urgent` | `#b83c36` | überfällig / heute |
+| `done` / `done-ink` | `#6f757e` / `#ffffff` | Erledigt-Marke |
 
 ### Farben — Dunkel
 | Token | Wert |
@@ -207,37 +256,37 @@ Direkt nach Flutter übertragbar.
 | `paper` | `#1f242e` |
 | `surface` | `#293241` |
 | `surface-sunken` | `#191d25` |
-| `ink` | `#f2ede0` |
-| `ink-soft` | `#b6aea0` |
-| `ink-faint` | `#aca492` |
+| `nav-hover` | `#333a48` |
+| `chip-bg` / `chip-hover` | `#293241` / `#3a4457` |
+| `tree-line` | `#4a5468` |
+| `ink` / `ink-soft` / `ink-faint` | `#f2ede0` / `#b6aea0` / `#aca492` |
 | `accent` / `accent-strong` | `#f38a6e` |
 | `accent-soft` | `#3a281f` |
+| `done` / `done-ink` | `#8d97ab` / `#1f242e` |
 
-> **Regel:** `accent` ist als *Textfarbe* zu hell (2,3–3,0:1). Für Text
-> immer `accent-strong` verwenden. Alle Textfarben erfüllen WCAG AA
-> (4,5:1) in beiden Modi — nachgemessen an den real gerenderten Elementen.
+### Listenfarben
+Eine **kurierte Reihe aus derselben warmen Familie** — vorher waren Petrol
+und Blauviolett dabei, die neben Orange/Sand/Navy als Fremdkörper wirkten.
 
-### Maße
-| Token | Wert |
-|---|---|
-| Sidebar-Breite | 248px |
-| Spalte, Mindestbreite | 240px |
-| Sichtbare Spalten, max. | 3 |
-| Fenster-Radius | 18px |
-| Icon-Buttons (Löschen, Schließen) | 22×22px, Icon 14px |
-
-### Bewegung
-| Token | Wert | Verwendung |
+| Hell | Dunkel | |
 |---|---|---|
-| Kurve | `cubic-bezier(0.32, 0.72, 0, 1)` → in Flutter `Cubic(0.32, 0.72, 0.0, 1.0)` | alle Panel-/Sidebar-Bewegungen |
-| Panel öffnen/schließen | 420ms | |
-| Sidebar ein-/ausklappen | 400ms | läuft **gleichzeitig** mit der Spaltenbewegung |
-| Kleine Zustandswechsel | 120–150ms | Hover, Fokus |
+| `#9c7f6b` | `#bb9c86` | Lehm |
+| `#6f8265` | `#8fa383` | Salbei |
+| `#c25a3a` | `#e07d5c` | Terrakotta |
+| `#5b7183` | `#7d95aa` | Taubenblau |
+| `#b8873a` | `#d4a457` | Ocker |
 
-> Alle Bewegungen animieren ausschließlich `transform` (in Flutter:
-> `Transform`/`AnimatedPositioned`), nie Layout-Eigenschaften.
-
----
+### Regeln
+- **`accent` ist als Textfarbe zu hell** (2,3–3,0:1). Für Text immer
+  `accent-strong`. Alle Textfarben erfüllen WCAG AA (4,5:1) in beiden Modi —
+  an den real gerenderten Elementen nachgemessen, nicht nur gerechnet.
+- **Hover hellt immer auf**, in beiden Modi. Nie abdunkeln.
+- **Farbe ist nie der einzige Träger einer Information.** Die
+  Überfällig-Markierung trägt zusätzlich einen Rahmen.
+- **Erledigtes tritt zurück.** Die Marke ist gedämpft, nicht kräftig — sie
+  liegt auf demselben Gewicht wie der durchgestrichene Text daneben.
+- **Textmarkierung und Fokusringe** kommen aus der Palette, nicht vom
+  Browser. Fokusringe nur bei Tastaturbedienung (`:focus-visible`).
 
 ## 4. Offene Festlegungen
 
