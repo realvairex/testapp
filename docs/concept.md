@@ -81,6 +81,11 @@ Apple Reminders/Notes-Niveau, mit eigenständigem Charakter.
 
 ## Offene Punkte
 
+- **`prefers-reduced-motion` wieder aktivieren, sobald echter App-Code
+  entsteht.** In der Mockup-Phase bewusst abgeschaltet (sonst wären die
+  Animationen beim Nutzer unsichtbar) — in der echten App zwingend
+  erforderlich, siehe `decisions.md`.
+
 - Feinschliff des Desktop-Mockups im Dialog mit dem Nutzer (laufend)
 - Mobile-Ansicht mocken (noch nicht begonnen)
 - Endgültige Bestätigung des Namens "Unfold" (aktuell Arbeitstitel, wurde

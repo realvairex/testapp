@@ -837,3 +837,47 @@ Speichervorgang eine halb geschriebene, unbrauchbare Datei hinterlässt —
 ein klassischer und billig vermeidbarer Datenverlust.
 
 ---
+
+## 2026-08-06 — Weitere Schutzmaßnahmen für die echte App
+
+**Kontext:** Vor dem Umstieg auf Flutter durchgegangene Liste zusätzlicher
+Risiken. Vom Nutzer bestätigt bis auf einen bewusst zurückgestellten Punkt.
+
+**Entscheidungen:**
+
+1. **Papierkorb / Rückgängig für zerstörerische Aktionen, auf App-Ebene.**
+   Das Löschen einer Liste, Gruppe oder Aufgabe muss zurückholbar sein.
+   Bewusst **unabhängig** vom Undo des Editors gelöst, denn dessen
+   Undo/Redo ist noch nicht fertig (siehe Stack-Entscheidung) — wir dürfen
+   uns für Datenverlust-Schutz nicht auf eine unfertige Fremdfunktion
+   verlassen.
+
+2. **Flutter-Version selbst pinnen** (z.B. über `fvm`), nicht nur die
+   Pakete. Ein Flutter-Update bricht einen Build genauso zuverlässig wie
+   ein Paket-Update; die Konvention zu Abhängigkeiten gilt deshalb auch
+   für die Toolchain.
+
+3. **Keine Telemetrie ohne ausdrückliche Zustimmung.** Die App ist
+   local-first; die Daten verlassen das Gerät nicht. Das ist ein echter
+   Datenschutzvorteil gegenüber praktisch allen Alternativen und wird
+   nicht für Nutzungsstatistiken aufgegeben. Falls je Telemetrie
+   sinnvoll wird: ausschließlich als Opt-in, nie voreingestellt.
+
+4. **Lizenzen aller Abhängigkeiten im Blick behalten.** Alles, was
+   eingebunden wird, muss permissiv lizenziert sein (MIT/BSD/Apache), damit
+   die App später ohne rechtliche Altlasten auch kommerziell vertrieben
+   werden könnte. `super_editor` erfüllt das (MIT).
+
+**Bewusst zurückgestellt — offener Punkt mit Auslöser:**
+
+**`prefers-reduced-motion` wieder respektieren.** In der Mockup-Phase ist
+die Unterstützung für diese Systemeinstellung absichtlich **abgeschaltet**,
+weil sie beim Nutzer aktiv ist und dadurch sämtliche Animationen unsichtbar
+waren — das Mockup dient aber gerade der Bewertung eben dieser Animationen.
+**Auslöser: Sobald echter App-Code entsteht, muss dies wieder aktiviert
+werden.** Ohne Respekt vor dieser Einstellung ist die App für
+bewegungsempfindliche Nutzer (Migräne, Schwindel, vestibuläre Störungen)
+unbenutzbar. Dieser Punkt darf nicht verloren gehen, deshalb steht er
+zusätzlich in `concept.md` unter den offenen Punkten.
+
+---
