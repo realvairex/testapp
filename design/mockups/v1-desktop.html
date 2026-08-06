@@ -287,7 +287,9 @@
     cursor: text;
   }
   .page-editor:empty::before { content: attr(data-placeholder); color: var(--ink-faint); pointer-events: none; }
-  .page-editor div { min-height: 1.65em; }
+  /* A paragraph block. Every top-level child of the editor is either one of
+     these or an .inline-embed - see the block model note in the JS. */
+  .pe-line { min-height: 1.65em; }
 
   .inline-embed { position: relative; margin: 3px 0; padding-left: 15px; animation: block-in 0.18s ease; overflow: hidden; }
   .inline-embed.drag-ghost { opacity: 0.4; }
@@ -638,6 +640,30 @@
     return wrap;
   }
 
+  // --- Block model -----------------------------------------------------
+  // A page is an ordered list of blocks, and a paragraph is a block in its
+  // own right - not loose text sitting between blocks. Every top-level child
+  // of the editor is therefore either an .inline-embed (task/image) or a
+  // .pe-line (paragraph). This mirrors how Superlist's own editor models a
+  // document (github.com/superlistapp/super_editor: an ordered list of
+  // discrete nodes - paragraph, task, image - each with its own id).
+  //
+  // The previous model kept paragraphs as bare text nodes and read the page
+  // back with innerText. That could not represent a caret position between
+  // two adjacent tasks, an empty line, or a line break that survives a
+  // re-render, and pressing Enter let the browser wrap following blocks into
+  // the new <div> it created, swallowing tasks into a paragraph.
+
+  function makeLineNode(text) {
+    var line = document.createElement("div");
+    line.className = "pe-line";
+    if (text) line.appendChild(document.createTextNode(text));
+    else line.appendChild(document.createElement("br"));
+    return line;
+  }
+
+  function isEmbed(n) { return n && n.nodeType === 1 && n.classList && n.classList.contains("inline-embed"); }
+
   function buildEditorDOM(owner, colIndex) {
     var el = document.createElement("div");
     el.className = "page-editor";
@@ -649,7 +675,9 @@
     for (var i = 0; i < owner.blocks.length; i++) {
       var b = owner.blocks[i];
       if (b.type === "text") {
-        el.appendChild(document.createTextNode(b.text));
+        // Legacy blocks may still carry embedded newlines; each becomes a line.
+        var linesOfText = String(b.text).split("\n");
+        for (var li = 0; li < linesOfText.length; li++) el.appendChild(makeLineNode(linesOfText[li]));
       } else if (b.type === "task") {
         var child = null;
         for (var k = 0; k < kids.length; k++) { if (kids[k].id === b.id) { child = kids[k]; break; } }
@@ -658,25 +686,81 @@
         el.appendChild(makeInlineImageNode(b, owner.id));
       }
     }
-    ensureTrailingEditableLine(el);
+    normalizeEditor(el);
     return el;
   }
 
-  // A contenteditable whose last child is a contenteditable="false" block
-  // offers no caret position after it, so there is nowhere left to type at
-  // the end of the page. Clicking below the last task then snaps the caret
-  // all the way back to the start of the document and text appears at the
-  // top instead of where it was clicked. Keeping one editable line at the
-  // end fixes that. The newline is trimmed away again on serialize, so it
-  // never turns into a stray empty text block.
-  function ensureTrailingEditableLine(el) {
-    if (!el.lastChild || el.lastChild.nodeType !== 3) {
-      el.appendChild(document.createTextNode("\n"));
+  // Restores the block model after the browser has had its way with the DOM,
+  // and guarantees there is always somewhere to type: a paragraph before a
+  // leading embed, between two adjacent embeds, and after a trailing one.
+  // Without those, a contenteditable offers no caret position at all next to
+  // a contenteditable="false" block.
+  function normalizeEditor(el) {
+    // 1. Flatten to a single top-level sequence of blocks, keeping document
+    //    order: hoist embeds the browser nested inside a paragraph, and keep
+    //    each block-level element as its own paragraph. Only inline content
+    //    (text, <br>, <b>, ...) is gathered together into one paragraph -
+    //    merging block elements here is what previously collapsed several
+    //    typed lines into one.
+    var flat = [];
+    function isBlockEl(n) { return n.nodeType === 1 && (n.nodeName === "DIV" || n.nodeName === "P"); }
+    function hasBlockChild(n) {
+      for (var i = 0; i < n.childNodes.length; i++) { if (isBlockEl(n.childNodes[i])) return true; }
+      return false;
     }
+    function collect(node) {
+      var kids = Array.prototype.slice.call(node.childNodes);
+      var carry = null;
+      function flush() { if (carry) { flat.push(carry); carry = null; } }
+      for (var i = 0; i < kids.length; i++) {
+        var k = kids[i];
+        if (isEmbed(k)) {
+          flush();
+          flat.push(k);
+        } else if (isBlockEl(k) && ((k.querySelector && k.querySelector(".inline-embed")) || hasBlockChild(k))) {
+          flush();
+          collect(k);
+        } else if (isBlockEl(k)) {
+          flush();
+          k.classList.add("pe-line");
+          flat.push(k);
+        } else {
+          if (!carry) { carry = makeLineNode(""); carry.innerHTML = ""; }
+          carry.appendChild(k);
+        }
+      }
+      flush();
+    }
+    collect(el);
+    el.innerHTML = "";
+    for (var f = 0; f < flat.length; f++) el.appendChild(flat[f]);
+
+    // 2. Make sure every non-embed child is a proper paragraph element.
+    var kids2 = Array.prototype.slice.call(el.childNodes);
+    for (var j = 0; j < kids2.length; j++) {
+      var n = kids2[j];
+      if (isEmbed(n)) continue;
+      if (n.nodeType === 3) {
+        var wrapped = makeLineNode(n.textContent);
+        el.replaceChild(wrapped, n);
+      } else if (n.nodeType === 1) {
+        n.classList.add("pe-line");
+        if (!n.textContent && !n.querySelector("br")) n.appendChild(document.createElement("br"));
+      }
+    }
+
+    // 3. Guarantee a paragraph around every embed run.
+    var kids3 = Array.prototype.slice.call(el.childNodes);
+    if (!kids3.length || isEmbed(kids3[0])) el.insertBefore(makeLineNode(""), el.firstChild);
+    var kids4 = Array.prototype.slice.call(el.childNodes);
+    for (var m = 0; m < kids4.length - 1; m++) {
+      if (isEmbed(kids4[m]) && isEmbed(kids4[m + 1])) el.insertBefore(makeLineNode(""), kids4[m + 1]);
+    }
+    if (isEmbed(el.lastChild)) el.appendChild(makeLineNode(""));
   }
 
   function placeCaretAtEnd(el) {
-    ensureTrailingEditableLine(el);
+    normalizeEditor(el);
     el.focus();
     var range = document.createRange();
     range.selectNodeContents(el);
@@ -722,30 +806,35 @@
     var owner = findList(ownerId) || findTaskGlobal(ownerId);
     if (!owner) return;
 
-    var clone = editorEl.cloneNode(true);
-    var embeds = clone.querySelectorAll("[data-embed-marker]");
-    for (var i = 0; i < embeds.length; i++) {
-      var marker = document.createTextNode("" + embeds[i].getAttribute("data-embed-marker") + "");
-      embeds[i].parentNode.replaceChild(marker, embeds[i]);
-    }
-    var raw = clone.innerText || clone.textContent || "";
-    var parts = raw.split("");
+    // Read the blocks straight off the DOM structure. The old approach
+    // flattened the page to innerText and split it on marker characters,
+    // which lost every line break and could not represent an empty line.
+    normalizeEditor(editorEl);
 
     var newBlocks = [];
-    for (var p = 0; p < parts.length; p++) {
-      if (p % 2 === 0) {
-        var text = parts[p].replace(/^\n+|\n+$/g, "");
-        if (text !== "") newBlocks.push({ type: "text", text: text });
-      } else {
-        var mm = parts[p].split(":");
-        if (mm[0] === "task") {
-          newBlocks.push({ type: "task", id: mm.slice(1).join(":") });
-        } else if (mm[0] === "image") {
-          var imgId = mm.slice(1).join(":");
-          var oldImg = owner.blocks.filter(function (b) { return b.type === "image" && b.id === imgId; })[0];
-          newBlocks.push({ type: "image", id: imgId, caption: oldImg ? oldImg.caption : "Bild" });
+    for (var i = 0; i < editorEl.childNodes.length; i++) {
+      var n = editorEl.childNodes[i];
+      if (isEmbed(n)) {
+        var marker = n.getAttribute("data-embed-marker") || "";
+        var sep = marker.indexOf(":");
+        var kind = marker.slice(0, sep);
+        var mid = marker.slice(sep + 1);
+        if (kind === "task") {
+          newBlocks.push({ type: "task", id: mid });
+        } else if (kind === "image") {
+          var oldImg = owner.blocks.filter(function (b) { return b.type === "image" && b.id === mid; })[0];
+          newBlocks.push({ type: "image", id: mid, caption: oldImg ? oldImg.caption : "Bild" });
         }
+      } else {
+        // A paragraph. Empty ones are kept - a blank line is real content.
+        newBlocks.push({ type: "text", text: n.textContent.replace(/\n/g, "") });
       }
+    }
+    // Trailing blank paragraphs are structural padding added by
+    // normalizeEditor, not content - drop them so they cannot pile up.
+    while (newBlocks.length) {
+      var lastB = newBlocks[newBlocks.length - 1];
+      if (lastB.type === "text" && lastB.text === "") newBlocks.pop(); else break;
     }
 
     var oldTaskIds = owner.blocks.filter(function (b) { return b.type === "task"; }).map(function (b) { return b.id; });
@@ -781,15 +870,31 @@
       range.collapse(true);
     }
     range.deleteContents();
-    range.insertNode(node);
-    // Keep a place to type after the embed if it landed at the very end.
-    ensureTrailingEditableLine(editorEl);
-    range.setStartAfter(node);
-    range.setEndAfter(node);
-    range.collapse(true);
-    editorEl.focus();
-    sel.removeAllRanges();
-    sel.addRange(range);
+    // An embed is a top-level block: lift it out of whatever paragraph the
+    // caret happened to be in, splitting that paragraph around it.
+    var host = range.startContainer;
+    while (host && host.parentNode !== editorEl) host = host.parentNode;
+    if (host && host !== editorEl) {
+      var tail = range.cloneRange();
+      tail.setEndAfter(host);
+      var after = tail.extractContents();
+      editorEl.insertBefore(node, host.nextSibling);
+      if (after && after.textContent !== "") editorEl.insertBefore(after, node.nextSibling);
+    } else {
+      range.insertNode(node);
+    }
+    normalizeEditor(editorEl);
+
+    // Put the caret on the paragraph right after the new block.
+    var next = node.nextSibling;
+    if (next) {
+      var r2 = document.createRange();
+      r2.selectNodeContents(next);
+      r2.collapse(true);
+      editorEl.focus();
+      sel.removeAllRanges();
+      sel.addRange(r2);
+    }
   }
 
   var prevPanelStack = [];
@@ -1309,6 +1414,47 @@
     placeCaretAtEnd(editor);
   });
 
+  // Enter is handled here rather than left to the browser: Chrome's default
+  // splits the current block by wrapping everything that follows into the
+  // new <div> it creates, which pulled the tasks below the caret inside a
+  // paragraph and destroyed the block structure.
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" || e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!e.target.closest) return;
+    var editor = e.target.closest(".page-editor");
+    if (!editor) return;
+    var sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    var range = sel.getRangeAt(0);
+    if (!editor.contains(range.startContainer)) return;
+    e.preventDefault();
+
+    var host = range.startContainer;
+    while (host && host.parentNode !== editor) host = host.parentNode;
+    if (!host) return;
+
+    var line = makeLineNode("");
+    if (isEmbed(host)) {
+      // Caret sat on an embed: just open a fresh paragraph after it.
+      editor.insertBefore(line, host.nextSibling);
+    } else {
+      // Move whatever follows the caret in this paragraph onto the new one.
+      var tail = range.cloneRange();
+      tail.setEnd(host, host.childNodes.length);
+      var moved = tail.extractContents();
+      line.innerHTML = "";
+      line.appendChild(moved);
+      if (line.textContent === "") line.appendChild(document.createElement("br"));
+      if (host.textContent === "" && !host.querySelector("br")) host.appendChild(document.createElement("br"));
+      editor.insertBefore(line, host.nextSibling);
+    }
+    var r = document.createRange();
+    r.selectNodeContents(line);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  });
+
   document.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && e.target && e.target.hasAttribute && e.target.hasAttribute("data-quick-add")) {
       e.preventDefault();
@@ -1483,10 +1629,15 @@
       requiresGrip: "[data-embed-grip]",
       itemFrom: function (t) { return t.closest(".inline-embed[data-embed-marker]"); },
       containerFrom: function (el) { return el.closest(".page-editor"); },
+      // Every top-level block is a drop anchor, not just other embeds, so a
+      // task can be dropped between two lines of text as well as between
+      // two tasks.
       resolveSpot: function (container, x, y, el) {
-        var all = container.querySelectorAll(".inline-embed[data-embed-marker]");
+        var all = container.childNodes;
         var others = [];
-        for (var i = 0; i < all.length; i++) { if (all[i] !== el) others.push(all[i]); }
+        for (var i = 0; i < all.length; i++) {
+          if (all[i] !== el && all[i].nodeType === 1 && all[i].getBoundingClientRect) others.push(all[i]);
+        }
         if (!others.length) return null;
         for (var j = 0; j < others.length; j++) {
           var r = others[j].getBoundingClientRect();
@@ -1495,9 +1646,11 @@
         return { target: others[others.length - 1], pos: "after" };
       },
       commit: function (el, spot) {
-        var ownerId = spot.target.closest(".page-editor").getAttribute("data-editor-for");
+        var editor = spot.target.closest(".page-editor");
+        var ownerId = editor.getAttribute("data-editor-for");
         if (spot.pos === "before") { spot.target.parentNode.insertBefore(el, spot.target); }
         else { spot.target.parentNode.insertBefore(el, spot.target.nextSibling); }
+        normalizeEditor(editor);
         serializeEditor(ownerId);
         renderAll();
       }
