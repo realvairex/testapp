@@ -19,6 +19,13 @@ Arbeite folgende Schritte ab, bevor du antwortest:
    `docs/decisions.md` für das Warum hinter einer Festlegung,
    `docs/concept.md` für die Produktvision.
 
+**Prüfe dabei den Hook mit:** Wenn zu Beginn dieser Sitzung *keine*
+Zeile `=== Projekt Unfold ===` erschienen ist, ist der Session-Start-Hook
+in `.claude/settings.json` defekt. Sag das dem Nutzer von dir aus und
+biete an, ihn zu reparieren — er soll nicht selbst darauf achten müssen.
+Ist die Zeile erschienen, vermerke einmalig in `docs/status.md`, dass
+der Hook nachweislich funktioniert, und entferne den offenen Punkt dazu.
+
 Melde dich dann mit einer **kurzen** Lagemeldung, nicht mit einer
 Zusammenfassung aller Dokumente:
 
