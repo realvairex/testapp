@@ -276,6 +276,21 @@ und Blauviolett dabei, die neben Orange/Sand/Navy als Fremdkörper wirkten.
 | `#5b7183` | `#7d95aa` | Taubenblau |
 | `#b8873a` | `#d4a457` | Ocker |
 
+### Icons
+Alle Icons werden mit **derselben effektiven Strichstärke von 1,25px**
+gezeichnet. Entscheidend ist nicht die Zahl im `stroke-width`, sondern
+`stroke-width × (Anzeigegröße ÷ viewBox)` — bei unterschiedlichen viewBoxen
+ergibt dieselbe Zahl unterschiedliche Strichstärken. Im Mockup lagen sie
+vorher zwischen 1,03px und 1,62px, was aussah wie Icons aus mehreren Sätzen.
+
+| Größe | Verwendung |
+|---|---|
+| 14px | Standard: Menüs, Schaltflächen, Zeilen |
+| 10px | Chevron einer Gruppe |
+| 9px | Häkchen **innerhalb** der Checkbox |
+
+Ecken und Enden durchgängig gerundet (`stroke-linecap`/`-linejoin: round`).
+
 ### Regeln
 - **`accent` ist als Textfarbe zu hell** (2,3–3,0:1). Für Text immer
   `accent-strong`. Alle Textfarben erfüllen WCAG AA (4,5:1) in beiden Modi —
