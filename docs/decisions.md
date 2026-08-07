@@ -1999,3 +1999,52 @@ und die Zusicherung schlug fehl. Der Befund lag in der Messung, nicht am
 Erzeugnis. Jetzt wird jeder Rand dort gemessen, wo er sichtbar ist. **Zum
 zweiten Mal heute steckte ein „Fehler" im Prüfwerkzeug** — es lohnt, bei
 einem roten Punkt zuerst zu fragen, ob die Messung stimmt.
+
+## 2026-08-07 — Fälligkeits-Pille steht neben dem Titel, nicht am Zeilenende
+
+**Kontext:** Der Nutzer fragte, warum rechts neben „Heute" so viel leerer
+Platz ist.
+
+**Befund, nachgemessen:** `.task-title` hatte `flex: 1` und dehnte sich
+auf **526 px**, obwohl der Text rund 180 px braucht. Die Pille wurde
+dadurch ans rechte Ende der Zeile gedrückt — **534 px** vom Titelanfang
+entfernt.
+
+**Das widersprach der eigenen Absicht.** Im Mockup steht bei
+`.page-editor { max-width: 680px }` seit jeher der Kommentar: *„Begrenzte
+Zeilenlänge: lange Zeilen sind schwer zu lesen, und die
+Fälligkeits-Pillen driften sonst weit vom Aufgabentitel weg."* Die Grenze
+war also **gegen genau dieses Wegdriften** gesetzt — sie hat es aber nur
+gedämpft, weil das Dehnen des Titels nie abgestellt wurde. Eine Maßnahme,
+die ihre eigene Ursache nicht beseitigt.
+
+**Entscheidung:** `flex: 0 1 auto`. Der Titel nimmt nur die Breite seines
+Textes und schrumpft erst, wenn es eng wird. Fortschrittsbalken und Pille
+bekommen `flex-shrink: 0` — sonst würde bei einem langen Titel die
+*Information* gekürzt statt des Titels.
+
+**Verworfen: rechtsbündige Datumsspalte** (die übliche Alternative, u.a.
+bei Linear). Sie trägt hier nicht:
+
+- **Es entsteht gar keine Spalte.** Nur ein Teil der Aufgaben hat ein
+  Datum — der rechte Rand ist löchrig, nicht bündig. Der Vorteil, für den
+  man die Distanz sonst in Kauf nimmt, tritt nicht ein.
+- **Unfold ist ein Dokument, keine Tabelle.** Die ganze Prämisse ist, dass
+  Aufgaben und Fließtext auf derselben Seite stehen. In einem Text gehört
+  eine Auszeichnung neben ihren Gegenstand.
+
+**Gegengeprüft im Engpass** (drei Spalten, langer Titel, Aufgabe mit
+Fortschritt *und* Datum): Titel kürzt mit „…", Fortschritt und Pille
+bleiben vollständig, der Löschknopf sitzt ohne Überlappung dahinter — die
+24 px Reserve dafür waren bereits vorhanden. Sechs betroffene Prüfskripte
+laufen unverändert grün.
+
+**Ebenfalls verworfen, auf Wunsch des Nutzers und mit Zustimmung:** das
+Superlist-Muster, das Datum **unter** den Titel zu setzen. Es verdoppelt
+die Zeilenhöhe und macht aus einer überfliegbaren Liste eine Reihe
+zweizeiliger Karten.
+
+**Offen geblieben:** Beim Überfahren einer Zeile erscheint der Löschknopf
+weiterhin am **rechten Rand** — jetzt mit sichtbarem Abstand zum Inhalt.
+Der Nutzer hält das für unschön. Drei Wege stehen zur Wahl, siehe
+`docs/status.md`; entschieden ist noch nichts.

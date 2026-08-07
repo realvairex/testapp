@@ -200,7 +200,28 @@ Farbpunkt, dann Titel. Kein Menü.
 > begrenzten Behälter** (der Spalte), nicht am Fenster. Nur so schiebt es
 > keinen Inhalt weg *und* wird nicht am Rand abgeschnitten.
 
-### 2.6 Heute-Seite
+### 2.6 Aufgabenzeile
+
+Aufbau von links: Kästchen · [Herkunftspunkt] · Titel · [Fortschritt] ·
+[Fälligkeits-Pille]. Alles **linksbündig aneinander**, nicht auf die
+Zeilenbreite verteilt.
+
+- Der **Titel nimmt nur die Breite seines Textes** und schrumpft erst,
+  wenn es eng wird; dann kürzt er mit „…". Fortschritt und Pille
+  schrumpfen **nie** — sonst würde die Information gekürzt statt des
+  Titels.
+- **Keine rechtsbündige Datumsspalte.** Sie wäre die übliche Lösung,
+  entsteht hier aber gar nicht: Nur ein Teil der Aufgaben hat ein Datum,
+  der rechte Rand bliebe löchrig. Und in einem Dokument gehört eine
+  Auszeichnung neben ihren Gegenstand, nicht ans Zeilenende.
+- **Das Datum steht nicht unter dem Titel** (Superlist-Muster). Das
+  verdoppelt die Zeilenhöhe und macht aus einer überfliegbaren Liste eine
+  Reihe zweizeiliger Karten.
+
+⚠️ **Offen:** Wo der Löschknopf beim Überfahren erscheint. Siehe
+`docs/status.md`.
+
+### 2.7 Heute-Seite
 - Zeigt listenübergreifend alle Aufgaben mit Fälligkeitsdatum **heute oder
   früher** (überfällig), sofern nicht erledigt.
 - Nur Aufgaben mit **eigenem** Datum. Eine übergeordnete Aufgabe erscheint

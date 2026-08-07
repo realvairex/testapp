@@ -561,7 +561,20 @@
   .check-btn svg { opacity: 0; transform: scale(0.4); transition: opacity var(--dur-fast) ease, transform var(--dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1); }
   .check-btn.done svg { opacity: 1; transform: scale(1); }
 
-  .task-title { font-size: var(--fs-md); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--dur-base) ease; }
+  /* flex: 0 1 auto statt 1 - der Titel nimmt nur so viel Platz, wie sein
+     Text braucht, und schrumpft erst, wenn es eng wird. Mit flex: 1 dehnte
+     er sich ueber die ganze Zeile und drueckte die Faelligkeits-Pille ans
+     rechte Ende: bei 680px Zeilenlaenge lagen 534px zwischen Titelanfang
+     und Pille. Die 680px-Grenze war schon gegen dieses Wegdriften gesetzt,
+     hat es aber nur gedaempft statt behoben.
+     Eine rechtsbuendige Datumsspalte waere die uebliche Alternative - sie
+     traegt hier nicht, weil nur ein Teil der Aufgaben ein Datum hat und
+     dadurch kein durchgehender Rand zum Abscannen entsteht. min-width: 0
+     bleibt noetig, damit lange Titel weiterhin mit ... kuerzen. */
+  .task-title { font-size: var(--fs-md); flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color var(--dur-base) ease; }
+  /* Fortschritt und Pille duerfen nicht mitschrumpfen - sonst wird bei
+     einem langen Titel die Information gekuerzt statt des Titels. */
+  .task-row .mini-progress, .task-row .due-pill { flex-shrink: 0; }
   .task-row.done .task-title { color: var(--ink-faint); text-decoration: line-through; }
 
   .list-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
