@@ -10,6 +10,71 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-07 (zweite Sitzung) — Vom Aufräumen zur Gestaltung: Eingang, Datum, Ziehen
+
+**Gemacht**
+
+Der Tag begann mit Aufräumen und endete bei Produktgestaltung.
+
+- **Prüfwerkzeug geschaffen:** `scripts/run-mockup-tests.sh` fällt ein
+  Urteil pro Skript. Die Behauptung „alle 40 laufen grün" war seit Wochen
+  ungeprüft weitergereicht worden — es gab schlicht keinen Läufer.
+- **Playwright auf 1.56.1 festgenagelt** (`package.json` + Lockfile), die
+  eigene Regel aus `CLAUDE.md` war unbemerkt verletzt.
+- **`README.md` geschrieben**, bestand vorher aus einer Zeile.
+- **Sitzungsbefehle handeln jetzt selbst** statt zu fragen: `start unfold`
+  holt den Stand per Fast-Forward, `ende unfold` überführt ihn nach `main`.
+  `session-check.sh` bekam Abschnitt 3 („Stand in main angekommen").
+- **Darstellungs-Schalter** ersetzt den Optionen-Knopf: zwei Felder mit
+  gleitendem Knopf, direkt in der Sidebar.
+- **Spaltenkopf ohne Menü:** Titel ist ein Eingabefeld (Umbenennen war
+  vorher gar nicht möglich), Farbe über den Punkt davor.
+- **Fälligkeit** als dauerhafte Zeile mit eigenem Kalender, der an der
+  Spalte verankert schwebt.
+- **Fenster** hört bei 490 px auf zu schrumpfen, die Seite scrollt
+  stattdessen und behält ihren Abstand.
+- **Der Eingang** wurde vom Xdo-Vorbild abgeleitet: ein Ort statt einer
+  Liste, Startansicht, Einsortieren durch Ziehen auf eine Sidebar-Liste.
+- **Ziehen sichtbar gemacht:** mitziehendes Etikett, greifender Zeiger,
+  angedeutete Ziele.
+
+**Entschieden** (alles mit Begründung in `docs/decisions.md`)
+
+- Overlays sind die letzte Wahl; wenn doch nötig, verankert am
+  nächstgelegenen begrenzten Behälter — nicht am Fenster. Steht als
+  Grundsatz in `spec.md` §2.5.
+- „Nächste Woche" aus der Fälligkeit entfernt; „System" aus dem
+  Darstellungs-Schalter entfernt; kein Stern für „wichtig"; keine
+  Tastenkürzel für die Triage.
+- CI bleibt zurückgestellt bis zum ersten Flutter-Code — schriftlich statt
+  stillschweigend.
+- `test_4bugs` wird nicht repariert: Der Fehler verschwindet beim
+  Flutter-Umstieg ersatzlos.
+
+**Lehre — dreimal derselbe Fund**
+
+Bei **drei** roten Punkten lag der Fehler im **Prüfwerkzeug**, nicht im
+Geprüften: eine um eine Sekunde zu knappe Zeitgrenze, eine Textsuche, die
+`false` im Mess-JSON traf, eine Erwartung „Zähler +1" bei einem Zähler,
+der verschachtelte Aufgaben mitsummiert, und eine Messung des linken
+Randes im nach rechts gescrollten Zustand. **Bei einem roten Punkt zuerst
+fragen, ob die Messung stimmt.**
+
+Und zweimal riss eine Entfernung etwas mit, das niemand vermutet hätte:
+die Animation `due-menu-in`, die das `/`-Menü noch brauchte, und neun
+Prüfskripte, die auf den Eingang zeigten. **Wer etwas entfernt, muss
+suchen, was daran hing** — und ein pauschales Ersetzen leistet das nicht:
+Ein Selektor, der wieder matcht, ist keine Prüfung, die wieder prüft.
+
+**Offen**
+
+- **Aufräum-Modus** für den Eingang — beauftragt, noch nicht gebaut. Die
+  drei Fragen davor stehen in `status.md`.
+- **Löschregeln und Papierkorb** (`spec.md` §4.3) — weiterhin der nächste
+  inhaltliche Schritt. Dabei mit anschauen: Der Löschknopf wandert mit der
+  Titellänge, was mit Wiederherstellung an Gewicht verliert.
+- **`test_4bugs`** bleibt der bekannte Wackelkandidat.
+
 ## 2026-08-07 — Umgebungsannahmen nachgezogen, Portabilität geklärt
 
 Eine kurze Aufräum-Sitzung ohne inhaltliche Produktarbeit. Anlass war,

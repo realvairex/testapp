@@ -29,10 +29,16 @@ const { chromium } = require('playwright');
 
     document.querySelectorAll('.nav-item-wrap').forEach((w,i)=>{
       const c=w.querySelector('.nav-count'), d=w.querySelector('.nav-delete');
+      // Der Eingang ist ein Ort und hat keinen Loeschknopf (spec.md 2.0) -
+      // seine Zeile hat hier also nichts zu vermessen.
+      if (!c || !d) return;
       res.rows.push({ row:'list'+i, glyph:glyphCenter(c), btn:ctr(d).x, svg:ctr(d.querySelector('svg')).x });
     });
     document.querySelectorAll('.group-row').forEach((w,i)=>{
       const c=w.querySelector('.nav-count'), d=w.querySelector('.nav-delete');
+      // Der Eingang ist ein Ort und hat keinen Loeschknopf (spec.md 2.0) -
+      // seine Zeile hat hier also nichts zu vermessen.
+      if (!c || !d) return;
       res.rows.push({ row:'group'+i, glyph:glyphCenter(c), btn:ctr(d).x, svg:ctr(d.querySelector('svg')).x });
     });
     return res;

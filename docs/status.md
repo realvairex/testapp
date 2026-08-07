@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-07
+Stand: 2026-08-07 (zweite Sitzung des Tages)
 
 ---
 
@@ -125,6 +125,12 @@ Was fertig ist:
   nachgemessen: **45 grün, 1 Wackelkandidat** (`test_4bugs`, siehe
   Abschnitt 4).
 
+  ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
+  Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
+  Fehler: Seit die Gruppe zusätzlich einen „+"-Knopf trägt, sitzt ihr
+  Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
+  Anfassen des Skripts die Erwartung nachziehen.
+
   ⚠️ **Wichtige Einschränkung:** Nur **zwölf** der 50 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
@@ -222,6 +228,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Die zwei Knöpfe unten links in der Sidebar | Die **unterschiedliche Größe ist Absicht**. Nicht angleichen. Der kleinere steht seit `432b409` auf derselben Grundlinie wie der große, nicht neben dessen Mitte. |
 | Neuentwurf des unteren Sidebar-Bereichs | Vier Varianten wurden vorgelegt und **alle abgelehnt** (2026-08-06). Der Bereich bleibt wie er ist. Nicht erneut vorschlagen. |
 | „+ Bild" in der unteren Leiste | Bleibt. |
+| Datum an der Zeile | **Ein** Steuerelement: ohne Datum ein Kalendersymbol beim Überfahren, mit Datum ist die **Pille selbst der Knopf**. Variante mit `Heute · Morgen · 📅` wurde gebaut, angesehen und verworfen — nicht erneut vorschlagen. |
 | Der Eingang | **Ort, keine Liste.** Startansicht, steht über „Heute", Symbol statt Farbpunkt, nicht umbenennbar/löschbar/verschiebbar. Keine Bild-Leiste. Einsortiert wird durch **Ziehen auf eine Sidebar-Liste**, in beide Richtungen. Angeregt durch Xdo, siehe `spec.md` §2.0. |
 | Triage im Eingang | **Keine Tastenkürzel** (vom Nutzer abgelehnt) und **kein Stern für „wichtig"** — nicht erneut vorschlagen. |
 | Kopf einer Listenspalte | **Kein Aufklappmenü.** Umbenennen = in den Titel klicken und tippen; Farbe = Punkt davor, klappt die fünf Farben **im Fluss** unter dem Titel auf. Verschieben und Löschen bleiben in der Sidebar — kein zweiter Weg. Grundsatz in `spec.md` §2.5. |
