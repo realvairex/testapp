@@ -22,7 +22,11 @@ const { chromium } = require('playwright');
   await page.goto('file://' + process.cwd() + '/design/mockups/v1-desktop.html');
   await page.waitForTimeout(400);
 
-  const sidebarName = () => page.locator('.nav-item[data-drag-id="inbox"] .nav-name').innerText();
+  // Auf einer gewoehnlichen Liste, nicht im Eingang: Der ist ein Ort und
+  // laesst sich weder umbenennen noch faerben (spec.md 2.0).
+  await page.locator('.nav-item[data-drag-id="personal"]').first().click();
+  await page.waitForTimeout(500);
+  const sidebarName = () => page.locator('.nav-item[data-drag-id="personal"] .nav-name').innerText();
 
   // 1. Umbenennen ohne Umweg
   const titel = page.locator('.column[data-col-index="0"] .col-title');
@@ -35,7 +39,7 @@ const { chromium } = require('playwright');
   const nameJetzt = await sidebarName();
   console.log('Sidebar zeigt:', nameJetzt);
   console.log('>>> Tippen benennt die Liste sofort um (ohne Bestätigen):',
-    nameJetzt === 'Inbox 2026');
+    nameJetzt === 'Persönlich 2026');
 
   // 2./3. Farbreihe
   await page.locator('.col-dot').click();
@@ -70,7 +74,7 @@ const { chromium } = require('playwright');
   // 4. Auswählen
   await page.locator('.color-swatch').nth(3).click();
   await page.waitForTimeout(350);
-  const punktFarbe = await page.locator('.nav-item[data-drag-id="inbox"] .nav-dot')
+  const punktFarbe = await page.locator('.nav-item[data-drag-id="personal"] .nav-dot')
     .evaluate((e) => getComputedStyle(e).backgroundColor);
   console.log('Sidebar-Punkt:', punktFarbe);
   console.log('>>> Auswahl setzt die Farbe auch in der Sidebar:',

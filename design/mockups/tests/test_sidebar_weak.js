@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   await page.waitForTimeout(300);
 
   // A: stale drop indicator — drag over a valid target, then over empty sidebar space, don't drop
-  const src = await page.$('.nav-item[data-drag-id="inbox"]');
+  const src = await page.$('.nav-item[data-drag-id="groceries"]');
   const dst = await page.$('.nav-item[data-drag-id="personal"]');
   const spacer = await page.$('#sidebar .sidebar-spacer');
   const sb = await src.boundingBox(), db = await dst.boundingBox(), spb = await spacer.boundingBox();

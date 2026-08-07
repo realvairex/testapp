@@ -27,9 +27,9 @@ const { chromium } = require('playwright');
   // Eine verschachtelte Aufgabe öffnen, damit drei Spalten stehen.
   await page.locator('.nav-item[data-drag-id="personal"]').first().click();
   await page.waitForTimeout(500);
-  await page.locator('.column[data-col-index="0"] .task-row').first().click();
+  await page.locator('.column[data-col-index="0"] .task-title').first().click();
   await page.waitForTimeout(600);
-  await page.locator('.column[data-col-index="1"] .task-row').first().click();
+  await page.locator('.column[data-col-index="1"] .task-title').first().click();
   await page.waitForTimeout(700);
   const spalten = await page.locator('.column').count();
   console.log('offene Spalten:', spalten);
@@ -90,9 +90,9 @@ const { chromium } = require('playwright');
   // waagerechten Bildlauf und der Klick trifft den Fensterrahmen.
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
-  await page.locator('.nav-item[data-drag-id="inbox"]').first().click();
+  await page.locator('.nav-item[data-list="inbox"]').first().click();
   await page.waitForTimeout(600);
-  await page.locator('.column[data-col-index="0"] .task-row').nth(1).click();
+  await page.locator('.column[data-col-index="0"] .task-title').nth(1).click();
   await page.waitForTimeout(700);
   const ueber = await page.locator('.column').last().locator('.due-chip').evaluate((e) => ({
     klassen: e.className,
@@ -158,6 +158,55 @@ const { chromium } = require('playwright');
 
   console.log('>>> kein natives Datumsfeld mehr in der Oberfläche:',
     (await page.locator('input[type="date"]').count()) === 0);
+
+  // --- Schnellwahl direkt an der Aufgabenzeile (Variante 1) ---
+  // Heute · Morgen · Kalender, sichtbar beim Überfahren. Der Kalender hängt
+  // an der SPALTE, nicht an der Zeile: .inline-embed hat overflow: hidden
+  // und würde ihn abschneiden.
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  await page.locator('.nav-item[data-list="inbox"]').first().click();
+  await page.waitForTimeout(500);
+
+  // Variante 2: EIN Steuerelement statt dreier. Ohne Datum ein Kalender-
+  // symbol beim Ueberfahren, mit Datum ist die Pille selbst der Knopf.
+  const ohneDatum = page.locator('.column[data-col-index="0"] .task-row').nth(2);
+  await ohneDatum.hover();
+  await page.waitForTimeout(250);
+  console.log('>>> Zeile ohne Datum bekommt ein Kalendersymbol:',
+    (await ohneDatum.locator('.row-due-cal').count()) === 1);
+
+  const mitDatum = page.locator('.column[data-col-index="0"] .task-row').nth(0);
+  await mitDatum.hover();
+  await page.waitForTimeout(250);
+  console.log('>>> Zeile mit Datum: die Pille selbst ist der Knopf:',
+    (await mitDatum.locator('button.row-due-pill').count()) === 1);
+  console.log('>>> und daneben kein zweites Kalendersymbol:',
+    (await mitDatum.locator('.row-due-cal').count()) === 0);
+  console.log('>>> im Ruhezustand ist das Symbol unsichtbar:',
+    await page.evaluate(() => {
+      const r = document.querySelector('.column[data-col-index="0"] .row-due-cal');
+      return !r || getComputedStyle(r).opacity === '0';
+    }));
+
+  await mitDatum.locator('.row-due-pill').click();
+  await page.waitForTimeout(450);
+  console.log('>>> ein Klick auf die Pille öffnet den Kalender an der Zeile:',
+    await page.locator('.due-cal.row-cal').isVisible());
+  console.log('>>> der Zeilen-Kalender bleibt in der Spalte:',
+    await page.evaluate(() => {
+      const k = document.querySelector('.due-cal.row-cal');
+      const c = k.closest('.column');
+      const kb = k.getBoundingClientRect(), cb = c.getBoundingClientRect();
+      return kb.left >= cb.left && kb.right <= cb.right;
+    }));
+  console.log('>>> er hängt an der Spalte, nicht an der Zeile (die schneidet ab):',
+    await page.evaluate(() => document.querySelector('.due-cal.row-cal').parentElement.classList.contains('column')));
+
+  await page.locator('.due-cal-day').nth(24).click();
+  await page.waitForTimeout(450);
+  console.log('>>> die Auswahl setzt das Datum der Zeile:',
+    /\d+\.\s\w+/.test(await page.locator('.column[data-col-index="0"] .due-pill').first().innerText()));
 
   console.log('>>> keine Seitenfehler:', fehler.length === 0);
   if (fehler.length) console.log(fehler);

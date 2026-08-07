@@ -2238,3 +2238,62 @@ dass dafür etwas Eigenes gebaut werden musste.
 Zeiger zurück, Kontur weg. Ein hängengebliebenes Etikett sieht aus wie
 eine eingefrorene App; als Zusicherung festgehalten („nach dem Loslassen
 bleibt nichts zurück").
+
+## 2026-08-07 — Datum an der Zeile: ein Steuerelement statt dreier
+
+**Kontext:** Für die Triage im Eingang sollte die Fälligkeit direkt an der
+Aufgabenzeile erreichbar sein. Der Nutzer wollte die Vorschau sehen, bevor
+er entscheidet — richtig, denn die Vorschau hat den Entwurf widerlegt.
+
+**Variante 1** (`Heute · Morgen · 📅` an der Zeile) wurde zuerst gewählt und
+auch gebaut. Im Bild wurde sichtbar, was ich vorher nur vermutet hatte:
+Drei Knöpfe neben einer Pille, die das Datum ohnehin schon nennt, machen
+die Zeile voll und sagen dasselbe zweimal. Der Nutzer wechselte daraufhin
+selbst zu **Variante 2**.
+
+**Entschieden: Variante 2.** Ein Steuerelement statt dreier:
+
+- **Ohne Datum** erscheint beim Überfahren ein **Kalendersymbol**.
+- **Mit Datum** ist die **Pille selbst der Knopf** — sie zeigt das Datum
+  ohnehin an, also braucht es daneben keinen zweiten Ort dafür. Eine feine
+  Kontur beim Überfahren verrät, dass man sie anfassen kann; ohne sie sähe
+  sie aus wie reine Anzeige.
+- Beides öffnet denselben Kalender, den es schon gibt.
+
+**Der Kalender einer Zeile hängt an der SPALTE, nicht an der Zeile.**
+`.inline-embed` hat `overflow: hidden` und würde ihn abschneiden. Seine
+Lage wird deshalb gemessen und am rechten Spaltenrand nach innen gerückt,
+statt hinauszulaufen. Das ist dieselbe Regel wie beim Kalender im
+Seitenkopf: verankert am nächstgelegenen begrenzten Behälter.
+
+**Gebaute und wieder verworfene Arbeit ist hier kein Verlust:** Variante 1
+zu sehen war der Grund, warum Variante 2 entstand. Die Vorschau vor der
+Entscheidung hat funktioniert.
+
+## 2026-08-07 — Nachwehen des Eingangs: stille Löcher in der Prüfung
+
+**Befund:** Weil der Eingang seine Zieh-Attribute verloren hat
+(`data-drag-type`, `data-drag-id`), zeigten **neun** Prüfskripte ins Leere.
+Ein pauschales Suchen-und-Ersetzen von `data-drag-id="inbox"` auf
+`data-list="inbox"` war die **falsche** Reparatur — es machte die
+Selektoren wieder gültig, aber inhaltlich sinnlos:
+
+- `test_sidebar_dnd`, `test_unified`, `test_sidebar_weak`,
+  `test_fuzz_all`, `test_sidebar_fuzz` **zogen am Eingang**, der sich nicht
+  mehr ziehen lässt. Die Skripte wären grün geblieben und hätten nichts
+  mehr geprüft. Jetzt ziehen sie an `groceries`.
+- `test_list_header` prüfte **Umbenennen und Farbe am Eingang** — beides
+  kann er nicht mehr. Läuft jetzt auf `Persönlich`.
+- `test_align` maß den **Farbpunkt des Eingangs**, den es nicht mehr gibt.
+- In `test_eingang` drehte das Ersetzen sogar eine Zusicherung um: Aus
+  „taucht nicht unter LISTEN auf" wurde „existiert gar nicht".
+
+**Lehre:** Ein Selektor, der wieder *matcht*, ist nicht dasselbe wie eine
+Prüfung, die wieder *prüft*. Nach einer Umbenennung gehört jede Fundstelle
+einzeln angesehen — genau die Arbeit, die ein pauschales Ersetzen
+vortäuscht, aber nicht leistet.
+
+**Zweiter Befund, aus derselben Ecke:** Mehrere Skripte öffneten eine
+Aufgabe durch einen Klick auf die **Zeilenmitte**. Seit die Pille ein Knopf
+ist, kann die Mitte je nach Titellänge genau auf ihr liegen — dann öffnet
+sich der Kalender statt der Seite. Sie klicken jetzt auf den **Titel**.

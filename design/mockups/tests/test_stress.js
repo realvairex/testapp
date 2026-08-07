@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
   await page.evaluate(() => {
     const L = window;   // Zugriff ueber die Oberflaeche, nicht ueber interne Variablen
   });
-  await page.click('.nav-item[data-list="inbox"]'); await page.waitForTimeout(300);
+  await page.click('.nav-item[data-drag-id="personal"]'); await page.waitForTimeout(300);
   // Liste umbenennen ueber den Titel
   await page.evaluate(()=>{
     const t=document.querySelector('[data-col-index="0"] .col-title');

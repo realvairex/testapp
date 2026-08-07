@@ -31,11 +31,11 @@ async function nativeDrag(page, srcSel, dstSel, yOffsetFrac) {
   console.log('start:', JSON.stringify(await sidebarState(page)));
 
   // 1. reorder: drag "inbox" list below "personal"
-  console.log('drag inbox -> below personal:', await nativeDrag(page, '.nav-item[data-drag-id="inbox"]', '.nav-item[data-drag-id="personal"]', 0.85));
+  console.log('drag groceries -> below personal:', await nativeDrag(page, '.nav-item[data-drag-id="groceries"]', '.nav-item[data-drag-id="personal"]', 0.85));
   console.log('  ->', JSON.stringify(await sidebarState(page)));
 
   // 2. drag a list INTO a group
-  console.log('drag inbox -> onto group g2:', await nativeDrag(page, '.nav-item[data-drag-id="inbox"]', '.group-row[data-drag-id="g2"]', 0.5));
+  console.log('drag groceries -> onto group g2:', await nativeDrag(page, '.nav-item[data-drag-id="groceries"]', '.group-row[data-drag-id="g2"]', 0.5));
   console.log('  ->', JSON.stringify(await sidebarState(page)));
 
   // 3. reorder groups

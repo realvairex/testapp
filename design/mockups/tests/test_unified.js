@@ -30,9 +30,9 @@ async function pdrag(page, srcSel, dstSel, frac, hold) {
 
   console.log('=== SIDEBAR ===');
   console.log('start:', JSON.stringify(await sb(page)));
-  await pdrag(page, '.nav-item[data-drag-id="inbox"]', '.nav-item[data-drag-id="personal"]', 0.85);
+  await pdrag(page, '.nav-item[data-drag-id="groceries"]', '.nav-item[data-drag-id="personal"]', 0.85);
   console.log('inbox below personal:', JSON.stringify(await sb(page)));
-  await pdrag(page, '.nav-item[data-drag-id="inbox"]', '.group-row[data-drag-id="g2"]', 0.5);
+  await pdrag(page, '.nav-item[data-drag-id="groceries"]', '.group-row[data-drag-id="g2"]', 0.5);
   console.log('inbox into g2      :', JSON.stringify(await sb(page)));
   await pdrag(page, '.group-row[data-drag-id="g2"]', '.group-row[data-drag-id="g1"]', 0.15);
   console.log('g2 above g1        :', JSON.stringify(await sb(page)));
@@ -48,7 +48,7 @@ async function pdrag(page, srcSel, dstSel, frac, hold) {
 
   // drag must NOT navigate
   const activeBefore = await page.evaluate(() => { const a=document.querySelector('#sidebar .nav-item.active'); return a&&a.getAttribute('data-list'); });
-  await pdrag(page, '.nav-item[data-drag-id="work"]', '.nav-item[data-drag-id="inbox"]', 0.15);
+  await pdrag(page, '.nav-item[data-drag-id="work"]', '.nav-item[data-drag-id="groceries"]', 0.15);
   const activeAfter = await page.evaluate(() => { const a=document.querySelector('#sidebar .nav-item.active'); return a&&a.getAttribute('data-list'); });
   console.log('drag does not navigate:', activeBefore === activeAfter, `(${activeBefore})`);
 

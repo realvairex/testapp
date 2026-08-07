@@ -393,6 +393,7 @@
   .content-area.anim-lock { overflow-x: hidden; }
 
   .column {
+    position: relative;   /* Anker fuer den Zeilen-Kalender, siehe .row-cal */
     flex: 1 1 0%;
     min-width: 240px;
     height: 100%;
@@ -583,6 +584,30 @@
      hundert Pixeln, sobald das Fenster breit war.
      Er behaelt seinen Platz auch unsichtbar (opacity statt display), damit
      die Zeile beim Ueberfahren nicht springt. */
+  /* Datum an der Zeile - EIN Steuerelement, nicht drei. Ohne Datum ein
+     Kalendersymbol beim Ueberfahren; mit Datum ist die Pille selbst der
+     Knopf. Sie zeigt das Datum ohnehin schon an, also braucht es daneben
+     keinen zweiten Ort dafuer. */
+  .row-due-cal {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; padding: 0; margin-left: 2px; flex-shrink: 0;
+    border: none; background: transparent; color: var(--ink-faint);
+    border-radius: var(--r-sm); cursor: pointer;
+    opacity: 0; transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+  .inline-embed:hover .row-due-cal, .row-due-cal:focus-visible { opacity: 1; }
+  .row-due-cal:hover { color: var(--accent-strong); }
+  /* Die Pille ist auf editierbaren Zeilen ein Knopf. Eine feine Kontur beim
+     Ueberfahren der Zeile verraet, dass man sie anfassen kann - ohne sie
+     saehe sie aus wie reine Anzeige. */
+  button.row-due-pill { font-family: inherit; cursor: pointer; }
+  .inline-embed:hover .row-due-pill { box-shadow: inset 0 0 0 1px var(--accent-line); }
+  .inline-embed:hover .row-due-pill.overdue { box-shadow: inset 0 0 0 1px var(--urgent); }
+
+  /* Der Kalender einer Zeile haengt an der SPALTE, nicht an der Zeile:
+     .inline-embed hat overflow: hidden und wuerde ihn abschneiden. */
+  .due-cal.row-cal { position: absolute; z-index: 45; }
+
   .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); margin-left: 2px; transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .row-delete svg { flex-shrink: 0; }
   .inline-embed:hover .row-delete { opacity: 1; }
@@ -906,7 +931,7 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null, calendarFor: null, calMonth: null };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null, calendarFor: null, calMonth: null, calAnchor: "header" };
 
   // Die kuratierte Reihe aus docs/spec.md. Sie steht hier einmal, damit die
   // Farbauswahl nicht versehentlich eine sechste Farbe erfindet.
@@ -1184,6 +1209,33 @@
     return braucht ? tage : tage.slice(0, 35);
   }
 
+  // Setzt den Kalender einer Zeile unter genau diese Zeile. Er haengt an
+  // der Spalte statt an der Zeile, weil .inline-embed overflow: hidden hat
+  // und ihn sonst abschneiden wuerde; die Lage wird deshalb gemessen.
+  function placeRowCalendar() {
+    var alt = document.querySelector(".due-cal.row-cal");
+    if (alt && alt.parentNode) alt.parentNode.removeChild(alt);
+    if (state.calAnchor !== "row" || !state.calendarFor) return;
+    var node = findTaskGlobal(state.calendarFor);
+    var embed = document.querySelector('.inline-embed[data-embed-marker="task:' + state.calendarFor + '"]');
+    if (!node || !embed) return;
+    var col = embed.closest(".column");
+    if (!col) return;
+
+    var huelle = document.createElement("div");
+    huelle.innerHTML = kalender(node);
+    var kal = huelle.firstChild;
+    kal.classList.add("row-cal");
+    col.appendChild(kal);
+
+    var cb = col.getBoundingClientRect(), eb = embed.getBoundingClientRect();
+    var links = eb.left - cb.left + 16;
+    // Am rechten Spaltenrand nach innen ruecken, statt hinauszulaufen.
+    links = Math.max(6, Math.min(links, cb.width - kal.offsetWidth - 6));
+    kal.style.left = links + "px";
+    kal.style.top = (eb.bottom - cb.top + 4) + "px";
+  }
+
   function kalender(node) {
     var monat = state.calMonth || (node.due ? node.due.slice(0, 7) : TODAY_ISO.slice(0, 7));
     var d = new Date(monat + "-01T00:00:00");
@@ -1265,7 +1317,18 @@
       var pct = Math.round((prog.done / prog.total) * 100);
       html += '<span class="mini-progress" title="' + prog.done + " von " + prog.total + ' erledigt"><span style="width:' + pct + '%"></span></span>';
     }
-    if (node.due) html += '<span class="due-pill' + duePillClass(node) + '">' + formatDue(node.due) + "</span>";
+    if (node.due) {
+      html += deleteCtx
+        ? '<button class="due-pill' + duePillClass(node) + ' row-due-pill" data-cal-row="' + node.id + '" title="Datum ändern">' + formatDue(node.due) + "</button>"
+        : '<span class="due-pill' + duePillClass(node) + '">' + formatDue(node.due) + "</span>";
+    }
+    // Ein Steuerelement statt dreier: Ohne Datum ein Kalendersymbol beim
+    // Ueberfahren, mit Datum ist die Pille selbst der Knopf. Drei Knoepfe
+    // neben einer Pille, die dasselbe Datum schon nennt, machen die Zeile
+    // voll und doppeln die Information.
+    if (deleteCtx && !node.due) {
+      html += '<button class="row-due-cal" data-cal-row="' + node.id + '" aria-label="Datum wählen" title="Datum wählen">' + svgCalendar() + "</button>";
+    }
     if (deleteCtx) html += '<button class="row-delete" data-delete-owner="' + deleteCtx.ownerId + '" data-delete-block="' + node.id + '" data-delete-kind="task" aria-label="Aufgabe löschen">' + svgTrash() + "</button>";
     html += "</div>";
     return html;
@@ -2044,6 +2107,9 @@
     el.innerHTML = html;
     mountEditors();
     sizeColumns();
+    // Erst nach mountEditors: Vorher gibt es die Zeile noch nicht, an der
+    // der Kalender ausgerichtet wird.
+    placeRowCalendar();
     el.scrollLeft = Math.max(0, el.scrollWidth - contentAreaWidth());
     animateColumnChange(el, beforeRects, newlyOpened);
     prevPanelStack = state.panelStack.slice();
@@ -2494,6 +2560,20 @@
       // kein return: der Klick soll trotzdem noch wirken
     }
 
+    el = e.target.closest("[data-cal-row]");
+    if (el) {
+      var rid = el.getAttribute("data-cal-row");
+      var offen = state.calendarFor === rid && state.calAnchor === "row";
+      state.calendarFor = offen ? null : rid;
+      state.calAnchor = "row";
+      if (!offen) {
+        var rn = findTaskGlobal(rid);
+        state.calMonth = (rn && rn.due ? rn.due : TODAY_ISO).slice(0, 7);
+      }
+      renderColumns();
+      return;
+    }
+
     // --- Fälligkeit ---
     // Kein Menü mehr, das geöffnet und wieder geschlossen werden müsste:
     // Die Zeile steht dauerhaft im Kopf, ein Klick genügt.
@@ -2512,6 +2592,7 @@
     el = e.target.closest("[data-cal-for]");
     if (el) {
       var cfor = el.getAttribute("data-cal-for");
+      state.calAnchor = "header";
       var schonOffen = state.calendarFor === cfor;
       state.calendarFor = schonOffen ? null : cfor;
       // Beim Öffnen im Monat des gesetzten Datums beginnen, sonst im
@@ -2949,7 +3030,7 @@
   // taken up by its name field, so excluding it would leave almost nothing
   // to grab the group by. Instead a press on a field that is already focused
   // is left alone, so selecting and editing text still works normally.
-  var SORT_PRESS_EXCLUDE = ".group-chevron, .nav-delete, .row-delete, .check-btn";
+  var SORT_PRESS_EXCLUDE = ".group-chevron, .nav-delete, .row-delete, .check-btn, .row-due-cal, .row-due-pill";
 
   // Zeigt waehrend der Geste, WAS gezogen wird, und folgt dem Zeiger.
   // Ohne dieses Etikett gibt es zwischen Editor und Sidebar - quer durchs

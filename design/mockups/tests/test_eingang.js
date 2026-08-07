@@ -50,7 +50,8 @@ async function ziehen(page, vonGriff, aufSelektor) {
       return i >= 0 && t >= 0 && i < t;
     }));
   console.log('>>> Eingang taucht nicht noch einmal unter LISTEN auf:',
-    (await page.locator('.nav-item[data-drag-id="inbox"]').count()) === 0);
+    (await page.locator('.nav-item[data-drag-id="inbox"]').count()) === 0 &&
+    (await page.locator('.nav-item[data-list="inbox"]').count()) === 1);
   console.log('>>> Eingang lässt sich nicht umsortieren (kein Ziehgriff):',
     (await page.locator('.nav-item[data-list="inbox"][data-drag-type]').count()) === 0);
   console.log('>>> Eingang lässt sich nicht löschen:',

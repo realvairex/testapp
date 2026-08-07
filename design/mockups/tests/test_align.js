@@ -16,9 +16,9 @@ const { chromium } = require('playwright');
     // linke Kanten: Icons und Text
     const l=(el)=>+el.getBoundingClientRect().x.toFixed(1);
     out.heuteIcon = l(g('.nav-item[data-nav="today"] .nav-icon'));
-    out.inboxPunkt = l(g('.nav-item[data-drag-id="inbox"] .nav-dot'));
+    out.listenPunkt = l(g('.nav-item[data-drag-id="personal"] .nav-dot'));
     out.heuteText = l(g('.nav-item[data-nav="today"] .nav-name'));
-    out.inboxText = l(g('.nav-item[data-drag-id="inbox"] .nav-name'));
+    out.listenText = l(g('.nav-item[data-drag-id="personal"] .nav-name'));
     return out;
   });
   console.log(JSON.stringify(r,null,1));

@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
   await page.waitForTimeout(600);
 
   const sels = [
-    '.nav-item[data-drag-id="inbox"]', '.nav-item[data-drag-id="personal"]',
+    '.nav-item[data-drag-id="groceries"]', '.nav-item[data-drag-id="personal"]',
     '.nav-item[data-drag-id="groceries"]', '.nav-item[data-drag-id="work"]',
     '.group-row[data-drag-id="g1"]', '.group-row[data-drag-id="g2"]',
     '.group-title[data-group-title-for="g1"]', '[data-toggle-group="g1"]',
