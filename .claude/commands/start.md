@@ -13,8 +13,20 @@ Arbeite folgende Schritte ab, bevor du antwortest:
    gekostet haben.
 2. Lies `docs/spec.md` — die Umsetzungsvorlage. Bei jedem Widerspruch
    zwischen Spec und Mockup gilt die Spec.
-3. Verschaffe dir mit `git log --oneline -15` einen Überblick über die
-   letzten Schritte.
+3. **Hol dir zuerst den echten Stand von GitHub**, bevor du ihn beurteilst:
+
+   ```bash
+   git fetch origin
+   git log --oneline -15
+   git log --oneline --all --not HEAD | head -20   # was liegt woanders?
+   ```
+
+   `git log` allein liest **nur lokale Refs** — nach einer Web-Sitzung
+   oder einer Sitzung auf einem anderen Rechner ist der lokale Stand
+   veraltet, ohne dass man es sieht. Weicht `origin/main` von deinem
+   Stand ab, sag es dem Nutzer **vor** der ersten inhaltlichen Änderung
+   und hol den Stand nach (`git pull origin main`). Zwei Stände
+   nebeneinander sind später teuer aufzulösen.
 4. Lies gezielt nach, was für die anstehende Aufgabe relevant ist:
    `docs/decisions.md` für das Warum hinter einer Festlegung,
    `docs/concept.md` für die Produktvision.

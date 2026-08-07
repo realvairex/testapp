@@ -76,7 +76,39 @@ else
   bad "$branch existiert nicht auf origin - noch nie gepusht"
 fi
 
-sec "3. Uebergabestand aktuell"
+sec "3. Stand in main angekommen"
+# Abschnitt 2 prueft nur "Branch == origin/Branch". Das war 2026-08-06 gruen,
+# waehrend der komplette Projektstand an einem Wegwerf-Branch hing und main
+# ein leeres README war. Gepusht ist nicht angekommen - deshalb diese Frage
+# getrennt stellen. Kein automatischer fetch: das Skript laeuft auch offline,
+# und ein stiller Netzzugriff in einer Pruefung ist eine unangenehme
+# Ueberraschung. Stattdessen wird auf "git fetch origin" hingewiesen.
+#
+# Bewusst NICHT im Kurzmodus: ein Nebenbranch ist gepusht, also nicht in
+# Verlustgefahr - er liegt nur am falschen Ort. Ein Hook, der das nach
+# jedem Schritt anmahnt, wird nach zwei Tagen ignoriert, und dann faellt
+# auch der echte Fund nicht mehr auf.
+main_ref=""
+for cand in origin/main origin/master; do
+  git rev-parse --verify --quiet "$cand" >/dev/null && { main_ref="$cand"; break; }
+done
+if [ "$KURZ" = "1" ]; then
+  :
+elif [ -z "$main_ref" ]; then
+  warn "kein origin/main gefunden - laesst sich nicht pruefen"
+elif [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  ok "Arbeit laeuft direkt auf $branch"
+elif git merge-base --is-ancestor HEAD "$main_ref" 2>/dev/null; then
+  ok "$branch ist in $main_ref enthalten"
+else
+  n="$(git rev-list --count "$main_ref..HEAD" 2>/dev/null || echo '?')"
+  bad "$n Commit(s) auf '$branch' sind NICHT in $main_ref"
+  say "              -> gepusht, aber nicht dort, wo die naechste Sitzung sucht."
+  say "                 Mit dem Nutzer klaeren: Fast-Forward nach main oder PR?"
+  say "                 Stand des Refs pruefen mit: git fetch origin"
+fi
+
+sec "4. Uebergabestand aktuell"
 if [ "$KURZ" = "1" ]; then
   :
 elif [ ! -f docs/status.md ]; then
@@ -92,7 +124,7 @@ else
   fi
 fi
 
-sec "4. Entscheidungsprotokoll"
+sec "5. Entscheidungsprotokoll"
 today="$(date '+%Y-%m-%d')"
 if [ "$KURZ" = "1" ]; then
   :
@@ -103,7 +135,7 @@ else
   warn "  -> wurde heute wirklich nichts entschieden?"
 fi
 
-sec "5. Ungerettete Dateien im Scratchpad"
+sec "6. Ungerettete Dateien im Scratchpad"
 sp="${CLAUDE_SCRATCHPAD:-}"
 if [ -z "$sp" ]; then
   sp="$(ls -d /tmp/claude-*/*/*/scratchpad 2>/dev/null | head -1)"
@@ -145,7 +177,7 @@ else
   ok "kein Scratchpad-Verzeichnis gefunden"
 fi
 
-sec "6. Sitzungsprotokoll"
+sec "7. Sitzungsprotokoll"
 if [ "$KURZ" = "1" ]; then
   :
 elif [ -f docs/session-log.md ] && grep -q "^## $today" docs/session-log.md; then

@@ -45,6 +45,23 @@ Arbeite dann das Folgende der Reihe nach ab:
 9. **Alles pushen**, dann **`bash scripts/session-check.sh` erneut
    ausführen**. Läuft es noch nicht sauber durch, ist die Session nicht
    fertig — dann die verbleibenden Punkte abarbeiten und erneut prüfen.
+10. **Den Arbeitsstand nach `main` überführen.** Gepusht heißt nicht
+    angekommen: Arbeitest du auf einem Nebenbranch (jede Web-Sitzung tut
+    das, `claude/…`), liegt der Stand danach zwar auf GitHub, aber
+    **nicht** dort, wo die nächste Sitzung ihn sucht. Genau so hing das
+    Projekt monatelang an `claude/todo-app-brainstorm-fmv1sd`, während
+    `main` ein leeres README war — und jede Prüfung war dabei grün.
+
+    Ist `HEAD` nicht in `origin/main` enthalten, **sag es dem Nutzer und
+    frag nach dem Weg** (Fast-Forward nach `main`, oder Pull Request).
+    Merge nach `main` nie unaufgefordert. Aber verlasse die Sitzung auch
+    nicht, ohne es angesprochen zu haben.
+
+    ```bash
+    git fetch origin
+    git merge-base --is-ancestor HEAD origin/main \
+      && echo "in main enthalten" || echo "NICHT in main"
+    ```
 
 Melde dann in wenigen Zeilen: das Ergebnis des Prüflaufs, was committet
 wurde, was in `docs/status.md` und `docs/session-log.md` neu steht, und

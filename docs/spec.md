@@ -377,6 +377,12 @@ Mehr als eine Überschriftenebene ist für unsere Seitengrößen Overhead.
 Schnellerfassungsfeld direkt darunter deckt das ab, und das `/`-Menü den
 Rest. Übrig bleibt „+ Bild" als sichtbarer Einstieg.
 
+### 4.5 Schicksal des Mockups
+Sobald diese Spezifikation vollständig ist, wird
+`design/mockups/v1-desktop.html` **eingefroren** und als historische
+Referenz gekennzeichnet. Ab dann ist dieses Dokument die Wahrheit — sonst
+driften zwei Implementierungen auseinander und niemand weiß, welche gilt.
+
 ### 4.6 Suche / Befehlspalette (⌘K) — 📋 MERKLISTE
 
 **Noch nicht gebaut, aber beschlossen als Lücke.** Es gibt derzeit keine
@@ -396,9 +402,3 @@ Vorgesehene Form (angeregt durch eine vom Nutzer gezeigte Referenz-App):
 
 Hängt eng mit 4.1 zusammen: Dasselbe Fenster sollte das globale
 Tastenkürzel bedienen, damit Erfassen von überall aus funktioniert.
-
-### 4.5 Schicksal des Mockups
-Sobald diese Spezifikation vollständig ist, wird
-`design/mockups/v1-desktop.html` **eingefroren** und als historische
-Referenz gekennzeichnet. Ab dann ist dieses Dokument die Wahrheit — sonst
-driften zwei Implementierungen auseinander und niemand weiß, welche gilt.

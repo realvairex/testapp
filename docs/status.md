@@ -37,6 +37,26 @@ Seit 2026-08-06 gilt:
 
 Begründung und Hergang: `docs/decisions.md`, Einträge vom 2026-08-06.
 
+### „Gepusht" heißt nicht „angekommen"
+
+Seit 2026-08-07 prüft `scripts/session-check.sh` in **Abschnitt 3**
+getrennt nach, ob der Arbeitsstand tatsächlich in `origin/main` liegt —
+nicht nur, ob der aktuelle Branch gepusht ist. Anlass: Am 2026-08-06 war
+die Prüfung **grün**, während der gesamte Projektstand an einem
+Wegwerf-Branch hing und `main` ein leeres README war.
+
+**Das betrifft jede Web-Sitzung.** Claude Code im Web arbeitet immer auf
+einem Nebenbranch (`claude/…`), nie direkt auf `main`. Der Stand ist dort
+zwar gesichert, aber nicht dort, wo die nächste Sitzung ihn sucht.
+`ende unfold` spricht das jetzt von sich aus an (Schritt 10) und fragt
+nach dem Weg — Fast-Forward nach `main` oder Pull Request. Gemergt wird
+nie unaufgefordert.
+
+`start unfold` holt seit demselben Tag mit `git fetch origin` erst den
+echten Stand, bevor es ihn beurteilt. `git log` allein liest nur lokale
+Refs und kann einen veralteten Klon nicht von einem aktuellen
+unterscheiden.
+
 ### Auf einem anderen Rechner weiterarbeiten
 
 Das gesamte Projekt ist portabel: Doku, Mockup, Prüfskripte, die Hooks in
@@ -128,10 +148,11 @@ Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
 
-**Kleiner offener Faden:** In `spec.md` steht §4.6 vor §4.5. Umsortieren
-wurde am 2026-08-07 angeboten, blieb ohne Rückmeldung, und wurde bewusst
-**nicht** eigenmächtig gemacht — Abschnittsnummern könnten anderswo
-referenziert sein. Beim nächsten Mal einfach mitfragen.
+**Erledigt — §4.5 steht jetzt vor §4.6.** Die Sorge um Referenzen wurde
+am 2026-08-07 sorgfältig geprüft: Es gibt genau **zwei** echte
+Referenzen, beide in diesem Dokument (Abschnitt 2). Getauscht wurden nur
+die Textblöcke, die **Nummern blieben unverändert** — deshalb stimmen
+beide Referenzen weiter. Begründung: `docs/decisions.md`.
 
 **Erledigt — der Session-Start-Hook funktioniert nachweislich.** Am
 2026-08-06 startete eine Sitzung direkt in `~/Documents/Claude/testapp`,

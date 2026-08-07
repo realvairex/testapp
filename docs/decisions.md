@@ -1272,3 +1272,71 @@ dokumentiert, inklusive `git config user.name/user.email`.
    Deshalb wurde die Container-Begründung gestern zwar aus `CLAUDE.md`
    entfernt, aber **nicht ersatzlos** — sie steht jetzt dort, wo sie
    zutrifft, nämlich beim Web-Weg in `status.md`.
+
+## 2026-08-07 — Die Abschlussprüfung fragte nie, ob der Stand ankommt
+
+**Kontext:** Der Nutzer stellte zwei Rückfragen, die wie
+Verständnisfragen klangen und beide eine Lücke aufdeckten: Müsste
+`ende unfold` den Stand nicht ohnehin nach `main` bringen, und müsste
+`start unfold` nicht ohnehin vorher `git pull` machen?
+
+**Befund — beides war nicht abgedeckt:**
+
+- `ende.md` sagte nur „Alles pushen". `session-check.sh` prüfte in
+  Abschnitt 2 lediglich, ob der **aktuelle Branch** mit
+  `origin/<derselbe Branch>` gleichauf ist.
+- `start.md` las mit `git log --oneline -15` ausschließlich **lokale
+  Refs**. Ohne `git fetch` ist ein veralteter Klon nicht von einem
+  aktuellen zu unterscheiden.
+
+**Warum das die schwerere Sorte Fehler ist:** Die Prüfung war am
+2026-08-06 **grün**, während der komplette Projektstand an
+`claude/todo-app-brainstorm-fmv1sd` hing und `main` ein leeres README
+war. Eine Prüfung, die im Schadensfall grün leuchtet, ist schlimmer als
+gar keine — sie erzeugt Sicherheit, statt sie zu geben. Der Grund war
+eine zu eng gestellte Frage: „Ist gepusht?" statt „Ist angekommen?".
+
+**Entscheidung — drei Änderungen:**
+
+1. **`session-check.sh` Abschnitt 3 (neu): „Stand in main angekommen".**
+   Prüft mit `git merge-base --is-ancestor HEAD origin/main`, ob der
+   Arbeitsstand tatsächlich in der Hauptlinie liegt. Als `[OFFEN]`, nicht
+   als `[pruefen]` — genau dieser Fund war einmal existenzbedrohend.
+2. **`ende.md` Schritt 10 (neu).** Meldet den Zustand und **fragt** nach
+   dem Weg (Fast-Forward oder PR). Merge nach `main` bleibt bewusst eine
+   Entscheidung des Nutzers.
+3. **`start.md` Schritt 3 erweitert:** `git fetch origin` vor der
+   Beurteilung des Stands, plus Abgleich gegen `origin/main`.
+
+**Zwei bewusste Einschränkungen:**
+
+- **Kein automatischer `fetch` im Prüfskript.** Es soll offline laufen,
+  und ein stiller Netzzugriff in einer Prüfung ist eine unangenehme
+  Überraschung. Stattdessen weist der Befund auf `git fetch origin` hin.
+- **Abschnitt 3 schweigt im Kurzmodus.** Ein Nebenbranch ist gepusht,
+  also nicht in Verlustgefahr — er liegt nur am falschen Ort. Ein Hook,
+  der das nach jedem Schritt anmahnt, wird nach zwei Tagen ignoriert, und
+  dann fällt auch der echte Fund nicht mehr auf.
+
+**Gegengeprüft:** Der Probelauf meldet die aktuelle Web-Sitzung korrekt
+als „1 Commit nicht in origin/main"; der Kurzmodus schweigt dazu.
+
+## 2026-08-07 — §4.5 vor §4.6 sortiert (Nummern unverändert)
+
+**Kontext:** Der offene Faden aus der Vorsitzung. Umsortieren war
+zurückgestellt worden, weil Abschnittsnummern anderswo referenziert sein
+könnten. Der Nutzer bat um eine sorgfältige Prüfung statt einer
+Vermutung.
+
+**Prüfung:** Alle getrackten Dateien, beide Schreibweisen (`4.5`/`4,5`,
+`4.6`/`4,6`). Ergebnis: **zwei echte Referenzen**, beide in
+`docs/status.md` (Zeilen 117 und 125). Die übrigen Treffer sind keine
+Referenzen — `4,5:1` in `spec.md` und `4.5` in `test_contrast.js` sind
+der WCAG-Kontrastschwellwert, der Treffer in `logo.svg` ist eine
+Pfadkoordinate.
+
+**Entscheidung:** Nur die **Textblöcke** getauscht, die **Nummern
+bleiben** `4.5` und `4.6`. Damit stimmen auch die zwei Referenzen
+unverändert weiter — das Risiko war nicht klein, sondern null.
+Umnummerieren wurde verworfen: Es hätte echten Bruch erzeugt, um ein
+rein kosmetisches Problem zu lösen.
