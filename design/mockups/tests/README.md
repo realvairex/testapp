@@ -12,27 +12,55 @@ jede spätere Session dieselben Messungen neu erfinden.
 
 ## Ausführen
 
-Voraussetzung ist Playwright mit Chromium. In der Session-Umgebung liegt
-es global, deshalb der `NODE_PATH`-Vorspann. **Immer aus dem Repo-Wurzel-
-verzeichnis starten** — die Skripte lösen den Pfad zum Mockup über
-`process.cwd()` auf.
+**Der übliche Weg — ein Befehl, mit Urteil:**
 
 ```bash
-# ein einzelnes Skript
-NODE_PATH="$(npm root -g)" node design/mockups/tests/test_align.js
-
-# alle nacheinander
-for f in design/mockups/tests/test_*.js; do
-  echo "== $f"; NODE_PATH="$(npm root -g)" node "$f"
-done
+bash scripts/run-mockup-tests.sh          # alle
+bash scripts/run-mockup-tests.sh fmt      # nur Skripte, deren Name "fmt" enthält
 ```
 
-Die Skripte haben keine Zusicherungen im Sinne eines Test-Frameworks —
-sie schreiben ihre Messwerte nach stdout. Zeilen mit `>>>` sind die
-eigentlichen Aussagen (`true` = in Ordnung). Ein Skript, das ohne Fehler
-durchläuft und nur `true` meldet, ist bestanden.
+Der Läufer entscheidet pro Skript selbst: Rückgabewert ≠ 0 → `[FEHLER]`,
+eine `>>>`-Zeile endet auf `false` → `[ROT]`, sonst `[ok]`. Vollständige
+Ausgaben landen in `out/` (nicht im Git). Zeitgrenze pro Skript: 600 s,
+über `MOCKUP_TEST_TIMEOUT` einstellbar — die Fuzz-Skripte brauchen
+mehrere Minuten.
 
-Screenshots landen in `out/` (nicht im Git).
+**Getestete Version: Playwright 1.56.1.** Sie ist in der `package.json`
+im Wurzelverzeichnis exakt festgenagelt, mit Lockfile. Die Skripte laufen
+gegen die **global** installierte Playwright-Installation (deshalb der
+`NODE_PATH`-Vorspann); die Deklaration hält fest, gegen welche Version
+zuletzt gemessen wurde. Das ist keine Förmlichkeit: Diese Skripte messen
+gerenderte Pixel und Farbkontraste, und eine andere Chromium-Version
+rendert minimal anders. Ohne die Versionsangabe wäre bei einem roten Lauf
+nicht unterscheidbar, ob das Mockup kaputt ist oder nur der Browser sich
+geändert hat.
+
+**Einzeln aufrufen** geht weiter. **Immer aus dem Repo-Wurzelverzeichnis
+starten** — die Skripte lösen den Pfad zum Mockup über `process.cwd()`
+auf.
+
+```bash
+NODE_PATH="$(npm root -g)" node design/mockups/tests/test_align.js
+```
+
+## Was die Skripte aussagen — und was nicht
+
+Nur **sechs** der 44 Skripte haben echte Zusicherungen (`>>>`-Zeilen, `true` =
+in Ordnung): `test_4bugs`, `test_accum`, `test_gaps`, `test_typing`,
+`test_typing2`, `test_typing3`. Alle übrigen sind **Messskripte**: Sie
+drucken Zahlen, die ein Mensch beurteilen muss. Ein grüner Lauf heißt bei
+ihnen nur „ohne Absturz durchgelaufen", nicht „Werte sind richtig".
+
+Das gilt ausdrücklich auch für `test_contrast`: Die Aussage „erfüllt WCAG
+AA in beiden Themes" wurde einmal von Hand abgelesen und ist **nicht**
+automatisch nachprüfbar.
+
+**`test_4bugs` ist ein bekannter Wackelkandidat** — etwa jeder zweite
+Lauf ist rot, weil beim Tippen in eine eingeklappte Füllzeile die ersten
+Zeichen verlorengehen. **Nicht reparieren:** Der Fehler verschwindet beim
+Flutter-Umstieg ersatzlos. Begründung in `docs/decisions.md`, 2026-08-07.
+
+Screenshots landen ebenfalls in `out/` (nicht im Git).
 
 ## Was womit geprüft wird
 

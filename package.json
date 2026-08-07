@@ -1,0 +1,12 @@
+{
+  "name": "unfold-mockup-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Nagelt die Werkzeug-Abhaengigkeit der Mockup-Pruefskripte fest. Kein App-Code - der entsteht in Flutter/Dart.",
+  "scripts": {
+    "test": "bash scripts/run-mockup-tests.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

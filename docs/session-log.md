@@ -196,3 +196,68 @@ Nachgezogen in `status.md` §0.
   nicht, aber die Sitzung startete eine Ebene über dem Repo — der Hook
   konnte gar nicht auslösen. Der Test hat nicht stattgefunden, statt
   fehlzuschlagen. Richtige Probe: Sitzung direkt in `testapp/` starten.
+
+## 2026-08-07 — Aufräumen: Prüfwerkzeug, Abhängigkeit, Sitzungsbefehle
+
+**Gemacht**
+
+- **Session-Start-Hook auch im Web nachgewiesen.** Diese Sitzung lief in
+  einem frischen Web-Container ohne lokalen Klon; die Zeile
+  „=== Projekt Unfold ===" erschien. Die eingecheckte Arbeitsweise trägt
+  damit auf beiden Wegen.
+- **Zwei Lücken in den Sitzungsbefehlen geschlossen**, beide vom Nutzer
+  aufgedeckt: `ende unfold` brachte den Stand nicht nach `main`,
+  `start unfold` holte ihn nicht von GitHub. Beide handeln jetzt selbst,
+  begrenzt auf den Fast-Forward. `session-check.sh` bekam Abschnitt 3
+  („Stand in main angekommen") als Netz darunter.
+- **`scripts/run-mockup-tests.sh` angelegt** — ein Befehl, der alle
+  Prüfskripte laufen lässt und ein Urteil fällt, statt Zahlen zu drucken.
+- **Playwright auf 1.56.1 festgenagelt** (`package.json` +
+  `package-lock.json`, erzeugt mit `--package-lock-only`, also ohne
+  `node_modules`).
+- **`README.md` geschrieben.** Bestand vorher aus der Zeile `# testapp`.
+- **Datums-Widerspruch bereinigt:** Der Tag-Push-Nachweis ist vom
+  **2026-08-06** (Commit `2c26402`), `status.md` hatte 2026-08-07.
+
+**Entschieden**
+
+- Sitzungsbefehle **handeln**, statt zu fragen — Grenze ist der
+  Fast-Forward, der per Konstruktion nichts verlieren kann. `--force`
+  verboten. (Korrigiert eine Festlegung vom selben Vormittag.)
+- **CI bleibt zurückgestellt**, aber schriftlich statt stillschweigend:
+  Sie müsste beim Flutter-Umstieg neu geschrieben werden und würde ein
+  eingefrorenes Mockup bewachen.
+- **`test_4bugs` wird nicht repariert.** Der Fehler steckt in der
+  Füllzeilen-Konstruktion, die laut `spec.md` §2.3 ohnehin nicht nach
+  Flutter übernommen wird.
+
+**Befunde aus dem ersten echten Prüflauf**
+
+Die Aussage „alle 40 laufen grün" war seit Wochen ungeprüft weitergereicht
+worden. Nachgemessen mit Playwright 1.56.1: **43 grün, 1 Wackelkandidat.**
+
+- `test_4bugs`: über 10 Läufe **5× grün, 5× rot**. Getippter Text
+  zwischen zwei Aufgaben verliert die ersten Zeichen.
+- `test_fuzz_all`: 760 Drag-Kombinationen, **0 Hänger**, keine
+  Seitenfehler — der Pointer-Sortierer ist erneut bestätigt.
+- **Nur sechs** der 44 Skripte haben überhaupt Zusicherungen. Der Rest
+  sind Messskripte, deren Zahlen ein Mensch beurteilen muss — auch
+  `test_contrast`, auf dem die WCAG-Aussage beruht.
+
+**Lehre**
+
+Zwei der drei „Fehler" im ersten Lauf lagen im **Prüfwerkzeug**: eine um
+eine Sekunde zu knappe Zeitgrenze und eine Textsuche, die das Wort
+`false` im angehängten Mess-JSON traf. Ein frisch gebautes Prüfwerkzeug
+gehört zuerst gegen sich selbst geprüft.
+
+Und: Eine Zusicherung, die zu teuer im Nachprüfen ist, wird nicht
+nachgeprüft, sondern geglaubt. Genau deshalb hielt sich „alle grün" so
+lange.
+
+**Offen**
+
+- **Löschregeln und Papierkorb** (`spec.md` §4.3) — weiterhin der nächste
+  inhaltliche Schritt, die vier Fragen stehen unverändert.
+- Der Arbeitsstand liegt auf `claude/start-unfold-r00zcz` und muss nach
+  `main` (erledigt `ende unfold` jetzt selbst).

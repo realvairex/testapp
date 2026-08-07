@@ -118,8 +118,19 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 40 Playwright-Skripte, die das Mockup in
-  einem echten Browser nachmessen. Alle laufen grün.
+- **`design/mockups/tests/`** — 44 Playwright-Skripte, die das Mockup in
+  einem echten Browser nachmessen. Gestartet werden sie mit
+  **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
+  Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
+  nachgemessen: **43 grün, 1 Wackelkandidat** (`test_4bugs`, siehe
+  Abschnitt 4).
+
+  ⚠️ **Wichtige Einschränkung:** Nur **sechs** der 44 Skripte haben echte
+  Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
+  die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
+  Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
+  auf einer automatischen Prüfung. Bewusst nicht umgebaut, weil das
+  Mockup eingefroren wird (`docs/decisions.md`, 2026-08-07).
 - Die Gestaltung ist einmal komplett durchnormalisiert (Schriftgrößen,
   Radien, Abstände, Dauern, Icon-Strichstärke) und erfüllt WCAG AA in
   beiden Themes — nachgemessen mit `test_contrast.js`.
@@ -193,7 +204,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Hover im hellen Design | Muss **heller** als der Grundton sein, nicht dunkler. |
 | Farben aus fremden Screenshots | Werden nicht übernommen — nur Struktur und Anordnung. |
 | Historische Einträge in `docs/decisions.md` | Werden **nicht überschrieben**. Korrekturen kommen als **Nachtrag darunter**, damit nachvollziehbar bleibt, was damals galt. Vom Nutzer bestätigt (2026-08-07). |
-| Git-Tags für Meilensteine | Technisch möglich (nachgewiesen 2026-08-07), aber **vorerst nicht genutzt**. `milestones.md` bleibt die Wahrheit. Tags erst ab echtem App-Code, **zusätzlich** zur Tabelle. |
+| Git-Tags für Meilensteine | Technisch möglich (nachgewiesen 2026-08-06), aber **vorerst nicht genutzt**. `milestones.md` bleibt die Wahrheit. Tags erst ab echtem App-Code, **zusätzlich** zur Tabelle. |
 | Repo-lokale Commit-Identität | **Bleibt so**, obwohl sie einen Klon nicht überlebt. Nach jedem Klon einmal setzen — Schrittfolge in §0. |
 
 ## 4. Fallstricke, die schon einmal Zeit gekostet haben
@@ -215,6 +226,16 @@ dieselbe Antwort noch einmal geben zu müssen.
   contenteditable-Notbehelf**, kein Entwurfsmuster. Sie darf **nicht**
   nach Flutter übernommen werden — dort übernimmt `super_editor` das
   Dokumentmodell. Steht auch so in `spec.md`.
+- **`test_4bugs` ist ein Wackelkandidat — bitte nicht reparieren.** Über
+  10 Läufe 5× grün, 5× rot: Tippt man in die eingeklappte Füllzeile
+  zwischen zwei Aufgaben, gehen die ersten Zeichen verloren
+  (`LINE("EN")` statt `LINE("ZWISCHEN")`). Die Ursache ist genau die
+  Füllzeilen-Konstruktion eine Zeile weiter oben — die eingeklappte
+  Zeile klappt beim ersten Tastendruck auf und schluckt dabei
+  Anschläge. **Der Fehler verschwindet beim Flutter-Umstieg ersatzlos**,
+  weil `super_editor` den Cursor auf einer Knotenposition führt und
+  keine Füllzeile braucht. Zeit, die hier hineinfließt, ist verloren.
+  Nicht als „geht kaputt" missverstehen, wenn der Lauf mal rot ist.
 
 ## 5. Wo was steht
 

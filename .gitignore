@@ -30,3 +30,6 @@ yarn-error.log*
 
 # Test / coverage
 coverage/
+
+# Ausgaben der Mockup-Pruefskripte (Screenshots, Logs)
+design/mockups/tests/out/

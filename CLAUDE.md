@@ -62,9 +62,12 @@ Für dieses Projekt gilt durchgängig:
   (Anlass: 40 Prüfskripte lagen ausschließlich im Scratchpad und wären
   bei einem Sitzungswechsel ersatzlos verloren gewesen. Siehe
   `docs/decisions.md`, 2026-08-06.)
-- **CI:** Sobald eine lauffähige Codebasis existiert, GitHub-Actions-Pipeline
-  einrichten, die bei jedem Push Linting, Type-Checking und Tests laufen
-  lässt.
+- **CI:** GitHub-Actions-Pipeline (Lint, Type-Check, Tests bei jedem Push)
+  **ab dem ersten Flutter-Code**. Für das Mockup bewusst zurückgestellt —
+  sie müsste beim Umstieg neu geschrieben werden und würde ein
+  eingefrorenes Artefakt bewachen. Der Zweck ist bis dahin über
+  `bash scripts/run-mockup-tests.sh` erreichbar. Begründung:
+  `docs/decisions.md`, 2026-08-07.
 - **Tests:** Parallel zu Features schreiben, nicht nachträglich. Kernlogik
   (z.B. Task-Verschachtelung, Fortschrittsberechnung, Datumsfilter) hat
   Priorität.
@@ -167,4 +170,5 @@ Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
 - `docs/milestones.md` — Meilensteine mit Commit-Hash zum Zurückspringen
 - `docs/research-superlist.md` — Recherche zu Superlists Open-Source-Fundament
 - `design/mockups/tests/` — Playwright-Prüfskripte zum Mockup (eigene README)
+- `scripts/run-mockup-tests.sh` — lässt alle Prüfskripte laufen, mit Urteil
 - `scripts/session-check.sh` — Abschlussprüfung beim Sitzungswechsel
