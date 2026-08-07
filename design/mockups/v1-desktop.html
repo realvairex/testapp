@@ -569,6 +569,7 @@
      gewonnene Breite braucht die Zeile in der schmalsten Spalte.
      nowrap ist Absicht: Bricht die Zeile, ist sie zu breit, und das soll
      auffallen statt sich still in zwei Zeilen zu verstecken. */
+  .due-block { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
   .due-row { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: nowrap; min-width: 0; }
   button.due-pill { border: none; font-family: inherit; cursor: pointer; }
   .due-seg { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; flex-shrink: 0; }
@@ -601,10 +602,43 @@
   }
   .due-chip-label > span { overflow: hidden; text-overflow: ellipsis; }
   .due-chip-label svg { flex-shrink: 0; }
-  /* Das native Datumsfeld liegt unsichtbar darunter und wird per
-     showPicker() geoeffnet - sichtbar wuerde es die Browser-Gestaltung in
-     eine sonst durchgestaltete Oberflaeche holen. */
-  .due-chip-input { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+  .due-chip-label { border: none; background: transparent; font-family: inherit; color: inherit; }
+
+  /* Kalender. Klappt IM FLUSS unter der Zeile auf, nicht als schwebendes
+     Fenster - dadurch kann er nicht ueber den Fensterrand hinauslaufen,
+     ohne eine einzige Zeile Positionierungslogik. Sieben Spalten a 26px
+     plus Innenabstand passen in die schmalste Spalte (240px). */
+  .due-cal {
+    margin: 10px 0 2px; padding: 8px; width: fit-content;
+    background: var(--surface-sunken); border: 1px solid var(--line);
+    border-radius: var(--r-md); animation: strip-in var(--dur-base) var(--ease);
+  }
+  @media (prefers-reduced-motion: reduce) { .due-cal { animation: none; } }
+  .due-cal-top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+  .due-cal-month { font-size: var(--fs-sm); font-weight: var(--fw-strong); color: var(--ink); }
+  .due-cal-nav {
+    width: 22px; height: 22px; padding: 0; border: none; background: transparent;
+    color: var(--ink-faint); border-radius: var(--r-sm); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+  .due-cal-nav:hover { background: var(--chip-hover); color: var(--ink); }
+  .due-cal-grid { display: grid; grid-template-columns: repeat(7, 26px); gap: 1px; }
+  .due-cal-wd { font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); text-align: center; padding-bottom: 4px; }
+  .due-cal-day {
+    height: 26px; padding: 0; border: none; background: transparent;
+    font: inherit; font-size: var(--fs-sm); font-variant-numeric: tabular-nums;
+    color: var(--ink); border-radius: var(--r-sm); cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+  .due-cal-day:hover { background: var(--chip-hover); }
+  /* Tage der Nachbarmonate bleiben anklickbar, treten aber zurueck. */
+  .due-cal-day.fremd { color: var(--ink-faint); opacity: 0.5; }
+  /* Heute traegt einen Ring, das gewaehlte Datum eine Flaeche - zwei
+     verschiedene Traeger, damit beide gleichzeitig lesbar sind. */
+  .due-cal-day.heute { box-shadow: inset 0 0 0 1px var(--ink-faint); font-weight: var(--fw-strong); }
+  .due-cal-day.gewaehlt { background: var(--accent); color: var(--accent-ink); font-weight: var(--fw-strong); }
+  .due-cal-day.gewaehlt:hover { background: var(--accent); }
   .due-chip-x {
     width: 20px; height: 20px; padding: 0; border: none; background: transparent;
     color: currentColor; opacity: 0.55; border-radius: 50%; cursor: pointer; flex-shrink: 0;
@@ -789,7 +823,7 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null, calendarFor: null, calMonth: null };
 
   // Die kuratierte Reihe aus docs/spec.md. Sie steht hier einmal, damit die
   // Farbauswahl nicht versehentlich eine sechste Farbe erfindet.
@@ -970,19 +1004,89 @@
       ? (isOverdue(node) ? "Überfällig · " : "") + (vonSegmentGedeckt ? datumKurz(node.due) : formatDue(node.due))
       : "Datum wählen";
 
-    var h = '<div class="due-row">';
+    // Zeile und Kalender stehen in einem gemeinsamen Block, der senkrecht
+    // stapelt. Ohne ihn landet der Kalender NEBEN der Zeile, weil
+    // .col-progress-row ein waagerechter Flex-Container ist.
+    var h = '<div class="due-block"><div class="due-row">';
     h += '<div class="due-seg" role="group" aria-label="Fälligkeit">';
     h += segButton(node, TODAY_ISO, "Heute");
     h += segButton(node, tomorrow, "Morgen");
     h += "</div>";
 
     h += '<div class="due-chip' + chipKlasse + '">';
-    h += '<label class="due-chip-label" title="Datum wählen">' + svgCalendar() +
-         "<span>" + beschriftung + "</span>" +
-         '<input type="date" class="due-chip-input" data-pick-due="' + node.id + '" value="' + (node.due || "") + '" tabindex="-1" /></label>';
+    h += '<button type="button" class="due-chip-label" data-cal-for="' + node.id + '"' +
+         ' aria-expanded="' + (state.calendarFor === node.id ? "true" : "false") + '"' +
+         ' title="Datum wählen">' + svgCalendar() + "<span>" + beschriftung + "</span></button>";
     if (node.due) {
       h += '<button class="due-chip-x" data-set-due="' + node.id + '" data-due-value="" ' +
            'aria-label="Fälligkeit entfernen" title="Fälligkeit entfernen">' + svgClose() + "</button>";
+    }
+    h += "</div></div>";
+    if (state.calendarFor === node.id) h += kalender(node);
+    h += "</div>";
+    return h;
+  }
+
+  // Eigener Kalender statt des nativen Datumsfeldes. Zwei Gründe:
+  // Das Browser-Widget bringt seine eigene Gestaltung in eine sonst
+  // durchgestaltete Oberfläche, und es öffnet als schwebendes Fenster.
+  // Dieser hier klappt IM FLUSS unter der Zeile auf - wie die Farbreihe im
+  // Spaltenkopf. Dadurch kann er nicht über den Fensterrand hinauslaufen,
+  // ohne dass es dafür eine einzige Zeile Positionierungslogik braucht.
+  var WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  var MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+                "Juli", "August", "September", "Oktober", "November", "Dezember"];
+
+  function isoVon(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+           "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function monatVerschieben(monatIso, delta) {
+    var d = new Date(monatIso + "-01T00:00:00");
+    d.setMonth(d.getMonth() + delta);
+    return isoVon(d).slice(0, 7);
+  }
+
+  function monatsGitter(monatIso) {
+    var d = new Date(monatIso + "-01T00:00:00");
+    var jahr = d.getFullYear(), monat = d.getMonth();
+    // Woche beginnt am Montag: getDay() liefert 0 für Sonntag.
+    var versatz = (new Date(jahr, monat, 1).getDay() + 6) % 7;
+    var tage = [];
+    for (var i = 0; i < 42; i++) {
+      var t = new Date(jahr, monat, 1 - versatz + i);
+      tage.push({ iso: isoVon(t), tag: t.getDate(), imMonat: t.getMonth() === monat });
+    }
+    // Sechste Zeile nur zeigen, wenn sie Tage dieses Monats enthält - sonst
+    // springt die Höhe des Kalenders von Monat zu Monat ohne Grund.
+    var sechste = tage.slice(35);
+    var braucht = false;
+    for (var k = 0; k < sechste.length; k++) if (sechste[k].imMonat) braucht = true;
+    return braucht ? tage : tage.slice(0, 35);
+  }
+
+  function kalender(node) {
+    var monat = state.calMonth || (node.due ? node.due.slice(0, 7) : TODAY_ISO.slice(0, 7));
+    var d = new Date(monat + "-01T00:00:00");
+    var tage = monatsGitter(monat);
+
+    var h = '<div class="due-cal" role="group" aria-label="Datum wählen">';
+    h += '<div class="due-cal-top">';
+    h += '<button class="due-cal-nav" data-cal-step="-1" aria-label="Vorheriger Monat">' + svgChevronLeft() + "</button>";
+    h += '<span class="due-cal-month">' + MONATE[d.getMonth()] + " " + d.getFullYear() + "</span>";
+    h += '<button class="due-cal-nav" data-cal-step="1" aria-label="Nächster Monat">' + svgChevronRight() + "</button>";
+    h += "</div>";
+
+    h += '<div class="due-cal-grid">';
+    for (var w = 0; w < 7; w++) h += '<span class="due-cal-wd">' + WOCHENTAGE[w] + "</span>";
+    for (var i = 0; i < tage.length; i++) {
+      var t = tage[i];
+      var kl = "due-cal-day";
+      if (!t.imMonat) kl += " fremd";
+      if (t.iso === TODAY_ISO) kl += " heute";
+      if (node.due && t.iso === node.due) kl += " gewaehlt";
+      h += '<button class="' + kl + '" data-cal-day="' + node.id + '" data-cal-value="' + t.iso + '">' + t.tag + "</button>";
     }
     h += "</div></div>";
     return h;
@@ -1005,6 +1109,9 @@
   function svgImg() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.34"/><circle cx="5" cy="6" r="1" fill="currentColor"/><path d="M2 11l3.5-3.5L8 10l2-2 3 3" stroke="currentColor" stroke-width="1.34" stroke-linejoin="round"/></svg>'; }
   function svgClose() { return '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.16" stroke-linecap="round"/></svg>'; }
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  // Effektive Strichstärke 1,25px: 1.34 × (14 ÷ 15). Siehe docs/spec.md, Icons.
+  function svgChevronLeft() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M9.2 3.5l-4 4 4 4" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  function svgChevronRight() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M5.8 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
   // Every part is drawn symmetrically about x = 6.5 so the icon sits dead
   // centre in its button. The can body used to run 3.5 - 10.5, i.e. centred
@@ -2252,16 +2359,44 @@
       return;
     }
 
-    // Der Chip öffnet den nativen Kalender. Das Datumsfeld liegt unsichtbar
-    // darunter; showPicker() braucht eine Nutzeraktion, ein Klick ist eine.
-    el = e.target.closest(".due-chip-label");
+    // Der Chip klappt den eigenen Kalender auf bzw. wieder zu.
+    el = e.target.closest("[data-cal-for]");
     if (el) {
-      var picker = el.querySelector(".due-chip-input");
-      if (picker) {
-        try { picker.showPicker(); }
-        catch (err) { picker.focus(); }
+      var cfor = el.getAttribute("data-cal-for");
+      var schonOffen = state.calendarFor === cfor;
+      state.calendarFor = schonOffen ? null : cfor;
+      // Beim Öffnen im Monat des gesetzten Datums beginnen, sonst im
+      // laufenden - man sucht meist in der Nähe dessen, was schon dasteht.
+      if (!schonOffen) {
+        var cnode = findTaskGlobal(cfor);
+        state.calMonth = (cnode && cnode.due ? cnode.due : TODAY_ISO).slice(0, 7);
       }
+      renderColumns();
       return;
+    }
+
+    el = e.target.closest("[data-cal-step]");
+    if (el) {
+      state.calMonth = monatVerschieben(state.calMonth || TODAY_ISO.slice(0, 7),
+                                        parseInt(el.getAttribute("data-cal-step"), 10));
+      renderColumns();
+      return;
+    }
+
+    el = e.target.closest("[data-cal-day]");
+    if (el) {
+      var kNode = findTaskGlobal(el.getAttribute("data-cal-day"));
+      if (kNode) kNode.due = el.getAttribute("data-cal-value");
+      state.calendarFor = null;
+      renderAll();
+      return;
+    }
+
+    // Klick irgendwo sonst schließt den Kalender.
+    if (state.calendarFor && !e.target.closest(".due-cal")) {
+      state.calendarFor = null;
+      renderColumns();
+      // kein return: der Klick soll trotzdem noch wirken
     }
 
     el = e.target.closest("[data-open-task]");
@@ -2479,14 +2614,6 @@
     }
     serializeEditor(ownerId);
     renderColumns();
-  });
-
-  document.addEventListener("change", function (e) {
-    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-pick-due")) {
-      var pNode = findTaskGlobal(e.target.getAttribute("data-pick-due"));
-      if (pNode) pNode.due = e.target.value || null;
-      renderAll();
-    }
   });
 
   document.addEventListener("input", function (e) {

@@ -102,6 +102,49 @@ const { chromium } = require('playwright');
   console.log('>>> Überfälliges trägt zusätzlich einen Rahmen:',
     ueber.klassen.includes('overdue') && ueber.rahmen !== 'none');
 
+  // --- Kalender ---
+  // Er klappt IM FLUSS unter der Zeile auf, nicht als schwebendes Fenster.
+  // Das ist kein Schönheitspunkt: Ein Overlay am rechten Fensterrand wird
+  // abgeschnitten (am 2026-08-07 an zwei Entwürfen gemessen), ein Element
+  // im Fluss kann das per Konstruktion nicht.
+  await page.locator('.column').last().locator('.due-chip-label').click();
+  await page.waitForTimeout(450);
+  const kal = page.locator('.due-cal');
+  console.log('>>> Klick auf den Chip öffnet einen Kalender:', await kal.isVisible());
+  console.log('>>> Kalender liegt im Fluss, ist kein schwebendes Fenster:',
+    (await kal.evaluate((e) => getComputedStyle(e).position)) === 'static');
+
+  const kalMasse = await page.evaluate(() => {
+    const cols = document.querySelectorAll('.column');
+    const c = cols[cols.length - 1];
+    const cal = c.querySelector('.due-cal');
+    const cb = c.getBoundingClientRect(), kb = cal.getBoundingClientRect();
+    return { spalte: +cb.width.toFixed(1), kalender: +kb.width.toFixed(1), ueberstand: +(kb.right - cb.right).toFixed(1) };
+  });
+  console.log('Kalender:', JSON.stringify(kalMasse));
+  console.log('>>> Kalender passt in die Spalte:', kalMasse.ueberstand < 0);
+
+  console.log('>>> Woche beginnt am Montag:',
+    (await page.locator('.due-cal-wd').first().innerText()) === 'Mo');
+  console.log('>>> heutiger Tag ist eigens markiert:',
+    (await page.locator('.due-cal-day.heute').count()) === 1);
+
+  const monatVorher = await page.locator('.due-cal-month').innerText();
+  await page.locator('[data-cal-step="1"]').click();
+  await page.waitForTimeout(350);
+  const monatNachher = await page.locator('.due-cal-month').innerText();
+  console.log('Monatswechsel:', monatVorher, '->', monatNachher);
+  console.log('>>> Monat lässt sich blättern:', monatVorher !== monatNachher);
+
+  await page.locator('.due-cal-day').nth(20).click();
+  await page.waitForTimeout(400);
+  console.log('>>> Auswahl setzt das Datum und schließt den Kalender:',
+    (await page.locator('.due-cal').count()) === 0 &&
+    /\d+\.\s\w+/.test(await page.locator('.column').last().locator('.due-chip-label span').innerText()));
+
+  console.log('>>> kein natives Datumsfeld mehr in der Oberfläche:',
+    (await page.locator('input[type="date"]').count()) === 0);
+
   console.log('>>> keine Seitenfehler:', fehler.length === 0);
   if (fehler.length) console.log(fehler);
   await b.close();

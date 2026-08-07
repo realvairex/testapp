@@ -1714,7 +1714,8 @@ genau die Art Doppelung, die beim nächsten Ändern auseinanderläuft.
 
 **Gegengeprüft:** `test_theme_switch.js` umgestellt und um zwei
 Zusicherungen erweitert — „Schalter ist ohne Aufklappen sichtbar" und
-„kein Rest des alten Optionen-Menüs". Neun Zusicherungen, alle grün.
+„kein Rest des alten Optionen-Menüs". Acht Zusicherungen, alle grün.
+(Ich hatte hier zunächst neun geschrieben; der Läufer zählt acht.)
 Deckungsgleichheit weiterhin 0,0 px Versatz und 0,0 px Breitendifferenz;
 Kontraste unverändert (hell 12,91 / 4,70 · dunkel 11,04 / 6,82). Keine
 Seitenfehler beim Laden, beim mehrfachen Umschalten oder nach einem
@@ -1850,3 +1851,71 @@ Prüfwerkzeug (`test_due`). Beide Male war der Schaden lautlos: Das eine
 hätte ohne Animation ausgesehen, das andere hätte eine Prüfung
 weggenommen. Ein vollständiger Durchlauf **nach** jedem Umbau ist deshalb
 keine Kür.
+
+## 2026-08-07 — Eigener Kalender, im Fluss statt als Fenster
+
+**Kontext:** Der Nutzer meldete, dass „Datum wählen" und der Klick auf ein
+gesetztes Datum **nichts tun** — man kann kein beliebiges Datum
+auswählen. Dazu der Hinweis, an das Leitmotiv zu denken: minimalistisch,
+intuitiv, so wenige Klicks wie möglich, umfangreich ohne überfüllt zu
+sein.
+
+**Warum es nicht ging — nachgemessen, nicht vermutet:** Der Chip war ein
+`<label>` mit einem unsichtbaren `<input type="date">` darunter, geöffnet
+per `showPicker()`. Eine Klickverfolgung zeigte, dass **ein** Mausklick
+**zwei** Ereignisse auslöst: eines auf den Text und ein zweites, das das
+`<label>` nativ an das Eingabefeld weiterreicht. Der erste
+`showPicker()`-Aufruf verbraucht die Nutzeraktivierung, der zweite
+scheitert daran — und mein `catch` schluckte den Fehler. Ein Fehler, der
+nur im echten Browser auftritt und in einer Messung „ok" meldet.
+
+**Die Reparatur wäre einfach gewesen** (Weiterleitung unterbinden). Sie
+wird trotzdem nicht gemacht, weil die Grundlage falsch war:
+
+1. **Das native Datumsfeld ist Fremdgestaltung.** Genau deshalb hatte ich
+   es unsichtbar gemacht — im alten Menü sah es wie ein Fremdkörper aus.
+   Ein unsichtbar gemachtes Element, das ein sichtbares Browser-Fenster
+   öffnet, löst das Problem nicht, es verschiebt es.
+2. **Es öffnet als schwebendes Fenster.** Unser eigener Grundsatz
+   (`spec.md` §2.5) sagt: Overlays sind die letzte Wahl. Und wir hatten am
+   selben Tag **gemessen**, dass Overlays am rechten Fensterrand
+   abgeschnitten werden.
+
+**Entscheidung: ein eigener Kalender, der im Fluss aufklappt** — genau
+wie die Farbreihe im Spaltenkopf. Dieselbe Interaktionssprache, zweimal
+angewandt, statt zweier verschiedener Lösungen für dasselbe Muster
+„Wert aus einer Menge wählen".
+
+- **Sieben Spalten à 26 px**, Woche beginnt am Montag. Gemessen **206 px**
+  breit — passt mit 94,7 px Luft in die schmalste Spalte (240 px Minimum).
+  Ein Overlay hätte hier Positionierungslogik gebraucht; ein Element im
+  Fluss kann per Konstruktion nicht überlaufen.
+- **Heute trägt einen Ring, das gewählte Datum eine Fläche.** Zwei
+  verschiedene Träger, damit beide gleichzeitig lesbar bleiben — sonst
+  verschwindet „heute", sobald es auch das gewählte Datum ist.
+- **Tage der Nachbarmonate bleiben anklickbar**, treten aber zurück. Wer
+  den 1. des Folgemonats sieht, will ihn auch treffen können.
+- **Die sechste Zeile erscheint nur, wenn sie Tage des Monats enthält** —
+  sonst springt die Höhe des Kalenders von Monat zu Monat ohne Grund.
+- **Beim Öffnen** steht der Monat des gesetzten Datums, sonst der
+  laufende: Man sucht meist in der Nähe dessen, was schon dasteht.
+
+**Klickzahl:** Datum in dieser Woche → **ein** Klick (Heute/Morgen).
+Beliebiges Datum → zwei (Chip, Tag). Anderer Monat → drei. Das native
+Feld hätte im besten Fall dieselbe Zahl gebraucht, aber mit
+Browser-Gestaltung und einem abschneidbaren Fenster.
+
+**Layoutfehler beim Bauen, gleich behoben:** Der Kalender landete
+zunächst **neben** der Zeile statt darunter — `.col-progress-row` ist ein
+waagerechter Flex-Container. Zeile und Kalender stehen jetzt in einem
+gemeinsamen, senkrecht stapelnden Block.
+
+**Ersatzlos entfernt:** das unsichtbare `<input type="date"]`, der
+`change`-Handler dazu und `data-pick-due`. Es gibt jetzt **kein** natives
+Datumsfeld mehr in der Oberfläche — als Zusicherung im Prüfskript
+festgehalten.
+
+**Gegengeprüft:** `test_due_row.js` auf 21 Zusicherungen erweitert, alle
+grün — darunter „Kalender liegt im Fluss, ist kein schwebendes Fenster",
+„Kalender passt in die Spalte", „Woche beginnt am Montag" und „kein
+natives Datumsfeld mehr in der Oberfläche".

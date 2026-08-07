@@ -375,7 +375,16 @@ Aufklappmenü:
   zutreffende ist markiert — der Zustand ist **ohne einen Klick** ablesbar.
 - **Ein Chip** daneben für jedes andere Datum. Ohne Datum trägt er die
   Einladung „Datum wählen", mit Datum das Datum selbst und ein ✕ zum
-  Entfernen. Er öffnet den nativen Kalender.
+  Entfernen.
+- **Der Chip öffnet einen eigenen Kalender**, der **im Fluss** unter der
+  Zeile aufklappt — kein schwebendes Fenster und ausdrücklich **nicht**
+  das native Datumsfeld des Browsers. Sieben Spalten, Woche beginnt am
+  Montag, 206 px breit (passt in die schmalste Spalte von 240 px).
+  *Heute* trägt einen Ring, das *gewählte* Datum eine Fläche — zwei
+  verschiedene Träger, damit beide gleichzeitig lesbar bleiben. Tage der
+  Nachbarmonate bleiben anklickbar, treten aber zurück. Die sechste
+  Zeile erscheint nur, wenn sie Tage des Monats enthält, sonst springt
+  die Höhe grundlos.
 - **Der Chip wiederholt die Schnellwahl nicht.** Ist „Heute" aktiv, zeigt
   er `5. Aug`, nicht noch einmal „Heute" — er ergänzt um die konkrete
   Angabe.
