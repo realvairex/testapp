@@ -616,18 +616,15 @@
   .empty-state .empty-mark .brand-logo { height: 34px; }
   .empty-state .empty-sub { font-size: var(--fs-sm); color: var(--ink-faint); opacity: 0.8; }
 
-  .options-wrap { position: relative; }
-  .options-panel {
-    position: absolute; left: 0; bottom: calc(100% + 8px); width: 224px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-    box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.28); padding: 12px; z-index: 20;
-  }
-  .options-panel[hidden] { display: none; }
-  .options-title { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin: 2px 2px 8px; }
-  /* Segmentierter Schalter mit gleitendem Knopf. Kein gap: die drei
-     Felder muessen exakt ein Drittel breit sein, sonst stimmt der Weg des
-     Knopfes (translateX(100%) = genau ein Feld) nicht mehr. */
-  .theme-segmented { position: relative; display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 4px; }
+  /* Segmentierter Schalter mit gleitendem Knopf. Er steht direkt in der
+     Sidebar, wo vorher der Knopf "Optionen" ein Aufklapp-Panel oeffnete:
+     Ein Menue fuer eine einzige Einstellung mit zwei Werten ist ein
+     Umweg - man sieht die aktuelle Wahl nicht, ohne es zu oeffnen.
+     Kein gap zwischen den Feldern: sie muessen exakt gleich breit sein,
+     sonst stimmt der Weg des Knopfes (translateX(100%) = genau ein Feld)
+     nicht mehr. --seg-count wird von der Auszeichnung gesetzt, damit
+     CSS und JS nicht auseinanderlaufen koennen. */
+  .theme-segmented { position: relative; display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 4px; margin-top: 4px; }
   /* Der Knopf ist ein eigenes Element und wird ausschliesslich ueber
      transform bewegt, nie ueber left/width. Layout-Eigenschaften zu
      animieren erzwingt in jedem Bild ein neues Layout; transform laeuft
@@ -635,7 +632,7 @@
      Abschnitt "Bewegung". */
   .theme-seg-thumb {
     position: absolute; left: 4px; top: 4px; bottom: 4px;
-    width: calc((100% - 8px) / 3);
+    width: calc((100% - 8px) / var(--seg-count, 2));
     background: var(--surface); border-radius: var(--r-sm);
     box-shadow: var(--el-1); pointer-events: none;
     transition: transform var(--dur-base) var(--ease);
@@ -735,13 +732,14 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, optionsOpen: false, dueMenuFor: null };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, dueMenuFor: null };
 
   // Reihenfolge des Darstellungs-Schalters: dunkel links, hell rechts.
-  // Die Reihenfolge steht an genau einer Stelle, weil sie zweimal gebraucht
-  // wird - beim Aufbau des Schalters und beim Berechnen der Knopfposition.
-  var THEME_ORDER = ["dark", "system", "light"];
-  var THEME_LABELS = { dark: "Dunkel", system: "System", light: "Hell" };
+  // Steht an genau einer Stelle, weil sie dreifach gebraucht wird - beim
+  // Aufbau der Felder, beim Berechnen der Knopfposition und als
+  // --seg-count fuer dessen Breite.
+  var THEME_ORDER = ["dark", "light"];
+  var THEME_LABELS = { dark: "Dunkel", light: "Hell" };
 
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
   function findGroup(id) { for (var i = 0; i < groups.length; i++) { if (groups[i].id === id) return groups[i]; } return null; }
@@ -918,7 +916,6 @@
   function svgImg() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.34"/><circle cx="5" cy="6" r="1" fill="currentColor"/><path d="M2 11l3.5-3.5L8 10l2-2 3 3" stroke="currentColor" stroke-width="1.34" stroke-linejoin="round"/></svg>'; }
   function svgClose() { return '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.16" stroke-linecap="round"/></svg>'; }
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
-  function svgGearPath() { return '<path d="M7.5 5.3a2.2 2.2 0 100 4.4 2.2 2.2 0 000-4.4z" stroke="currentColor" stroke-width="1.25"/><path d="M7.5 1.5v1.3M7.5 12.2v1.3M13.5 7.5h-1.3M2.8 7.5H1.5M11.6 3.4l-.9.9M4.3 10.7l-.9.9M11.6 11.6l-.9-.9M4.3 4.3l-.9-.9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>'; }
 
   // Every part is drawn symmetrically about x = 6.5 so the icon sits dead
   // centre in its button. The can body used to run 3.5 - 10.5, i.e. centred
@@ -1875,18 +1872,13 @@
     html += '<div class="sidebar-spacer"></div>';
 
     var pref = currentThemePref();
-    html += '<div class="options-wrap">';
-    html += '<button class="nav-item" id="optionsBtn" type="button"><svg class="nav-icon" viewBox="0 0 15 15" fill="none">' + svgGearPath() + '</svg><span class="nav-name">Optionen</span></button>';
-    html += '<div class="options-panel" id="optionsPanel"' + (state.optionsOpen ? "" : " hidden") + '>';
-    html += '<div class="options-title">Darstellung</div>';
-    // Reihenfolge: dunkel links, hell rechts. "System" steht in der Mitte,
-    // weil es genau dazwischen liegt - es folgt der Systemeinstellung und
-    // ist damit weder das eine noch das andere.
-    var segIdx = THEME_ORDER.indexOf(pref); if (segIdx < 0) segIdx = 1;
-    html += '<div class="theme-segmented" role="radiogroup" aria-label="Darstellung">';
+    // Reihenfolge: dunkel links, hell rechts.
+    var segIdx = THEME_ORDER.indexOf(pref); if (segIdx < 0) segIdx = 0;
+    html += '<div class="theme-segmented" role="radiogroup" aria-label="Darstellung"' +
+            ' style="--seg-count: ' + THEME_ORDER.length + '">';
     // Startposition steht direkt im Markup: Ein frisch erzeugtes Element
     // hat keinen Vorher-Wert, auf dem ein Uebergang laufen koennte - der
-    // Knopf sitzt beim Oeffnen des Menues also sofort richtig und gleitet
+    // Knopf sitzt beim Aufbau der Sidebar also sofort richtig und gleitet
     // erst bei einem echten Wechsel.
     html += '<span class="theme-seg-thumb" aria-hidden="true" style="transform: translateX(' + (segIdx * 100) + '%)"></span>';
     for (var ti = 0; ti < THEME_ORDER.length; ti++) {
@@ -1896,7 +1888,7 @@
               ' aria-checked="' + (on ? "true" : "false") + '" data-set-theme="' + tk + '">' +
               THEME_LABELS[tk] + "</button>";
     }
-    html += "</div></div></div>";
+    html += "</div>";
 
     html += '<div class="sidebar-bottom-actions">';
     html += '<button class="icon-action-btn primary" id="newListBtn" type="button" title="Neue Liste" aria-label="Neue Liste">' + svgPlus() + "</button>";
@@ -1905,9 +1897,11 @@
     el.innerHTML = html;
   }
 
+  // Nur noch zwei Werte. Der Rueckfall auf "light" greift nur in dem
+  // Wimpernschlag vor dem ersten Setzen von data-theme; bis dahin regelt
+  // der @media-Block die Darstellung.
   function currentThemePref() {
-    var attr = document.documentElement.getAttribute("data-theme");
-    return attr === "dark" ? "dark" : attr === "light" ? "light" : "system";
+    return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
   }
 
   // Aktualisiert den segmentierten Schalter an Ort und Stelle, statt die
@@ -1918,7 +1912,7 @@
     var wrap = document.querySelector(".theme-segmented");
     if (!wrap) return;
     var pref = currentThemePref();
-    var idx = THEME_ORDER.indexOf(pref); if (idx < 0) idx = 1;
+    var idx = THEME_ORDER.indexOf(pref); if (idx < 0) idx = 0;
     var thumb = wrap.querySelector(".theme-seg-thumb");
     if (thumb) thumb.style.transform = "translateX(" + (idx * 100) + "%)";
     var btns = wrap.querySelectorAll(".theme-seg-btn");
@@ -2619,27 +2613,14 @@
   });
 
   document.addEventListener("click", function (e) {
-    if (e.target.closest("#optionsBtn")) {
-      state.optionsOpen = !state.optionsOpen;
-      renderSidebar();
-      return;
-    }
     var themeChoice = e.target.closest("[data-set-theme]");
     if (themeChoice) {
-      var choice = themeChoice.getAttribute("data-set-theme");
-      if (choice === "system") { document.documentElement.removeAttribute("data-theme"); }
-      else { document.documentElement.setAttribute("data-theme", choice); }
-      // Das Menue bleibt offen und wird an Ort und Stelle nachgezogen.
-      // Zwei Gruende: renderSidebar() wuerde den gleitenden Knopf als neues
-      // Element erzeugen, das nicht gleiten kann - und ein Menue, das sich
-      // beim ersten Klick schliesst, laesst sich nicht zum Vergleichen von
-      // Hell und Dunkel benutzen, wofuer der Schalter ja da ist.
+      document.documentElement.setAttribute("data-theme", themeChoice.getAttribute("data-set-theme"));
+      // Der Schalter wird an Ort und Stelle nachgezogen, nicht neu gebaut:
+      // renderSidebar() wuerde den gleitenden Knopf als frisches Element
+      // erzeugen, und CSS-Uebergaenge laufen darauf nicht - er wuerde
+      // springen statt zu gleiten.
       syncThemeSegmented();
-      return;
-    }
-    if (state.optionsOpen && !e.target.closest(".options-wrap")) {
-      state.optionsOpen = false;
-      renderSidebar();
     }
   });
 

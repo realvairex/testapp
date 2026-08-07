@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
     '.nav-item[data-drag-id="groceries"]', '.nav-item[data-drag-id="work"]',
     '.group-row[data-drag-id="g1"]', '.group-row[data-drag-id="g2"]',
     '.group-title[data-group-title-for="g1"]', '[data-toggle-group="g1"]',
-    '#sidebar .sidebar-spacer', '#sidebar .brand', '[data-nav="today"]', '#optionsBtn',
+    '#sidebar .sidebar-spacer', '#sidebar .brand', '[data-nav="today"]', '.theme-segmented',
     '#contentArea', '.page-editor', '.inline-embed', '.inline-embed [data-embed-grip]',
     '.check-btn', '.task-row', '.quick-add input', '.col-title',
   ];

@@ -199,7 +199,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Die zwei Knöpfe unten links in der Sidebar | Die **unterschiedliche Größe ist Absicht**. Nicht angleichen. Der kleinere steht seit `432b409` auf derselben Grundlinie wie der große, nicht neben dessen Mitte. |
 | Neuentwurf des unteren Sidebar-Bereichs | Vier Varianten wurden vorgelegt und **alle abgelehnt** (2026-08-06). Der Bereich bleibt wie er ist. Nicht erneut vorschlagen. |
 | „+ Bild" in der unteren Leiste | Bleibt. |
-| Darstellungs-Schalter (Optionen) | Segmentiert mit **gleitendem Knopf**, Reihenfolge **Dunkel · System · Hell**. „System" bleibt erhalten — die Bildvorlage zeigte zwei Felder, aber die Systemfolge stillschweigend zu streichen wäre ein Funktionsverlust. Das Menü bleibt beim Umschalten **offen**. Geprüft von `test_theme_switch.js`. |
+| Darstellungs-Schalter | Segmentiert mit **gleitendem Knopf**, genau **zwei** Felder: **Dunkel links, Hell rechts**. „System" wurde auf Wunsch des Nutzers **entfernt** (2026-08-07) — nicht erneut vorschlagen. Der Schalter steht **direkt in der Sidebar** und hat den Knopf „Optionen" samt Aufklapp-Panel ersetzt. Geprüft von `test_theme_switch.js`. |
 | „+" an der Gruppenzeile (Liste anlegen) | Beim Überfahren wechselt **nur die Icon-Farbe** auf `--accent-strong`, **keine Fläche**. Der Papierkorb daneben behält seine Fläche — die Gewichtung bildet die Tragweite ab. Geprüft von `test_group_add_hover.js`. |
 | „+ Aufgabe" in der unteren Leiste | Wurde entfernt — das Eingabefeld erfüllt denselben Zweck. |
 | Listen-Kennzeichnung in der Sidebar | **Farbige Punkte**, keine Ordner-Icons. |

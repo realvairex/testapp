@@ -1659,3 +1659,63 @@ Breitendifferenz 0,0 px), Bewegung per `transform` statt Layout, Menü
 bleibt offen, und die vier Kontrastwerte oben. Damit ist auch die
 `transform`-Regel erstmals **mechanisch** abgesichert und nicht nur
 beschrieben.
+
+### Nachtrag, gleicher Tag — zwei Felder, und der Schalter ersetzt den Optionen-Knopf
+
+Der Eintrag oben behielt „System" bei und ließ den Schalter in einem
+Aufklapp-Panel hinter dem Knopf „Optionen" sitzen. **Beides hat der
+Nutzer korrigiert.** Der alte Text bleibt stehen, damit nachvollziehbar
+ist, was zwischenzeitlich galt.
+
+**1. Nur noch zwei Felder: Dunkel · Hell.** Ich hatte „System" bewusst
+behalten, um die Systemfolge nicht stillschweigend zu streichen, und das
+so gesagt. Der Nutzer hat entschieden: zwei. Damit ist es entschieden —
+die Option ist entfernt, nicht versteckt.
+
+Was das technisch bedeutet: `data-theme` trägt jetzt immer `light` oder
+`dark`, nie mehr gar nichts. Der Block
+`@media (prefers-color-scheme: dark)` in der CSS **bleibt trotzdem**: Er
+regelt weiterhin den ersten Bildaufbau, bevor das Skript `data-theme`
+setzt. Er ist damit vom Hauptweg zur Rückfallebene geworden — wer die
+Farben ändert, muss ihn weiter mitpflegen (siehe Fallstrick „Drei
+Theme-Blöcke" in `docs/status.md`).
+
+**2. Der Schalter ersetzt den Knopf „Optionen" samt Panel.** Er steht
+jetzt direkt in der Sidebar, unten über den beiden Aktionsknöpfen.
+
+**Warum das die bessere Lösung ist — und ich es vorher hätte sehen
+müssen:** Ein Aufklapp-Menü für **eine einzige Einstellung mit zwei
+Werten** ist ein Umweg mit drei Nachteilen. Man sieht die aktuelle Wahl
+nicht, ohne das Menü zu öffnen. Man braucht zwei Klicks statt einem. Und
+der eigentliche Zweck eines segmentierten Schalters — beide Zustände
+nebeneinander sehen und vergleichen — wird von einem Menü, das darüber
+liegt, gerade zunichtegemacht. Ich hatte im Eintrag oben noch eigens
+dafür gesorgt, dass das Menü offen **bleibt**; das war die Reparatur
+eines Symptoms, dessen Ursache das Menü selbst war.
+
+**Ersatzlos entfernt:** `.options-wrap`, `.options-panel`,
+`.options-title`, `state.optionsOpen`, die beiden Klick-Zweige zum
+Öffnen und Schließen sowie `svgGearPath()` — das Zahnrad-Icon hatte
+keinen zweiten Verwendungsort. Toter Code, der stehen bleibt, wird beim
+nächsten Lesen für absichtlich gehalten.
+
+**Nachgezogen, was sonst still ausgefallen wäre:** `test_fuzz_all.js` und
+`test_sidebar_fuzz.js` zogen bisher an `#optionsBtn`. Der Selektor trifft
+nichts mehr, und beide Skripte überspringen fehlende Elemente
+**stillschweigend** (`if (!S || !D) continue;`) — die Abdeckung wäre
+lautlos geschrumpft, ohne dass ein Lauf rot geworden wäre. Beide zeigen
+jetzt auf `.theme-segmented`, also auf das Element, das dort tatsächlich
+sitzt.
+
+**Breite des gleitenden Knopfes** hängt jetzt an
+`--seg-count`, das die Auszeichnung aus `THEME_ORDER.length` setzt. Vorher
+stand die Feldzahl fest in der CSS (`/ 3`) und noch einmal im Skript —
+genau die Art Doppelung, die beim nächsten Ändern auseinanderläuft.
+
+**Gegengeprüft:** `test_theme_switch.js` umgestellt und um zwei
+Zusicherungen erweitert — „Schalter ist ohne Aufklappen sichtbar" und
+„kein Rest des alten Optionen-Menüs". Neun Zusicherungen, alle grün.
+Deckungsgleichheit weiterhin 0,0 px Versatz und 0,0 px Breitendifferenz;
+Kontraste unverändert (hell 12,91 / 4,70 · dunkel 11,04 / 6,82). Keine
+Seitenfehler beim Laden, beim mehrfachen Umschalten oder nach einem
+Navigationswechsel.

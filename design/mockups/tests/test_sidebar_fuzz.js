@@ -12,7 +12,7 @@ const { chromium } = require('playwright');
     '.nav-item[data-drag-id="groceries"]', '.nav-item[data-drag-id="work"]',
     '.group-row[data-drag-id="g1"]', '.group-row[data-drag-id="g2"]',
     '#sidebar .sidebar-spacer', '#sidebar .brand', '[data-nav="today"]',
-    '#contentArea', '#optionsBtn',
+    '#contentArea', '.theme-segmented',
   ];
 
   let combo = 0;
