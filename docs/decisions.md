@@ -1340,3 +1340,47 @@ bleiben** `4.5` und `4.6`. Damit stimmen auch die zwei Referenzen
 unverändert weiter — das Risiko war nicht klein, sondern null.
 Umnummerieren wurde verworfen: Es hätte echten Bruch erzeugt, um ein
 rein kosmetisches Problem zu lösen.
+
+### Nachtrag, gleicher Tag — von „fragen" auf „ausführen" korrigiert
+
+Der Eintrag oben legte fest: *„Merge nach `main` bleibt bewusst eine
+Entscheidung des Nutzers."* **Das war zu zaghaft und wird hiermit
+revidiert.** Der alte Text bleibt stehen, damit nachvollziehbar ist, was
+zwischenzeitlich galt.
+
+**Anlass:** Der Nutzer stellte klar, dass `ende unfold` die Drift
+*vermeiden* soll, und begründete es mit dem entscheidenden Satz: Er ruft
+diese Befehle **bewusst auf, weil sie Aktionen auslösen**. Ein Befehl,
+den man eigens aufruft, um etwas zu bewirken, darf nicht bloß eine Frage
+stellen.
+
+**Warum die Rückfrage sogar schädlich war:** `ende unfold` läuft
+definitionsgemäß, wenn der Nutzer die Sitzung **verlässt**. Eine Frage
+zu diesem Zeitpunkt trifft mit hoher Wahrscheinlichkeit niemanden mehr
+an — die Antwort kommt nie, und die Drift bleibt. Die Rückfrage war also
+genau an der Stelle eingebaut, an der sie am wenigsten wirken kann. Sie
+hätte das Problem vom 2026-08-06 **nicht** verhindert.
+
+**Neue Regel, beide Befehle gleich gebaut:**
+
+| | läuft von selbst | stoppt und fragt |
+|---|---|---|
+| `start unfold` | `git pull --ff-only origin main` | Arbeitsverzeichnis nicht sauber, oder Pull bricht ab |
+| `ende unfold` | `git push origin HEAD:main`, wenn `main` Vorfahr von `HEAD` ist | `main` hat eigene Commits, ist also auseinandergelaufen |
+
+**Warum ausgerechnet der Fast-Forward die richtige Grenze ist:** Er kann
+per Konstruktion nichts verlieren — er hängt nur an, was ohnehin fehlt,
+und existiert schlicht nicht, wenn die Stände auseinanderlaufen. Damit
+fällt die Automatik genau dann aus, wenn Urteilsvermögen nötig ist, und
+läuft genau dann, wenn es keines braucht. `--force` ist in beiden
+Befehlen ausdrücklich verboten.
+
+**Verworfen: immer einen Pull Request öffnen.** Sichtbar und
+nachvollziehbar, aber es verlagert die Drift nur — ein ungemergter PR
+ist derselbe auseinanderlaufende Stand, nur mit Weboberfläche davor. Für
+ein Ein-Personen-Projekt ohne Review-Pflicht ist das Zeremonie ohne
+Ertrag. Bleibt als Option, sobald jemand zweites mitarbeitet.
+
+**Was `session-check.sh` Abschnitt 3 jetzt ist:** kein Wächter mehr,
+sondern ein **Netz darunter**. Er meldet die Drift auch dann, wenn
+`ende unfold` gar nicht gelaufen ist — etwa weil die Sitzung abbrach.

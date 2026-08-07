@@ -48,14 +48,23 @@ Wegwerf-Branch hing und `main` ein leeres README war.
 **Das betrifft jede Web-Sitzung.** Claude Code im Web arbeitet immer auf
 einem Nebenbranch (`claude/…`), nie direkt auf `main`. Der Stand ist dort
 zwar gesichert, aber nicht dort, wo die nächste Sitzung ihn sucht.
-`ende unfold` spricht das jetzt von sich aus an (Schritt 10) und fragt
-nach dem Weg — Fast-Forward nach `main` oder Pull Request. Gemergt wird
-nie unaufgefordert.
 
-`start unfold` holt seit demselben Tag mit `git fetch origin` erst den
-echten Stand, bevor es ihn beurteilt. `git log` allein liest nur lokale
-Refs und kann einen veralteten Klon nicht von einem aktuellen
-unterscheiden.
+**Beide Sitzungsbefehle handeln deshalb selbst** — der Nutzer ruft sie
+bewusst auf, damit etwas passiert, nicht damit eine Frage gestellt wird:
+
+| | läuft von selbst | stoppt und fragt |
+|---|---|---|
+| `start unfold` | `git pull --ff-only origin main` | Arbeitsverzeichnis nicht sauber, oder Pull bricht ab |
+| `ende unfold` | `git push origin HEAD:main`, wenn `main` Vorfahr von `HEAD` ist | `main` ist auseinandergelaufen |
+
+Die Grenze ist bewusst der **Fast-Forward**: Er kann per Konstruktion
+nichts verlieren und existiert gar nicht erst, wenn die Stände
+auseinanderlaufen. Die Automatik fällt also genau dort aus, wo
+Urteilsvermögen nötig ist. **`--force` ist in beiden Befehlen
+verboten.** Abschnitt 3 der Prüfung ist das Netz darunter — er meldet
+die Drift auch dann, wenn `ende unfold` nie gelaufen ist, etwa weil die
+Sitzung abbrach. Begründung und verworfene Alternative (immer ein Pull
+Request): `docs/decisions.md`, Nachtrag vom 2026-08-07.
 
 ### Auf einem anderen Rechner weiterarbeiten
 

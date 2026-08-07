@@ -52,16 +52,32 @@ Arbeite dann das Folgende der Reihe nach ab:
     Projekt monatelang an `claude/todo-app-brainstorm-fmv1sd`, während
     `main` ein leeres README war — und jede Prüfung war dabei grün.
 
-    Ist `HEAD` nicht in `origin/main` enthalten, **sag es dem Nutzer und
-    frag nach dem Weg** (Fast-Forward nach `main`, oder Pull Request).
-    Merge nach `main` nie unaufgefordert. Aber verlasse die Sitzung auch
-    nicht, ohne es angesprochen zu haben.
+    **Ein sauberer Fast-Forward wird ausgeführt, nicht angekündigt.** Der
+    Nutzer ruft `ende unfold` bewusst auf, damit etwas passiert — eine
+    Frage, die unbeantwortet bleibt, weil er den Chat schon verlassen
+    hat, hilft ihm nicht. Genau so entstand die Drift beim letzten Mal.
 
     ```bash
     git fetch origin
-    git merge-base --is-ancestor HEAD origin/main \
-      && echo "in main enthalten" || echo "NICHT in main"
+
+    # Fall 1: schon drin - nichts zu tun.
+    git merge-base --is-ancestor HEAD origin/main && echo "in main enthalten"
+
+    # Fall 2: main ist Vorfahr von HEAD -> Fast-Forward, ausfuehren.
+    git merge-base --is-ancestor origin/main HEAD \
+      && git push origin HEAD:main
     ```
+
+    **Nur diese beiden Fälle laufen von selbst.** Trifft *keiner* zu, ist
+    `main` auseinandergelaufen (hat eigene Commits bekommen). Dann wird
+    **nichts** gepusht: Lage schildern, Optionen nennen (Merge, Rebase,
+    Pull Request), den Nutzer entscheiden lassen. Niemals `--force`,
+    niemals `main` überschreiben — ein Fast-Forward kann nichts
+    verlieren, alles andere schon.
+
+    Melde anschließend in einer Zeile, was passiert ist: „`main` per
+    Fast-Forward auf `<hash>` gezogen" oder „`main` war schon aktuell"
+    oder „nicht möglich, weil …".
 
 Melde dann in wenigen Zeilen: das Ergebnis des Prüflaufs, was committet
 wurde, was in `docs/status.md` und `docs/session-log.md` neu steht, und
