@@ -218,8 +218,10 @@ Zeilenbreite verteilt.
   verdoppelt die Zeilenhöhe und macht aus einer überfliegbaren Liste eine
   Reihe zweizeiliger Karten.
 
-⚠️ **Offen:** Wo der Löschknopf beim Überfahren erscheint. Siehe
-`docs/status.md`.
+- Der **Löschknopf** erscheint beim Überfahren **im Fluss hinter dem
+  Inhalt**, nicht am rechten Zeilenrand — dort klaffte sonst eine Lücke
+  von mehreren hundert Pixeln. Er belegt seinen Platz auch unsichtbar,
+  damit die Zeile beim Überfahren nicht springt.
 
 ### 2.7 Heute-Seite
 - Zeigt listenübergreifend alle Aufgaben mit Fälligkeitsdatum **heute oder

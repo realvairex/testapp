@@ -538,16 +538,24 @@
   .removing { transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; overflow: hidden; }
   @media (prefers-reduced-motion: reduce) { .removing { transition: opacity var(--dur-fast) ease; } }
 
-  .inline-embed .task-row { padding-right: 24px; }
+  /* Nur noch ein kleiner Randabstand: Der Loeschknopf steht seit
+     2026-08-07 im Fluss hinter der Pille, nicht mehr am rechten Rand -
+     es ist also keine Spur mehr freizuhalten. */
+  .inline-embed .task-row { padding-right: 6px; }
 
   .block-image { display: flex; align-items: center; gap: 8px; padding: 12px 12px; border: 1px dashed var(--line); border-radius: var(--r-md); color: var(--ink-faint); font-size: var(--fs-sm); margin-right: 24px; }
   .block-image svg { flex-shrink: 0; }
 
-  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) ease; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  /* Steht im Fluss direkt hinter dem Inhalt, nicht am rechten Zeilenrand.
+     Am Rand klaffte zwischen Inhalt und Knopf eine Luecke von mehreren
+     hundert Pixeln, sobald das Fenster breit war.
+     Er behaelt seinen Platz auch unsichtbar (opacity statt display), damit
+     die Zeile beim Ueberfahren nicht springt. */
+  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); margin-left: 2px; transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
   .row-delete svg { flex-shrink: 0; }
   .inline-embed:hover .row-delete { opacity: 1; }
   .row-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
-  .row-delete:active { transform: translateY(-50%) scale(0.88); }
+  .row-delete:active { transform: scale(0.88); }
 
   .page-editor.drag-over { background: var(--accent-soft); }
 

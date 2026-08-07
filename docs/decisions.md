@@ -2044,7 +2044,64 @@ Superlist-Muster, das Datum **unter** den Titel zu setzen. Es verdoppelt
 die Zeilenhöhe und macht aus einer überfliegbaren Liste eine Reihe
 zweizeiliger Karten.
 
-**Offen geblieben:** Beim Überfahren einer Zeile erscheint der Löschknopf
-weiterhin am **rechten Rand** — jetzt mit sichtbarem Abstand zum Inhalt.
-Der Nutzer hält das für unschön. Drei Wege stehen zur Wahl, siehe
-`docs/status.md`; entschieden ist noch nichts.
+**Folgefrage, am selben Tag entschieden:** Beim Überfahren einer Zeile
+erschien der Löschknopf weiterhin am **rechten Rand** — jetzt mit einer
+weiten Lücke zum Inhalt, weil der Inhalt früher endet. Siehe den
+nächsten Eintrag.
+
+## 2026-08-07 — Löschknopf steht im Fluss hinter dem Inhalt
+
+**Kontext:** Nachdem die Fälligkeits-Pille an den Titel gerückt war,
+endete der Zeileninhalt früh — der Löschknopf hing aber weiter am rechten
+Zeilenrand. Der Nutzer: *„das sieht ja dann trotzdem kacke aus, weil wenn
+man auf die Aufgabe hovert und man den Button sieht, ist rechts zum Rand
+viel Platz frei."* Und die Frage: **Wie lösen das andere Apps?**
+
+**Drei Muster in der Praxis:**
+
+| App | Lösung |
+|---|---|
+| **Todoist** | Datum am Titel, Hover-Aktionen ganz rechts — **genau die beanstandete Lücke**. Trägt dort nur, weil die Hover-Fläche beide Enden verbindet |
+| **Things** | Aktionen **direkt hinter dem Inhalt**, kein rechter Rand |
+| **Notion** | Alle Zeilen-Bedienelemente im **linken Rand** (Griff, „+"), rechts nur Information |
+| **Linear** | Rechts Metadaten, Aktionen über ⋯-Menü oder Rechtsklick |
+
+**Entscheidung: der Things-Weg** (vom Nutzer gewählt). `.row-delete` ist
+nicht mehr absolut am rechten Rand positioniert, sondern steht **im
+Fluss** hinter der Pille. Gemessen: 10 px Abstand zur Pille statt mehrerer
+hundert Pixel Lücke.
+
+**Verworfen: der Notion-Weg** (linker Rand neben dem Ziehgriff). Er wäre
+konzeptionell der sauberste — ein Ort für alle Zeilen-Bedienelemente —
+scheitert aber an einer Zahl: Der linke Rand ist 16 px breit, für Griff
+**und** Löschknopf bräuchte er rund 34 px. Damit rückten alle Aufgaben
+doppelt so weit von den Textzeilen ein, was `spec.md` §2.3 widerspricht
+(„Blöcke stehen so dicht wie zwei Textzeilen").
+
+**Zwei Details, die den Unterschied machen:**
+
+1. **Der Knopf behält seinen Platz auch unsichtbar** (`opacity: 0` statt
+   `display: none`). Sonst spränge die Zeile beim Überfahren um 24 px.
+   Nachgemessen: Titelposition vor und nach dem Überfahren identisch.
+2. **Die 24 px Reserve am rechten Rand entfallen** (`padding-right`
+   24 → 6 px). Sie hielt die Spur für den absolut positionierten Knopf
+   frei; ohne ihn ist sie nur noch ungenutzter Rand.
+
+**Bekannter Nachteil, bewusst in Kauf genommen:** Der Knopf steht je nach
+Titellänge an einer anderen Stelle — ein wanderndes Ziel bei einer
+Aktion, die man nicht versehentlich treffen will. Das Risiko ist klein,
+weil er nur auf der überfahrenen Zeile erscheint: Fährt man senkrecht
+durch die Liste, landet der Zeiger auf der nächsten Zeile fast nie genau
+auf deren Löschknopf. **Beim Bau des Papierkorbs (§4.3) noch einmal
+anschauen** — mit Wiederherstellung verliert das Argument ohnehin sein
+Gewicht.
+
+**Gegengeprüft:** Löschen funktioniert unverändert (3 → 2 Aufgaben), die
+Zeile springt beim Überfahren nicht, und im Engpass (drei Spalten, langer
+Titel) bleibt der Knopf 25 px innerhalb der Spaltenkante, während der
+Titel kürzt und die Pille vollständig bleibt.
+
+**Ebenfalls betrachtet und vom Nutzer selbst zurückgezogen:** das
+Superlist-Muster, das Datum unter den Titel zu setzen — es verdoppelt die
+Zeilenhöhe und macht aus einer überfliegbaren Liste eine Reihe
+zweizeiliger Karten.

@@ -168,21 +168,14 @@ Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
 
-**Offener Faden: Wo gehört der Löschknopf einer Aufgabenzeile hin?**
-Seit die Fälligkeits-Pille direkt neben dem Titel steht (2026-08-07),
-endet der Zeileninhalt früh — der Löschknopf erscheint beim Überfahren
-aber weiterhin am **rechten Rand**, mit einer sichtbaren Lücke dazwischen.
-Der Nutzer hält das für unschön. Drei Wege wurden gegenübergestellt:
-
-| Weg | Vorbild | Bewertung |
-|---|---|---|
-| **A** bleibt rechts | Todoist | Lücke bleibt. Funktioniert dort nur, weil die Hover-Fläche beide Enden verbindet |
-| **B** direkt hinter der Pille | Things | **Empfohlen.** Keine Lücke, Knopf erscheint dort, wo der Blick ist. Nachteil: Position wandert mit der Titellänge |
-| **C** in den linken Rand, neben den Ziehgriff | Notion | Verworfen: Der Rand müsste von 16 auf ~34 px wachsen, damit rückten Aufgaben doppelt so weit von Textzeilen ein — Verstoß gegen `spec.md` §2.3 |
-
-**Noch nicht entschieden.** Hinweis für die Entscheidung: Sobald der
-Papierkorb aus §4.3 existiert, verliert „wie leicht trifft man den Knopf
-versehentlich" viel Gewicht — es lohnt, beides zusammen zu betrachten.
+**Erledigt — der Löschknopf steht jetzt im Fluss hinter dem Inhalt**
+(Things-Weg, gewählt am 2026-08-07). Nicht mehr am rechten Zeilenrand:
+Seit die Pille am Titel steht, endet der Inhalt früh, und der Knopf hing
+mit weiter Lücke daneben. Der Notion-Weg (linker Rand) wurde verworfen —
+er bräuchte 34 statt 16 px Rand und rückte damit alle Aufgaben doppelt so
+weit von den Textzeilen ein. **Beim Papierkorb (§4.3) noch einmal
+anschauen:** Der Knopf wandert mit der Titellänge, was mit
+Wiederherstellung an Gewicht verliert.
 
 **Erledigt — §4.5 steht jetzt vor §4.6.** Die Sorge um Referenzen wurde
 am 2026-08-07 sorgfältig geprüft: Es gibt genau **zwei** echte
