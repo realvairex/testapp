@@ -1588,3 +1588,74 @@ Fläche, beide bei Gruppen-Hover sichtbar. Alle vier grün. Damit ist die
 Regel nicht nur beschrieben, sondern **mechanisch nachprüfbar**: Sie
 gehört zu den wenigen Skripten mit echten Zusicherungen (jetzt 7 von 45)
 und schlägt an, falls jemand die Fläche später zurückbaut.
+
+## 2026-08-07 — Darstellungs-Schalter mit gleitendem Knopf
+
+**Kontext:** Der Nutzer zeigte einen segmentierten iOS-Schalter (weißer
+Knopf, der zwischen zwei Feldern gleitet) und wollte den bisherigen
+Umschalter dadurch ersetzen — **dunkel links, hell rechts**.
+
+**Ausgangslage:** Der Schalter war bereits segmentiert, aber ohne
+Bewegung: Das aktive Feld bekam schlagartig eine Akzentfläche. Die
+Reihenfolge war Hell · Dunkel · System.
+
+**Entscheidung — drei Punkte, zwei davon über das Verlangte hinaus:**
+
+**1. Gleitender Knopf, ausschließlich per `transform`.** Ein eigenes
+Element (`.theme-seg-thumb`) liegt hinter den Beschriftungen und wird mit
+`translateX(n · 100%)` bewegt, Dauer `--dur-base` (200 ms), Kurve `--ease`.
+`left`/`width` zu animieren hätte gleich ausgesehen, aber in jedem Bild
+ein neues Layout erzwungen — die Projektregel aus `spec.md`
+(„Alle Bewegungen animieren ausschließlich `transform`") ist hier keine
+Förmlichkeit, sondern der Unterschied zwischen Compositor und Layout.
+Damit `translateX(100%)` genau ein Feld weit trägt, musste das `gap: 4px`
+zwischen den Feldern entfallen — sonst wären die Felder nicht exakt ein
+Drittel breit.
+
+**2. „System" bleibt — in der Mitte.** Die Vorlage des Nutzers zeigt zwei
+Felder, der bestehende Schalter hatte drei. Zwei zu bauen hätte bedeutet,
+die Option „folge der Systemeinstellung" **stillschweigend zu
+entfernen** — ein Funktionsverlust, den die Bildvorlage nicht verlangt
+hat. Sie steht jetzt in der Mitte, weil sie sachlich dorthin gehört: Sie
+ist weder hell noch dunkel, sondern das, was dazwischen liegt. Die
+Anordnung „dunkel links, hell rechts" ist damit exakt erfüllt. Wenn der
+Nutzer wirklich zwei Felder will, ist es eine Zeile Arbeit — aber es
+sollte seine Entscheidung sein, nicht ein Nebeneffekt meiner Umsetzung.
+
+**3. Das Menü bleibt beim Umschalten offen.** Vorher setzte jeder Klick
+`state.optionsOpen = false` und baute die Sidebar neu. Das hatte zwei
+Folgen, die beide gegen die neue Bewegung arbeiteten:
+
+- **Der Knopf hätte nie gleiten können.** `renderSidebar()` erzeugt den
+  Knopf als neues Element, und CSS-Übergänge laufen nicht auf frisch
+  erzeugten Elementen — er wäre gesprungen. Deshalb `syncThemeSegmented()`,
+  das den Schalter **an Ort und Stelle** nachzieht.
+- **Man hätte die Bewegung ohnehin nicht gesehen**, weil sich das Menü im
+  selben Moment schloss. Und man konnte Hell und Dunkel nicht
+  vergleichen, ohne das Menü jedes Mal neu zu öffnen — wofür ein solcher
+  Schalter ja gerade da ist.
+
+**Farbwahl:** Knopf `--surface` auf Schiene `--surface-sunken`, Schatten
+`--el-1`, Radius `--r-sm` — alles bestehende Stufen, keine neuen Werte
+(Projektregel gegen gewachsene Skalen). Die Akzentfläche des aktiven
+Feldes entfällt: Sie war für einen ruhenden Einstellungs-Schalter zu
+laut, und der gleitende Knopf trägt die Auswahl jetzt selbst.
+
+**Gegengeprüft, an den real gerenderten Elementen:**
+
+| | aktiv | inaktiv |
+|---|---|---|
+| hell | 12,91:1 | 4,70:1 |
+| dunkel | 11,04:1 | 6,82:1 |
+
+Alle über WCAG AA (4,5:1). **Der helle inaktive Wert ist mit 4,70:1
+knapp** — wer `--ink-faint` oder `--surface-sunken` künftig anfasst, muss
+hier nachmessen. Genau dafür gibt es jetzt das Skript.
+
+**Neues Prüfskript `test_theme_switch.js`** mit sieben Zusicherungen:
+Reihenfolge auf dem Bildschirm (nicht nur im Markup), Deckungsgleichheit
+von Knopf und aktivem Feld in jeder Stellung (gemessen: Versatz 0,0 px,
+Breitendifferenz 0,0 px), Bewegung per `transform` statt Layout, Menü
+bleibt offen, und die vier Kontrastwerte oben. Damit ist auch die
+`transform`-Regel erstmals **mechanisch** abgesichert und nicht nur
+beschrieben.
