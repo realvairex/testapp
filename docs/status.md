@@ -37,6 +37,39 @@ Seit 2026-08-06 gilt:
 
 Begründung und Hergang: `docs/decisions.md`, Einträge vom 2026-08-06.
 
+### Auf einem anderen Rechner weiterarbeiten
+
+Das gesamte Projekt ist portabel: Doku, Mockup, Prüfskripte, die Hooks in
+`.claude/settings.json` und die Auslöser in `.claude/commands/` sind alle
+eingecheckt, und die Hooks arbeiten über `$CLAUDE_PROJECT_DIR` — es gibt in
+keiner eingecheckten Datei einen absoluten Pfad. Klonen, `start unfold`
+sagen, weiterarbeiten.
+
+**Eine Sache kommt beim Klonen aber nicht mit: die Commit-Identität.** Sie
+ist bewusst repo-lokal gesetzt, und repo-lokale Konfiguration lebt in
+`.git/config` — die wird nicht mitgeklont. Auf einem frischen Rechner greift
+dessen globale Einstellung, und die zeigt beim Nutzer auf einen älteren
+Account. Ohne diesen Schritt gehen Commits unter falschem Namen raus, was
+erst in der GitHub-Historie auffällt. Deshalb nach jedem Klon:
+
+```bash
+gh auth login
+gh repo clone realvairex/testapp
+cd testapp
+git config user.name  realvairex
+git config user.email vvairexx@gmail.com
+```
+
+**Auf fremden Geräten:** `gh auth login` hinterlässt ein dauerhaftes Token
+mit Schreibzugriff. Gehört der Rechner nicht dem Nutzer, danach
+`gh auth logout` und den Klon löschen.
+
+**Ohne lokalen Klon** geht es über Claude Code im Web (`claude.ai/code`),
+das direkt gegen GitHub arbeitet. Dann gilt allerdings wieder: Die Umgebung
+ist temporär, Ungepushtes ist verloren, und die Weboberfläche kennt keine
+eingecheckten Slash-Befehle — `start unfold` / `ende unfold` als Text
+schreiben.
+
 ---
 
 ## 1. Wo wir stehen
