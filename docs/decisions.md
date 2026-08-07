@@ -1815,3 +1815,38 @@ nächstes anstehen.
 darunter „Farbreihe liegt im Fluss, ist kein schwebendes Fenster"
 (`position: static`) und „Farbreihe verdeckt keine Aufgabe" (gemessen:
 36 px Abstand zur ersten Zeile).
+
+### Nachtrag, gleicher Tag — der Umbau hat ein Prüfskript mitgerissen
+
+Der vollständige Durchlauf nach dem Umbau meldete `test_due` als
+**abgestürzt**. Ursache war meine Änderung: Das Skript klickte auf
+`[data-due-menu]`, ein Attribut, das mit dem Aufklappmenü verschwunden
+ist. Ich hatte beim Umbau die beiden Fuzz-Skripte nachgezogen, dieses
+aber übersehen.
+
+**Nachgezogen** auf die neue Bedienung: `.due-seg-btn` statt Menüpunkt,
+`.due-chip-x` statt `.due-clear`, `.due-chip-label` statt `.due-add`.
+Das Skript prüft danach unverändert dieselben Verhaltensregeln und läuft
+grün — inklusive der wichtigen Kette: Datum auf „Heute" setzen → Aufgabe
+erscheint auf der Heute-Seite → Datum entfernen → Einladung ist zurück →
+eine erledigte überfällige Aufgabe zählt nicht mehr mit (Zähler 5 → 4).
+
+**Danach systematisch statt zufällig gesucht:** eine Suche über alle
+Prüfskripte nach den entfernten Bezeichnern (`due-menu`, `due-add`,
+`due-opt`, `due-clear`, `due-trigger`, `optionsBtn`, `options-panel`,
+`svgGearPath`). Die verbliebenen Treffer sind Absicht — sie sichern zu,
+dass es die Dinge **nicht** mehr gibt.
+
+**Erfreulicher Nebenbefund:** `test_stress` enthielt seit jeher den Zweig
+`if (t.tagName === 'INPUT')` zum Umbenennen einer Liste über den
+Spaltentitel. Der lief bis heute **nie**, weil der Listentitel ein `<h2>`
+war. Jetzt greift er zum ersten Mal — und besteht: Ein absurd langer
+Listenname bringt weder Sidebar noch Fenster zum Überlaufen, er wird
+sauber abgeschnitten (`namenAbgeschnitten: 1`, kein Überlauf).
+
+**Lehre, zum zweiten Mal an einem Tag:** Wer etwas entfernt, muss suchen,
+was daran hing — erst im Erzeugnis (die Animation `due-menu-in`), dann im
+Prüfwerkzeug (`test_due`). Beide Male war der Schaden lautlos: Das eine
+hätte ohne Animation ausgesehen, das andere hätte eine Prüfung
+weggenommen. Ein vollständiger Durchlauf **nach** jedem Umbau ist deshalb
+keine Kür.

@@ -31,13 +31,17 @@ const { chromium } = require('playwright');
   await openable[1].click();   // "Unterkunft aussuchen" - kein Datum
   await page.waitForTimeout(700);
   console.log('\n=== DATUM SETZEN ===');
-  console.log('Steuerung sichtbar:', await page.evaluate(()=>document.querySelector('[data-col-index="2"] .due-add')?.textContent.trim()));
-  await page.click('[data-col-index="2"] [data-due-menu]');
-  await page.waitForTimeout(300);
-  console.log('Menü-Optionen:', await page.evaluate(()=>Array.from(document.querySelectorAll('.due-menu .due-opt')).map(o=>o.textContent.trim())));
-  await page.click('.due-menu [data-due-value="2026-08-05"]');   // Heute
+  // Seit 2026-08-07 gibt es kein Aufklappmenue mehr: Die Zeile steht
+  // dauerhaft im Kopf, die Schnellwahl wird direkt geklickt.
+  console.log('Steuerung sichtbar:', await page.evaluate(()=>document.querySelector('[data-col-index="2"] .due-chip-label span')?.textContent.trim()));
+  console.log('Schnellwahl:', await page.evaluate(()=>Array.from(document.querySelectorAll('[data-col-index="2"] .due-seg-btn')).map(o=>o.textContent.trim())));
+  await page.click('[data-col-index="2"] .due-seg-btn[data-due-value="2026-08-05"]');   // Heute
   await page.waitForTimeout(500);
-  console.log('nach "Heute":', await page.evaluate(()=>document.querySelector('[data-col-index="2"] .due-pill')?.textContent.trim()));
+  console.log('nach "Heute":', await page.evaluate(()=>{
+    const b=document.querySelector('[data-col-index="2"] .due-seg-btn.active');
+    const c=document.querySelector('[data-col-index="2"] .due-chip-label span');
+    return (b?b.textContent.trim():'-')+' / Chip: '+(c?c.textContent.trim():'-');
+  }));
 
   // 3. taucht sie jetzt in Heute auf?
   await page.keyboard.press('Escape'); await page.waitForTimeout(700);
@@ -55,11 +59,10 @@ const { chromium } = require('playwright');
   const o2 = await page.$$('[data-col-index="1"] [data-open-task]');
   await o2[1].click();
   await page.waitForTimeout(600);
-  await page.click('[data-col-index="2"] [data-due-menu]');
-  await page.waitForTimeout(250);
-  await page.click('.due-menu .due-clear');
+  await page.click('[data-col-index="2"] .due-chip-x');
   await page.waitForTimeout(500);
-  console.log('nach Entfernen wieder Einladung:', await page.evaluate(()=>!!document.querySelector('[data-col-index="2"] .due-add')));
+  console.log('nach Entfernen wieder Einladung:', await page.evaluate(()=>
+    document.querySelector('[data-col-index="2"] .due-chip-label span')?.textContent.trim() === 'Datum wählen'));
 
   // 5. erledigte überfällige Aufgabe darf NICHT mehr als überfällig gelten
   await page.keyboard.press('Escape'); await page.waitForTimeout(700);
