@@ -1220,3 +1220,55 @@ der Server ist danach wieder tag-frei.
 richtigen Regel hält genau so lange, bis jemand die Regel hinterfragt — dann
 wirkt sie hinfällig, und die Regel fällt mit. Deshalb ist die Begründung
 nachzuziehen und nicht nur die Regel zu behalten.
+
+## 2026-08-07 — Portabilität: was ein Klon nicht mitbringt
+
+**Kontext:** Der Nutzer fragte, wie das Projekt funktioniert, wenn er von
+einem anderen Laptop aus arbeitet, auf dem der lokale Klon nicht liegt.
+Anlass, die Portabilität einmal wirklich nachzusehen statt anzunehmen.
+
+**Befund — portabel ist alles bis auf einen Punkt:**
+
+- Eingecheckt sind nicht nur Doku und Mockup, sondern auch
+  `.claude/settings.json` (die Hooks) und `.claude/commands/` (die
+  Auslöser `start unfold` / `ende unfold`) sowie
+  `scripts/session-check.sh`. Ein Klon bringt die gesamte Arbeitsweise mit,
+  nicht nur den Inhalt.
+- Die Hooks adressieren durchgängig über `$CLAUDE_PROJECT_DIR`. Eine Suche
+  nach absoluten Pfaden (`/Users/`, `/home/`, `Documents/Claude`) über alle
+  eingecheckten Dateien ergab **keinen einzigen Treffer**. Es gibt also
+  nichts, was an diesen einen Rechner gebunden wäre.
+- **Die Ausnahme: die Commit-Identität.** Sie ist bewusst repo-lokal
+  gesetzt (Eintrag vom 2026-08-06, damit andere Projekte unberührt
+  bleiben). Repo-lokale Konfiguration lebt in `.git/config` — und die wird
+  bei `git clone` **nicht** übertragen. Auf einem frischen Rechner greift
+  dessen globale Einstellung; beim Nutzer zeigt die auf den älteren Account
+  `SchnapsideeAT`. Commits gingen dann unter falschem Namen raus.
+
+**Warum das eine echte Falle ist und kein Schönheitsfehler:** Der Fehler
+ist völlig geräuschlos. Nichts bricht, keine Warnung erscheint, der Push
+gelingt. Auffallen kann er nur, wenn jemand später in die GitHub-Historie
+schaut — und dann sind die falschen Commits schon geschrieben und nur noch
+per History-Rewrite zu korrigieren. Genau die Klasse von Problemen, die in
+eine Übergabedatei gehört.
+
+**Entscheidung:** Die repo-lokale Identität **bleibt** — ihr Vorteil (keine
+Einmischung in die globale Konfiguration anderer Projekte) wiegt schwerer
+als die Unbequemlichkeit, sie nach einem Klon einmal zu setzen. Stattdessen
+wird der Klon-Vorgang in `docs/status.md` §0 als abhakbare Schrittfolge
+dokumentiert, inklusive `git config user.name/user.email`.
+
+**Zwei Punkte gleich mit festgehalten:**
+
+1. **Abmelden auf fremden Geräten.** `gh auth login` hinterlässt ein
+   dauerhaftes Token mit Schreibzugriff auf das GitHub-Konto. Auf einem
+   Rechner, der dem Nutzer nicht gehört, gehören danach `gh auth logout`
+   und das Löschen des Klons dazu — sonst erbt der nächste Nutzer den
+   Zugriff.
+2. **Die Web-Variante als Ausweg ohne Klon.** Claude Code im Web arbeitet
+   direkt gegen GitHub, ohne Installation und ohne Anmeldung auf dem
+   fremden Gerät. Dort gilt die ursprüngliche Container-Logik wieder in
+   voller Schärfe: Die Umgebung ist temporär, Ungepushtes ist verloren.
+   Deshalb wurde die Container-Begründung gestern zwar aus `CLAUDE.md`
+   entfernt, aber **nicht ersatzlos** — sie steht jetzt dort, wo sie
+   zutrifft, nämlich beim Web-Weg in `status.md`.

@@ -10,6 +10,75 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-07 — Umgebungsannahmen nachgezogen, Portabilität geklärt
+
+Eine kurze Aufräum-Sitzung ohne inhaltliche Produktarbeit. Anlass war,
+dass beim Sitzungsstart drei Aussagen im Repo auffielen, die aus der alten
+Container-Umgebung stammten und nach dem Umzug auf den lokalen Rechner
+niemand nachgeprüft hatte.
+
+**Gemacht**
+
+- **Session-Start-Hook nachgewiesen.** Die Zeile `=== Projekt Unfold ===`
+  erschien — diese Sitzung startete anders als die vorige direkt im
+  Repo-Verzeichnis. Damit ist auch der frühere Fehlschlag erklärt: falsches
+  Arbeitsverzeichnis, nicht defekter Hook. Offener Punkt in `status.md`
+  gestrichen und durch die Diagnoseregel ersetzt (bleibt die Zeile aus,
+  zuerst das Arbeitsverzeichnis prüfen).
+- **Git-Tag-Push geprüft statt vermutet.** Wegwerf-Tag
+  `test-tag-push-probe` angelegt, gepusht, per `git ls-remote --tags` auf
+  dem Server bestätigt, beidseitig wieder gelöscht. Alle Schritte
+  fehlerfrei; der Server ist danach wieder tag-frei. Die alte 403-Sperre
+  war tatsächlich nur eine Eigenschaft der Container-Umgebung.
+- **`CLAUDE.md` an drei Stellen korrigiert**, die Doku- und Push-Pflicht
+  noch mit dem temporären Session-Container begründeten.
+- **Portabilität nachgesehen** (auf Nachfrage des Nutzers): Suche nach
+  absoluten Pfaden über alle eingecheckten Dateien — kein Treffer. Hooks
+  adressieren über `$CLAUDE_PROJECT_DIR`. Klon-Anleitung in `status.md` §0
+  aufgenommen.
+
+**Entschieden**
+
+- **Tags bleiben vorerst ungenutzt** — aber jetzt aus inhaltlichem Grund
+  statt aus technischem Zwang: `milestones.md` trägt Beschreibungen, die
+  ein Tag-Name nicht fassen kann. Tags kommen mit echtem App-Code dazu,
+  zusätzlich zur Tabelle, nicht an ihrer Stelle.
+- **Die repo-lokale Commit-Identität bleibt**, obwohl sie einen Klon nicht
+  überlebt. Der Preis ist ein Konfigurationsschritt nach jedem Klon; der
+  Gegenwert ist, dass die globale Konfiguration anderer Projekte des
+  Nutzers unberührt bleibt.
+- **Historische Einträge in `decisions.md` werden nicht überschrieben.**
+  Der Nutzer hat das ausdrücklich bestätigt: Korrekturen kommen als
+  Nachtrag darunter. Ein Protokoll soll zeigen, was damals galt — sonst
+  ist später nicht mehr nachvollziehbar, warum eine Entscheidung so fiel.
+
+**Was ein Commit nicht zeigt**
+
+- Der eigentliche Ertrag der Sitzung ist ein Muster, nicht ein Fix: **Eine
+  Konvention, die aus einer technischen Einschränkung entstanden ist,
+  braucht eine neue Begründung, sobald die Einschränkung wegfällt.** Sonst
+  schleppt das Projekt Regeln mit, deren Grund niemand mehr kennt — und
+  beim ersten Hinterfragen kippt mit der hinfälligen Begründung auch die
+  weiterhin richtige Regel. Beide heutigen Korrekturen sind Fälle davon.
+- Die Container-Begründung wurde aus `CLAUDE.md` entfernt, aber **nicht
+  ersatzlos**: Für den Web-Weg (Claude Code ohne lokalen Klon) stimmt sie
+  weiterhin und steht jetzt dort, wo sie zutrifft.
+- Die Commit-Identitäts-Falle ist deshalb heikel, weil sie geräuschlos
+  ist: nichts bricht, der Push gelingt, und auffallen kann sie erst in der
+  GitHub-Historie — wenn die falschen Commits schon geschrieben sind.
+
+**Offen**
+
+- **Inhaltlich unverändert:** Am Produkt wurde heute nichts entschieden.
+  Der nächste Schritt bleibt derselbe wie gestern — Löschregeln und
+  Papierkorb (`spec.md` §4.3). Die vier Fragen wurden dem Nutzer gestellt,
+  aber nicht beantwortet; die Sitzung endete vorher.
+- **Kleinigkeit ohne Antwort:** In `spec.md` steht §4.6 vor §4.5. Angeboten
+  umzusortieren, keine Rückmeldung erhalten — bewusst nicht eigenmächtig
+  geändert, weil Abschnittsnummern anderswo referenziert sein könnten.
+
+---
+
 ## 2026-08-06 — Mockup-Feinschliff und Übergabe-Infrastruktur
 
 **Gemacht**

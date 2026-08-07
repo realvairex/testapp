@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-06
+Stand: 2026-08-07
 
 ---
 
@@ -99,11 +99,19 @@ Was fertig ist:
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
-1. **Löschregeln und Papierkorb** (`spec.md` §4.3) — offen. Zu klären:
-   Löscht das Entfernen einer Gruppe die Listen darin oder hebt es sie
-   eine Ebene hoch? Papierkorb mit Wiederherstellung oder
-   Rückgängig-Meldung? Was passiert mit Unteraufgaben, wenn die
-   Elternaufgabe verschwindet?
+1. **Löschregeln und Papierkorb** (`spec.md` §4.3) — offen. **Die vier
+   Fragen wurden dem Nutzer am 2026-08-07 gestellt, aber nicht mehr
+   beantwortet** — die Sitzung endete vorher. Sie können unverändert
+   wieder aufgemacht werden:
+   1. Gelöschte Gruppe — löscht sie die Listen darin mit, oder rutschen
+      die eine Ebene hoch (ungruppiert)?
+   2. Gelöschte Aufgabe — nehmen die Unteraufgaben den Weg mit, oder
+      rücken sie an die Stelle der Elternaufgabe?
+   3. Papierkorb mit Wiederherstellung (und wie lange?) oder nur eine
+      Rückgängig-Meldung direkt nach der Aktion?
+   4. Offene Spalte zeigt auf Gelöschtes — welche Regel gilt? (Im Mockup
+      wird der `panelStack` abgeschnitten, das ist die Reparatur eines
+      Einzelfalls.)
 2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — lässt
    sich im Browser nicht bauen, muss also rein spezifiziert werden.
 3. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
@@ -119,6 +127,11 @@ Auf der Merkliste, bewusst zurückgestellt: Befehlspalette ⌘K
 Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
+
+**Kleiner offener Faden:** In `spec.md` steht §4.6 vor §4.5. Umsortieren
+wurde am 2026-08-07 angeboten, blieb ohne Rückmeldung, und wurde bewusst
+**nicht** eigenmächtig gemacht — Abschnittsnummern könnten anderswo
+referenziert sein. Beim nächsten Mal einfach mitfragen.
 
 **Erledigt — der Session-Start-Hook funktioniert nachweislich.** Am
 2026-08-06 startete eine Sitzung direkt in `~/Documents/Claude/testapp`,
@@ -145,6 +158,9 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Listen-Kennzeichnung in der Sidebar | **Farbige Punkte**, keine Ordner-Icons. |
 | Hover im hellen Design | Muss **heller** als der Grundton sein, nicht dunkler. |
 | Farben aus fremden Screenshots | Werden nicht übernommen — nur Struktur und Anordnung. |
+| Historische Einträge in `docs/decisions.md` | Werden **nicht überschrieben**. Korrekturen kommen als **Nachtrag darunter**, damit nachvollziehbar bleibt, was damals galt. Vom Nutzer bestätigt (2026-08-07). |
+| Git-Tags für Meilensteine | Technisch möglich (nachgewiesen 2026-08-07), aber **vorerst nicht genutzt**. `milestones.md` bleibt die Wahrheit. Tags erst ab echtem App-Code, **zusätzlich** zur Tabelle. |
+| Repo-lokale Commit-Identität | **Bleibt so**, obwohl sie einen Klon nicht überlebt. Nach jedem Klon einmal setzen — Schrittfolge in §0. |
 
 ## 4. Fallstricke, die schon einmal Zeit gekostet haben
 
