@@ -97,6 +97,11 @@ Reihenfolge und Position auf der Seite.
 - Ab der 4. Spalte wird horizontal gescrollt; darunter erscheint **keine**
   Scrollleiste.
 - Escape schließt alle Panels.
+- **Das Fenster hört bei 490 px auf zu schrumpfen** (Sidebar 248 px + eine
+  Spalte in Mindestbreite 240 px). Reicht der Platz nicht, scrollt die
+  **Seite** waagerecht statt des Fensterinnenraums, und ihr Außenabstand
+  von 24 px bleibt erhalten. Ein Fenster unter die Summe seiner
+  unteilbaren Bestandteile zu quetschen zeigt nur noch Bruchstücke.
 
 ### 2.2 Erledigt-Kaskade
 - Eine Aufgabe abhaken hakt **alle** ihre Unteraufgaben mit ab (nach unten).
@@ -189,6 +194,11 @@ Farbpunkt, dann Titel. Kein Menü.
 > geändert. Overlays sind die letzte Wahl, nicht die erste — sie verdecken
 > den Gegenstand der Entscheidung und kosten zwei Klicks für einen Wert.
 > Angewandt auch auf die Fälligkeit (§4.2) und den Darstellungs-Schalter.
+>
+> **Und wenn doch eines nötig ist** — wie beim Kalender, den man schlecht
+> dauerhaft aufgeklappt lässt —, dann verankert am **nächstgelegenen
+> begrenzten Behälter** (der Spalte), nicht am Fenster. Nur so schiebt es
+> keinen Inhalt weg *und* wird nicht am Rand abgeschnitten.
 
 ### 2.6 Heute-Seite
 - Zeigt listenübergreifend alle Aufgaben mit Fälligkeitsdatum **heute oder
@@ -376,10 +386,13 @@ Aufklappmenü:
 - **Ein Chip** daneben für jedes andere Datum. Ohne Datum trägt er die
   Einladung „Datum wählen", mit Datum das Datum selbst und ein ✕ zum
   Entfernen.
-- **Der Chip öffnet einen eigenen Kalender**, der **im Fluss** unter der
-  Zeile aufklappt — kein schwebendes Fenster und ausdrücklich **nicht**
-  das native Datumsfeld des Browsers. Sieben Spalten, Woche beginnt am
-  Montag, 206 px breit (passt in die schmalste Spalte von 240 px).
+- **Der Chip öffnet einen eigenen Kalender** — ausdrücklich **nicht** das
+  native Datumsfeld des Browsers. Er **schwebt über dem Inhalt, aber
+  innerhalb der Spalte**: an der Spalte verankert, nicht am Fenster.
+  Dadurch schiebt er nichts nach unten *und* kann nicht am Fensterrand
+  abgeschnitten werden — beides zugleich geht nur so. Sieben Spalten,
+  Woche beginnt am Montag, 199 px breit (passt in die schmalste Spalte
+  von 240 px).
   *Heute* trägt einen Ring, das *gewählte* Datum eine Fläche — zwei
   verschiedene Träger, damit beide gleichzeitig lesbar bleiben. Tage der
   Nachbarmonate bleiben anklickbar, treten aber zurück. Die sechste

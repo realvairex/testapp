@@ -1919,3 +1919,83 @@ festgehalten.
 grün — darunter „Kalender liegt im Fluss, ist kein schwebendes Fenster",
 „Kalender passt in die Spalte", „Woche beginnt am Montag" und „kein
 natives Datumsfeld mehr in der Oberfläche".
+
+### Nachtrag, gleicher Tag — der Kalender schwebt jetzt doch, aber in der Spalte
+
+Der Eintrag oben begründete ausführlich, warum der Kalender **im Fluss**
+steht: damit er nicht am Fensterrand abgeschnitten wird. Der Nutzer
+meldete die Kehrseite, die ich in Kauf genommen, aber nicht benannt
+hatte: **Er schiebt die Aufgabenliste nach unten.** Ein Kalender, der
+beim Öffnen den Inhalt verrückt, ist unruhig — und dazu störte ihn der
+viele Freiraum rechts neben dem schmalen Kalender.
+
+**Beides hat dieselbe Ursache**, und beides löst sich mit derselben
+Änderung: Der Kalender ist jetzt **absolut positioniert — verankert an
+der Spalte, nicht am Fenster.**
+
+| | im Fluss (vorher) | schwebend am Fenster | schwebend an der Spalte |
+|---|---|---|---|
+| schiebt Inhalt | **ja** | nein | nein |
+| wird am Fensterrand abgeschnitten | nein | **ja** | nein |
+
+Die dritte Spalte ist die einzige, die beide Regeln zugleich erfüllt. Die
+Spalte ist per Spezifikation mindestens 240 px breit, der Kalender misst
+**199 px** — er kann also gar nicht überstehen, und es braucht dafür
+weiterhin **keine Zeile Positionierungslogik**. Gemessen: Inhalt
+verschiebt sich um **0 px**, Kalender liegt 180 px innerhalb der
+Spaltenkante.
+
+Der Freiraum rechts erledigt sich mit: Ein schwebendes Feld über dem
+Inhalt liest sich als das, was es ist, nicht als halbleere Zeile.
+Tagesfelder von 26 auf **25 px**, damit die 199 px auch in der schmalsten
+Spalte (208 px nutzbare Breite) noch Luft lassen.
+
+**Was von der alten Begründung bleibt:** Overlays sind weiterhin die
+letzte Wahl — aber wenn eines nötig ist, gehört es an den **nächstgelegenen
+begrenzten Behälter**, nicht ans Fenster. Das ist die verallgemeinerte
+Fassung von `spec.md` §2.5.
+
+## 2026-08-07 — Das Fenster hört auf zu schrumpfen, die Seite scrollt
+
+**Kontext:** Der Nutzer schickte einen Bildschirmausschnitt: Bei zu
+schmalem Fenster wird der Inhalt abgeschnitten — das sei in Ordnung —
+*„aber es sollte trotzdem ein Padding da sein"*.
+
+**Befund, nachgemessen:** Das App-Fenster schrumpfte **unbegrenzt** mit
+(bei 420 px Ansicht auf 372 px). Weil Sidebar (248 px) und eine Spalte
+(mindestens 240 px) zusammen 488 px brauchen, scrollte dann das
+**Innenleben** des Fensters — und der Inhalt stieß ohne jeden Abstand an
+die Fensterkante. Genau der Effekt im Bild.
+
+**Entscheidung:** Das Fenster hört bei seiner nutzbaren Mindestbreite auf
+zu schrumpfen (`--win-min: 490px`). Reicht der Platz nicht, scrollt die
+**Seite** waagerecht statt des Fensterinnenraums — und ihr Innenabstand
+von 24 px bleibt dabei auf beiden Seiten stehen.
+
+Das ist nicht nur hübscher: Ein Fenster, das unter die Summe seiner
+unteilbaren Bestandteile gequetscht wird, zeigt nur noch Bruchstücke.
+Lieber ein vollständiges Fenster, das man verschiebt, als ein
+zerschnittenes, das stillhält.
+
+**Beide Werte stehen an genau einer Stelle** (`--win-min`, `--page-pad`)
+und werden zweimal verwendet — am Fenster und an der Seite. Ein erster
+Versuch mit `min-width: min-content` rechnete stattdessen die
+Mindestbreite des Inhalts aus und kam auf 654 px; die Seite hätte dann
+schon bei 700 px zu scrollen begonnen, wo vorher alles passte. Verworfen
+zugunsten des ausdrücklichen Werts.
+
+| Ansicht | Fenster | Abstand links/rechts | Seite scrollt |
+|---|---|---|---|
+| 1240 px | 1040 | 100 / 100 | nein |
+| 700 px | 652 | 24 / 24 | nein |
+| 560 px | 512 | 24 / 24 | nein |
+| 420 px | **490** | 24 / 24 | **ja** |
+| 340 px | **490** | 24 / 24 | **ja** |
+
+**Fehler in der eigenen Prüfung, gleich behoben:** Das neue Skript
+`test_window_min.js` maß beide Ränder, während es ganz nach rechts
+gescrollt war — der linke liegt dann naturgemäß außerhalb des Sichtfelds,
+und die Zusicherung schlug fehl. Der Befund lag in der Messung, nicht am
+Erzeugnis. Jetzt wird jeder Rand dort gemessen, wo er sichtbar ist. **Zum
+zweiten Mal heute steckte ein „Fehler" im Prüfwerkzeug** — es lohnt, bei
+einem roten Punkt zuerst zu fragen, ob die Messung stimmt.

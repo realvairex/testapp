@@ -84,6 +84,11 @@
     --el-2: 0 18px 38px -14px rgba(41, 50, 65, 0.32);
     --el-3: 0 40px 80px -24px rgba(41, 50, 65, 0.45);
     --col-w: 276px;
+    /* Mindestbreite des App-Fensters: Sidebar (248px) plus eine Spalte in
+       Mindestbreite (240px) plus Rahmen. Steht hier einmal, weil sie an
+       zwei Stellen gebraucht wird - am Fenster selbst und an der Seite. */
+    --win-min: 490px;
+    --page-pad: 24px;
     color-scheme: light;
   }
 
@@ -188,13 +193,23 @@
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 
-  .page { max-width: 1180px; margin: 0 auto; padding: 40px 24px; min-height: 100vh; display: flex; align-items: center; }
+  /* min-width: min-content laesst die Seite nicht schmaler werden als ihr
+     Inhalt. Wird das Fenster enger, scrollt die SEITE waagerecht - und der
+     Innenabstand von 24px bleibt dabei auf beiden Seiten erhalten. Ohne das
+     schrumpfte das App-Fenster immer weiter, sein Innenleben scrollte
+     stattdessen, und der Inhalt stiess hart an die Fensterkante. */
+  .page { max-width: 1180px; margin: 0 auto; padding: 40px var(--page-pad); min-height: 100vh; display: flex; align-items: center;
+          min-width: calc(var(--win-min) + 2 * var(--page-pad)); }
 
   .window-frame { display: flex; justify-content: center; width: 100%; }
 
   .app-window {
     width: 100%;
     max-width: 1040px;
+    /* Sidebar (248px) plus eine Spalte in Mindestbreite (240px) plus Rahmen.
+       Darunter ist die App nicht mehr bedienbar - dann lieber die Seite
+       scrollen lassen, als das Fenster weiter zu quetschen. */
+    min-width: var(--win-min);
     height: 640px;
     display: flex;
     background: var(--surface);
@@ -569,7 +584,7 @@
      gewonnene Breite braucht die Zeile in der schmalsten Spalte.
      nowrap ist Absicht: Bricht die Zeile, ist sie zu breit, und das soll
      auffallen statt sich still in zwei Zeilen zu verstecken. */
-  .due-block { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+  .due-block { position: relative; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
   .due-row { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: nowrap; min-width: 0; }
   button.due-pill { border: none; font-family: inherit; cursor: pointer; }
   .due-seg { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; flex-shrink: 0; }
@@ -608,10 +623,19 @@
      Fenster - dadurch kann er nicht ueber den Fensterrand hinauslaufen,
      ohne eine einzige Zeile Positionierungslogik. Sieben Spalten a 26px
      plus Innenabstand passen in die schmalste Spalte (240px). */
+  /* Er schwebt ueber dem Inhalt, aber INNERHALB der Spalte: an .due-block
+     verankert, nicht am Fenster. Dadurch schiebt er nichts nach unten (ein
+     Kalender, der die Aufgabenliste verrueckt, ist unruhig) und kann
+     trotzdem nicht am Fensterrand abgeschnitten werden - das war der Grund,
+     ihn zuerst in den Fluss zu setzen. Beides zugleich geht nur so.
+     Breite 199px, damit er auch in die schmalste Spalte passt: 240px
+     minus 2x16px Innenabstand des Kopfes laesst 208px. */
   .due-cal {
-    margin: 10px 0 2px; padding: 8px; width: fit-content;
-    background: var(--surface-sunken); border: 1px solid var(--line);
-    border-radius: var(--r-md); animation: strip-in var(--dur-base) var(--ease);
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+    padding: 8px; width: max-content;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-md); box-shadow: var(--el-2);
+    animation: strip-in var(--dur-base) var(--ease);
   }
   @media (prefers-reduced-motion: reduce) { .due-cal { animation: none; } }
   .due-cal-top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: var(--sp-3); }
@@ -623,10 +647,10 @@
     transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
   }
   .due-cal-nav:hover { background: var(--chip-hover); color: var(--ink); }
-  .due-cal-grid { display: grid; grid-template-columns: repeat(7, 26px); gap: 1px; }
+  .due-cal-grid { display: grid; grid-template-columns: repeat(7, 25px); gap: 1px; }
   .due-cal-wd { font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); text-align: center; padding-bottom: 4px; }
   .due-cal-day {
-    height: 26px; padding: 0; border: none; background: transparent;
+    height: 25px; padding: 0; border: none; background: transparent;
     font: inherit; font-size: var(--fs-sm); font-variant-numeric: tabular-nums;
     color: var(--ink); border-radius: var(--r-sm); cursor: pointer;
     transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;

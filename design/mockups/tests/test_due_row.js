@@ -103,16 +103,30 @@ const { chromium } = require('playwright');
     ueber.klassen.includes('overdue') && ueber.rahmen !== 'none');
 
   // --- Kalender ---
-  // Er klappt IM FLUSS unter der Zeile auf, nicht als schwebendes Fenster.
-  // Das ist kein Schönheitspunkt: Ein Overlay am rechten Fensterrand wird
-  // abgeschnitten (am 2026-08-07 an zwei Entwürfen gemessen), ein Element
-  // im Fluss kann das per Konstruktion nicht.
+  // Er schwebt über dem Inhalt, aber INNERHALB der Spalte. Zwei Regeln, die
+  // sich sonst widersprechen, und nur so zugleich gelten:
+  //   a) Er darf den Inhalt NICHT nach unten schieben (eine Aufgabenliste,
+  //      die beim Öffnen des Kalenders wegrutscht, ist unruhig).
+  //   b) Er darf NICHT am Fensterrand abgeschnitten werden — am 2026-08-07
+  //      an zwei Entwürfen gemessen, die genau daran scheiterten.
+  // Verankert an der Spalte statt am Fenster erfüllt beides.
+  const vorherOben = await page.evaluate(() => {
+    const cols = document.querySelectorAll('.column');
+    return +cols[cols.length - 1].querySelector('.blocks').getBoundingClientRect().top.toFixed(1);
+  });
   await page.locator('.column').last().locator('.due-chip-label').click();
   await page.waitForTimeout(450);
   const kal = page.locator('.due-cal');
   console.log('>>> Klick auf den Chip öffnet einen Kalender:', await kal.isVisible());
-  console.log('>>> Kalender liegt im Fluss, ist kein schwebendes Fenster:',
-    (await kal.evaluate((e) => getComputedStyle(e).position)) === 'static');
+
+  const nachherOben = await page.evaluate(() => {
+    const cols = document.querySelectorAll('.column');
+    return +cols[cols.length - 1].querySelector('.blocks').getBoundingClientRect().top.toFixed(1);
+  });
+  console.log('Inhalt oben vorher/nachher:', vorherOben, '->', nachherOben);
+  console.log('>>> Kalender schiebt den Inhalt nicht nach unten:', vorherOben === nachherOben);
+  console.log('>>> Kalender schwebt (an der Spalte verankert):',
+    (await kal.evaluate((e) => getComputedStyle(e).position)) === 'absolute');
 
   const kalMasse = await page.evaluate(() => {
     const cols = document.querySelectorAll('.column');
@@ -122,7 +136,7 @@ const { chromium } = require('playwright');
     return { spalte: +cb.width.toFixed(1), kalender: +kb.width.toFixed(1), ueberstand: +(kb.right - cb.right).toFixed(1) };
   });
   console.log('Kalender:', JSON.stringify(kalMasse));
-  console.log('>>> Kalender passt in die Spalte:', kalMasse.ueberstand < 0);
+  console.log('>>> Kalender bleibt in der Spalte, auch der schmalsten:', kalMasse.ueberstand < 0);
 
   console.log('>>> Woche beginnt am Montag:',
     (await page.locator('.due-cal-wd').first().innerText()) === 'Mo');

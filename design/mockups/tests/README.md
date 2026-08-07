@@ -45,10 +45,11 @@ NODE_PATH="$(npm root -g)" node design/mockups/tests/test_align.js
 
 ## Was die Skripte aussagen — und was nicht
 
-Nur **zehn** der 48 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
+Nur **elf** der 49 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
 `true` = in Ordnung): `test_4bugs`, `test_accum`, `test_due_row`,
 `test_gaps`, `test_group_add_hover`, `test_list_header`,
-`test_theme_switch`, `test_typing`, `test_typing2`, `test_typing3`. Alle übrigen sind **Messskripte**: Sie
+`test_theme_switch`, `test_typing`, `test_typing2`, `test_typing3`,
+`test_window_min`. Alle übrigen sind **Messskripte**: Sie
 drucken Zahlen, die ein Mensch beurteilen muss. Ein grüner Lauf heißt bei
 ihnen nur „ohne Absturz durchgelaufen", nicht „Werte sind richtig".
 
@@ -75,7 +76,8 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Hover-Gewichtung in der Sidebar | `test_group_add_hover` |
 | Darstellungs-Schalter (Gleiten, Kontrast) | `test_theme_switch` |
 | Spaltenkopf: Umbenennen, Farbe | `test_list_header` |
-| Fälligkeitszeile, auch im engsten Fall | `test_due_row` |
+| Fälligkeitszeile und Kalender, auch im engsten Fall | `test_due_row` |
+| Schmales Fenster: Mindestbreite und Abstand | `test_window_min` |
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
 
