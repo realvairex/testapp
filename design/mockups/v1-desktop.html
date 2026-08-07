@@ -312,7 +312,13 @@
   .group-actions .nav-delete { position: static; transform: none; }
   .group-actions .nav-delete:active { transform: scale(0.9); }
   .group-row:hover .group-actions .nav-delete { opacity: 1; }
-  .group-actions [data-add-list-to]:hover { color: var(--accent-strong); background: var(--accent-soft); }
+  /* Der "+"-Knopf hebt sich beim Ueberfahren allein ueber die Farbe des
+     Icons hervor - ausdruecklich ohne Flaeche. Er sitzt direkt neben dem
+     Papierkorb: Zwei gefuellte Flaechen nebeneinander machen die
+     Gruppenzeile unruhig, und eine Flaeche laesst das harmlose Anlegen
+     einer Liste so gewichtig aussehen wie das Loeschen daneben. Die
+     Gewichtung soll die Tragweite abbilden. */
+  .group-actions [data-add-list-to]:hover { color: var(--accent-strong); background: transparent; }
   .nav-item-wrap:hover .nav-delete, .group-row:hover .nav-delete { opacity: 1; }
   /* Bei Tastaturbedienung muss der Knopf sichtbar sein, sonst steht der
      Fokus auf einem unsichtbaren Element - das gilt besonders hier, wo

@@ -1554,3 +1554,37 @@ ersten Lauf lagen im **Prüfwerkzeug**, nicht im Geprüften — ein zu
 knapper Zeitwert und eine zu grobe Textsuche. Ein frisch gebautes
 Prüfwerkzeug ist zuerst gegen sich selbst zu prüfen, sonst erzeugt es
 Arbeit, statt sie zu sparen.
+
+## 2026-08-07 — „+" an der Gruppe hebt sich nur über das Icon hervor
+
+**Kontext:** Der Nutzer merkte an, dass der „+"-Knopf, der beim
+Überfahren einer Gruppe erscheint (Liste in dieser Gruppe anlegen), sich
+**bis auf das Icon** genauso verhält wie der Löschknopf daneben: Beide
+füllten sich beim Hovern mit einer farbigen Fläche. Sein Wunsch: nur die
+Icon-Farbe wechselt, der Knopf bleibt flächenlos.
+
+**Warum das mehr ist als Geschmack — und warum ich zustimme:** Die beiden
+Knöpfe sitzen unmittelbar nebeneinander in derselben Zeile. Gab man
+beiden eine gefüllte Fläche, sah das **harmlose Anlegen einer Liste**
+optisch so gewichtig aus wie das **Löschen einer Gruppe**. Die visuelle
+Gewichtung soll aber die Tragweite der Aktion abbilden, nicht
+verwischen — sonst zögert man vor dem Ungefährlichen und klickt das
+Gefährliche zu schnell. Dazu kommt, dass zwei gefüllte Flächen
+nebeneinander die Gruppenzeile unruhig machen.
+
+**Entscheidung:** `background: var(--accent-soft)` beim Hover des
+„+"-Knopfes entfällt; `color: var(--accent-strong)` bleibt. **Der
+Papierkorb behält seine Fläche** — er ist die folgenschwere Aktion und
+darf sich melden.
+
+Der Kontrast bleibt gewahrt: `--accent-strong` ist die Textvariante des
+Akzents (`#b32f10` hell, `#f38a6e` dunkel) und erfüllt WCAG AA in beiden
+Themes — die Regel greift über die Variable, also auch im Dunkelmodus.
+
+**Gegengeprüft und festgehalten:** Neues Prüfskript
+`design/mockups/tests/test_group_add_hover.js` mit vier Zusicherungen —
+„+" flächenlos, „+" wechselt die Icon-Farbe, Papierkorb behält seine
+Fläche, beide bei Gruppen-Hover sichtbar. Alle vier grün. Damit ist die
+Regel nicht nur beschrieben, sondern **mechanisch nachprüfbar**: Sie
+gehört zu den wenigen Skripten mit echten Zusicherungen (jetzt 7 von 45)
+und schlägt an, falls jemand die Fläche später zurückbaut.

@@ -118,14 +118,14 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 44 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 45 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen: **43 grün, 1 Wackelkandidat** (`test_4bugs`, siehe
+  nachgemessen: **44 grün, 1 Wackelkandidat** (`test_4bugs`, siehe
   Abschnitt 4).
 
-  ⚠️ **Wichtige Einschränkung:** Nur **sechs** der 44 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **sieben** der 45 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -199,6 +199,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Die zwei Knöpfe unten links in der Sidebar | Die **unterschiedliche Größe ist Absicht**. Nicht angleichen. Der kleinere steht seit `432b409` auf derselben Grundlinie wie der große, nicht neben dessen Mitte. |
 | Neuentwurf des unteren Sidebar-Bereichs | Vier Varianten wurden vorgelegt und **alle abgelehnt** (2026-08-06). Der Bereich bleibt wie er ist. Nicht erneut vorschlagen. |
 | „+ Bild" in der unteren Leiste | Bleibt. |
+| „+" an der Gruppenzeile (Liste anlegen) | Beim Überfahren wechselt **nur die Icon-Farbe** auf `--accent-strong`, **keine Fläche**. Der Papierkorb daneben behält seine Fläche — die Gewichtung bildet die Tragweite ab. Geprüft von `test_group_add_hover.js`. |
 | „+ Aufgabe" in der unteren Leiste | Wurde entfernt — das Eingabefeld erfüllt denselben Zweck. |
 | Listen-Kennzeichnung in der Sidebar | **Farbige Punkte**, keine Ordner-Icons. |
 | Hover im hellen Design | Muss **heller** als der Grundton sein, nicht dunkler. |
