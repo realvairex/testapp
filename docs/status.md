@@ -141,6 +141,10 @@ Fehlschlag lag allein am falschen Startverzeichnis (`~/Documents/Claude`,
 eine Ebene **über** dem Repo) — Claude Code liest `.claude/settings.json`
 aus dem Projektverzeichnis.
 
+Am 2026-08-07 zusätzlich **in einer Web-Sitzung** (Claude Code im Web,
+frischer Container ohne lokalen Klon) bestätigt: Der Hook löst dort
+genauso aus. Die eingecheckte Arbeitsweise trägt also auf beiden Wegen.
+
 > **Merke:** Bleibt die Zeile künftig aus, ist zuerst das
 > Arbeitsverzeichnis zu prüfen, nicht der Hook. Er ist in Ordnung.
 
