@@ -1719,3 +1719,99 @@ Deckungsgleichheit weiterhin 0,0 px Versatz und 0,0 px Breitendifferenz;
 Kontraste unverändert (hell 12,91 / 4,70 · dunkel 11,04 / 6,82). Keine
 Seitenfehler beim Laden, beim mehrfachen Umschalten oder nach einem
 Navigationswechsel.
+
+## 2026-08-07 — Fälligkeit: eine dauerhafte Zeile statt eines Menüs
+
+**Kontext:** Aus dem Referenzbild übernommen (Muster `Short | Long | 8s`).
+Der Nutzer entschied sich nach der Vorschau für die Spielart **2a** — die
+Zeile steht **dauerhaft** im Kopf der Aufgabenseite — und ergänzte:
+„Nächste Woche" solle raus, *„da man sich ja sowieso für nächste Woche
+eher ein Datum aussuchen würde"*.
+
+**Das Argument ist richtig, und es löst nebenbei ein gemessenes Problem.**
+Die Vorschau hatte gezeigt: Mit drei Schnellwahl-Feldern passt die Zeile
+**nicht** in die schmalste Spalte (drei offene Spalten) — der Datums-Chip
+wurde vom Spaltenrand abgeschnitten. Mit zwei Feldern passt sie: gemessen
+**84,5 px Luft** bei 346 px Spaltenbreite, eine Zeile hoch. Aus einer
+inhaltlichen Vereinfachung wurde damit auch die technische Lösung.
+
+**Ersetzt die Festlegung in `spec.md` §4.2 vom 2026-08-06**, die
+„Heute · Morgen · Nächste Woche · Datum wählen · Entfernen" als
+fünfzeiliges Menü vorsah. Der Abschnitt ist überschrieben, die alte
+Fassung ist über die Git-Historie erreichbar; die Begründung steht hier.
+
+**Zwei Feinheiten, die beim Bauen aufkamen:**
+
+1. **Der Chip wiederholt die Schnellwahl nicht.** Erste Fassung zeigte bei
+   aktivem „Heute" auch im Chip „Heute" — zweimal dasselbe Wort
+   nebeneinander. Jetzt nennt der Chip in diesem Fall das konkrete Datum
+   (`5. Aug`). Er ergänzt, statt zu doppeln.
+2. **Das native Datumsfeld liegt unsichtbar unter dem Chip** und wird per
+   `showPicker()` geöffnet. Sichtbar würde es die Browser-Gestaltung in
+   eine sonst durchgestaltete Oberfläche holen — im alten Menü war genau
+   das der Fall und sah wie ein Fremdkörper aus.
+
+**Beinahe-Fehler beim Aufräumen, festgehalten weil lehrreich:** Mit dem
+alten Menü wäre die Animation `due-menu-in` verschwunden — die das
+`/`-Blockmenü noch benutzt. Es wäre lautlos ohne Einblendung erschienen,
+und niemand hätte es einem Commit zugeordnet, der „Fälligkeitsmenü
+entfernt" heißt. Die Animation heißt jetzt `menu-in` und steht bei ihrem
+Verwender. **Wer etwas entfernt, muss prüfen, was daran hing.**
+
+**Gegengeprüft:** `test_due_row.js`, elf Zusicherungen, alle grün —
+darunter „Zeile passt in die schmalste Spalte" (der Punkt, an dem der
+erste Entwurf scheiterte) und „Überfälliges trägt zusätzlich einen
+Rahmen" (die Zugänglichkeitsregel aus §4.2).
+
+## 2026-08-07 — Kein Titelmenü: Overlays sind die letzte Wahl
+
+**Kontext:** Der Nutzer hatte Entwurf 1 (Titel mit Aufklappmenü) zunächst
+zugesagt, dann aber gefragt, ob es *„ohne dass sich ein kleines Fenster
+öffnet"* gehe — mit der Begründung, die App solle minimalistisch und
+intuitiv bleiben, mit so wenigen Klicks wie möglich, ohne dabei überfüllt
+zu wirken.
+
+**Die Frage kippt meine eigene Empfehlung, und zwar zu Recht.** Ich hatte
+das Menü vorgeschlagen, weil „Löschen" nur an einem Hover-Papierkorb
+hängt. Beim zweiten Hinsehen trägt der Vorschlag nicht: Von den vier
+Menüpunkten braucht **keiner** ein Menü.
+
+| Menüpunkt | Besserer Weg |
+|---|---|
+| Umbenennen | Der Titel **ist** ein Eingabefeld. Hineinklicken, tippen. **Null** zusätzliche Klicks statt zwei |
+| Farbe ändern | Der Punkt vor dem Titel zeigt die Farbe **und** ändert sie. Ein Klick öffnet die Reihe **im Fluss**, kein Overlay |
+| In Gruppe verschieben | **Gibt es bereits**: Liste in der Sidebar auf eine Gruppe ziehen (`spec.md` §2.4) |
+| Liste löschen | **Gibt es bereits**: Papierkorb beim Überfahren der Sidebar-Zeile |
+
+**Das Menü hätte also zwei Wege dupliziert und zwei Dinge umständlicher
+gemacht, als sie sein müssen.** Ein Overlay verdeckt zudem genau den
+Inhalt, den man beurteilt, und verbirgt den aktuellen Zustand, bis man es
+öffnet — bei einer Farbe, die man sehen will, ist das das Gegenteil des
+Gewollten.
+
+**Entscheidung:** Kein Titelmenü. Stattdessen zwei direkte Eingriffe:
+
+1. **Listentitel wird ein Eingabefeld** — Umbenennen war vorher **gar
+   nicht möglich**. Der Entwurf hat also eine echte Lücke aufgedeckt, nur
+   nicht die, die ich vermutet hatte.
+2. **Farbpunkt vor dem Titel**, der die fünf kuratierten Farben als Reihe
+   **unter** dem Titel aufklappt. Unter und nicht daneben, weil daneben
+   die Überschrift beim Öffnen zur Seite rückte — ein springender Titel
+   ist unruhiger als eine zusätzliche Zeile.
+
+**Als Grundsatz nach `spec.md` §2.5 übernommen**, weil er über diesen Fall
+hinaus gilt: *Eine Aktion bekommt einen Ort. Wo eine Eigenschaft angezeigt
+wird, wird sie auch geändert. Overlays sind die letzte Wahl.* Derselbe
+Gedanke hatte schon den Darstellungs-Schalter aus seinem Menü geholt —
+jetzt ist er aufgeschrieben, statt zweimal neu hergeleitet zu werden.
+
+**Nicht gelöst, bewusst:** Dass „Liste löschen" allein an einem
+Hover-Papierkorb hängt, bleibt. Es war mein ursprüngliches Argument für
+das Menü, und es ist nicht falsch — nur ist ein Menü die teure Antwort
+darauf. Gehört zu den Löschregeln (`spec.md` §4.3), die ohnehin als
+nächstes anstehen.
+
+**Gegengeprüft:** `test_list_header.js`, zehn Zusicherungen, alle grün —
+darunter „Farbreihe liegt im Fluss, ist kein schwebendes Fenster"
+(`position: static`) und „Farbreihe verdeckt keine Aufgabe" (gemessen:
+36 px Abstand zur ersten Zeile).

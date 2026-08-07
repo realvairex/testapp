@@ -118,14 +118,14 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 46 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 48 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
   nachgemessen: **45 grün, 1 Wackelkandidat** (`test_4bugs`, siehe
   Abschnitt 4).
 
-  ⚠️ **Wichtige Einschränkung:** Nur **acht** der 46 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **zehn** der 48 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -199,6 +199,8 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Die zwei Knöpfe unten links in der Sidebar | Die **unterschiedliche Größe ist Absicht**. Nicht angleichen. Der kleinere steht seit `432b409` auf derselben Grundlinie wie der große, nicht neben dessen Mitte. |
 | Neuentwurf des unteren Sidebar-Bereichs | Vier Varianten wurden vorgelegt und **alle abgelehnt** (2026-08-06). Der Bereich bleibt wie er ist. Nicht erneut vorschlagen. |
 | „+ Bild" in der unteren Leiste | Bleibt. |
+| Kopf einer Listenspalte | **Kein Aufklappmenü.** Umbenennen = in den Titel klicken und tippen; Farbe = Punkt davor, klappt die fünf Farben **im Fluss** unter dem Titel auf. Verschieben und Löschen bleiben in der Sidebar — kein zweiter Weg. Grundsatz in `spec.md` §2.5. |
+| Fälligkeit | **Dauerhafte Zeile** im Kopf der Aufgabenseite: `Heute · Morgen` + Datums-Chip. **„Nächste Woche" ist entfernt** (Entscheidung des Nutzers, 2026-08-07) — mit drei Feldern passt die Zeile nicht in die schmalste Spalte. Kein Menü mehr. |
 | Darstellungs-Schalter | Segmentiert mit **gleitendem Knopf**, genau **zwei** Felder: **Dunkel links, Hell rechts**. „System" wurde auf Wunsch des Nutzers **entfernt** (2026-08-07) — nicht erneut vorschlagen. Der Schalter steht **direkt in der Sidebar** und hat den Knopf „Optionen" samt Aufklapp-Panel ersetzt. Geprüft von `test_theme_switch.js`. |
 | „+" an der Gruppenzeile (Liste anlegen) | Beim Überfahren wechselt **nur die Icon-Farbe** auf `--accent-strong`, **keine Fläche**. Der Papierkorb daneben behält seine Fläche — die Gewichtung bildet die Tragweite ab. Geprüft von `test_group_add_hover.js`. |
 | „+ Aufgabe" in der unteren Leiste | Wurde entfernt — das Eingabefeld erfüllt denselben Zweck. |

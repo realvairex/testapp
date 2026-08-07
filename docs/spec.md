@@ -167,7 +167,30 @@ lockerer wirken als der Fließtext darüber.
 - Eine Liste kann auf eine Gruppe gezogen werden (= in die Gruppe
   aufnehmen) oder zwischen zwei Listen (= umsortieren).
 
-### 2.5 Heute-Seite
+### 2.5 Kopf einer Listenspalte — ✅ ENTSCHIEDEN (2026-08-07)
+
+Farbpunkt, dann Titel. Kein Menü.
+
+- **Umbenennen:** Der Titel **ist** ein Eingabefeld. Hineinklicken, tippen,
+  fertig — die Sidebar zieht bei jedem Anschlag mit. Kein Bestätigen, kein
+  Menüpunkt, keine zusätzliche Klickstufe.
+- **Farbe ändern:** Der Punkt links vom Titel zeigt die Farbe **und** ist
+  der Weg, sie zu ändern. Ein Klick klappt die fünf kuratierten Farben als
+  Reihe **unter** dem Titel auf — im Fluss, nicht als schwebendes Fenster,
+  damit nichts verdeckt wird und der Titel nicht zur Seite springt. Die
+  gewählte Farbe trägt einen Ring (nicht nur eine andere Größe).
+- **In Gruppe verschieben** und **Löschen** bekommen hier **keinen**
+  Zugang. Beides gibt es bereits in der Sidebar — Ziehen auf eine Gruppe
+  bzw. der Papierkorb beim Überfahren. Ein zweiter Weg zum selben Ziel
+  kostet Platz und stiftet Zweifel, welcher der richtige ist.
+
+> **Grundsatz, der hier zum ersten Mal ausformuliert ist:** Eine Aktion
+> bekommt **einen** Ort. Wo eine Eigenschaft angezeigt wird, wird sie auch
+> geändert. Overlays sind die letzte Wahl, nicht die erste — sie verdecken
+> den Gegenstand der Entscheidung und kosten zwei Klicks für einen Wert.
+> Angewandt auch auf die Fälligkeit (§4.2) und den Darstellungs-Schalter.
+
+### 2.6 Heute-Seite
 - Zeigt listenübergreifend alle Aufgaben mit Fälligkeitsdatum **heute oder
   früher** (überfällig), sofern nicht erledigt.
 - Nur Aufgaben mit **eigenem** Datum. Eine übergeordnete Aufgabe erscheint
@@ -339,11 +362,37 @@ feste Eingangsliste, oder Listenauswahl im Eingabefeld?
   ⚠️ Im Mockup nicht umgesetzt — das Datum ist dort fest verdrahtet,
   damit die Demo reproduzierbar bleibt. **In Flutter zu implementieren.**
 
-**Datum setzen:** Im Kopf der Aufgabenseite. Ohne Datum eine Einladung
-(„Fällig am …"), mit Datum die Fälligkeits-Pille; beides öffnet dasselbe
-Menü: Heute · Morgen · Nächste Woche · Datum wählen · Entfernen. Die drei
-Schnellwahlen decken den Alltag ab, ohne den Kalender zu öffnen — das ist
-der Quick-Capture-Gedanke, angewandt auf Datumsvergabe.
+**Datum setzen — ✅ überarbeitet 2026-08-07, ersetzt die frühere Fassung:**
+
+Im Kopf der Aufgabenseite steht eine **dauerhaft sichtbare Zeile**, kein
+Aufklappmenü:
+
+```
+[ Heute | Morgen ]   ( 📅 6. Aug ✕ )
+```
+
+- **Zwei Schnellwahl-Felder**, segmentiert: Heute und Morgen. Das jeweils
+  zutreffende ist markiert — der Zustand ist **ohne einen Klick** ablesbar.
+- **Ein Chip** daneben für jedes andere Datum. Ohne Datum trägt er die
+  Einladung „Datum wählen", mit Datum das Datum selbst und ein ✕ zum
+  Entfernen. Er öffnet den nativen Kalender.
+- **Der Chip wiederholt die Schnellwahl nicht.** Ist „Heute" aktiv, zeigt
+  er `5. Aug`, nicht noch einmal „Heute" — er ergänzt um die konkrete
+  Angabe.
+- **Überfällig:** Der Chip trägt `Überfällig · 1. Aug`, Warnfarbe **und
+  einen Rahmen** (siehe Regel oben).
+
+**„Nächste Woche" ist bewusst nicht dabei.** Für einen Termin in einer
+Woche greift man ohnehin zum Kalender, statt eine Schnellwahl zu nehmen,
+deren genauen Tag man nicht sieht. Der gewonnene Platz ist nicht
+kosmetisch: Mit drei Feldern passt die Zeile **nicht** in die schmalste
+Spalte (drei offene Spalten) — der Chip wird abgeschnitten. Nachgemessen
+am 2026-08-07, siehe `docs/decisions.md`.
+
+**Warum keine Menüs:** Ein Aufklappmenü verdeckt den Inhalt, den man
+gerade beurteilt, kostet einen Klick zum Öffnen und einen zum Schließen,
+und verbirgt den aktuellen Zustand, bis man es öffnet. Bei zwei bis drei
+Werten ist das reiner Verlust.
 
 ### 4.3 Regeln fürs Löschen (referentielle Integrität)
 **Zu klären:**

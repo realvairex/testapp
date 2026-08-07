@@ -398,6 +398,34 @@
 
   .col-header { padding: 16px 16px 4px; flex-shrink: 0; }
   .col-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  /* Farbpunkt vor dem Listentitel. Er zeigt die Farbe und ist zugleich der
+     Weg, sie zu ändern - ein Element, zwei Zwecke, kein Menü.
+     margin statt padding: border-radius: 50% rechnet gegen die Border-Box,
+     mit padding würde aus dem Kreis eine Ellipse. */
+  .col-dot {
+    width: 10px; height: 10px; border-radius: 50%; border: none; padding: 0;
+    flex-shrink: 0; cursor: pointer; margin: 9px 2px 0 0;
+    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  .col-dot:hover { transform: scale(1.25); }
+  .col-dot:active { transform: scale(0.9); }
+  /* Die Farbreihe klappt UNTER dem Titel auf, nicht daneben: Sonst rückte
+     die Überschrift beim Öffnen zur Seite, und ein springender Titel ist
+     unruhiger als eine zusätzliche Zeile. Kein schwebendes Fenster. */
+  .color-strip {
+    display: flex; gap: var(--sp-3); align-items: center;
+    margin: 8px 0 2px; animation: strip-in var(--dur-base) var(--ease);
+  }
+  @keyframes strip-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) { .color-strip { animation: none; } }
+  .color-swatch {
+    width: 17px; height: 17px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  .color-swatch:hover { transform: scale(1.15); }
+  /* Die gewählte Farbe trägt einen Ring aus der Grundfläche plus Kontur -
+     nicht nur "etwas größer", das wäre allein über Größe kodiert. */
+  .color-swatch.active { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink-faint); }
   .col-title { font-size: var(--fs-xl); font-weight: var(--fw-bold); letter-spacing: -0.02em; line-height: 1.2; margin: 0; border: none; background: transparent; color: var(--ink); font-family: inherit; padding: 0; width: 100%; }
   .col-title.done { color: var(--ink-faint); text-decoration: line-through; }
   .col-title:focus { outline: none; }
@@ -533,34 +561,58 @@
   .due-pill.overdue { background: var(--urgent-soft); color: var(--urgent); box-shadow: inset 0 0 0 1px var(--urgent); }
   .group-heading.overdue-heading { color: var(--urgent); }
 
-  /* --- Fälligkeits-Steuerung --- */
-  .due-wrap { position: relative; display: inline-flex; }
-  .due-trigger { border: none; font-family: inherit; cursor: pointer; }
+  /* --- Fälligkeits-Steuerung ---
+     Eine dauerhaft sichtbare Zeile im Kopf der Aufgabenseite statt eines
+     Aufklappmenues: Schnellwahl "Heute"/"Morgen" plus ein Chip fuer jedes
+     andere Datum. "Naechste Woche" ist bewusst NICHT dabei - fuer einen
+     Termin in einer Woche greift man ohnehin zum Kalender, und die
+     gewonnene Breite braucht die Zeile in der schmalsten Spalte.
+     nowrap ist Absicht: Bricht die Zeile, ist sie zu breit, und das soll
+     auffallen statt sich still in zwei Zeilen zu verstecken. */
+  .due-row { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: nowrap; min-width: 0; }
   button.due-pill { border: none; font-family: inherit; cursor: pointer; }
-  .due-add {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint);
-    background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill);
-    padding: 4px 10px 4px 8px; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  .due-seg { display: flex; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; flex-shrink: 0; }
+  .due-seg-btn {
+    border: none; background: transparent; color: var(--ink-soft);
+    font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-medium);
+    padding: 4px 11px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap;
+    transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease;
   }
-  .due-add:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
-  .due-menu {
-    position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 236px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-    box-shadow: var(--el-2); padding: 6px;
-    display: flex; flex-direction: column; gap: 2px;
-    animation: due-menu-in var(--dur-fast) var(--ease);
+  .due-seg-btn:not(.active):hover { color: var(--ink); }
+  .due-seg-btn.active { background: var(--surface); color: var(--ink); font-weight: var(--fw-strong); box-shadow: var(--el-1); }
+
+  /* Chip und Loeschknopf sitzen in einer gemeinsamen Pille, damit die Zeile
+     aus zwei Bloecken besteht und nicht aus dreien. */
+  .due-chip {
+    display: inline-flex; align-items: center; min-width: 0;
+    background: var(--line-soft); color: var(--ink-soft);
+    border-radius: var(--r-pill); padding: 0 2px 0 0;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
   }
-  @keyframes due-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-  .due-opt {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px; white-space: nowrap;
-    font: inherit; font-size: var(--fs-sm); text-align: left; color: var(--ink);
-    background: transparent; border: none; border-radius: var(--r-md); padding: 7px 8px; cursor: pointer;
+  .due-chip.set { background: var(--accent-soft); color: var(--accent-strong); }
+  /* Ueberfaellig traegt zusaetzlich einen Rahmen - Farbe darf nie der
+     einzige Traeger einer Information sein. */
+  .due-chip.today { background: var(--urgent-soft); color: var(--urgent); }
+  .due-chip.overdue { background: var(--urgent-soft); color: var(--urgent); box-shadow: inset 0 0 0 1px var(--urgent); }
+  .due-chip-label {
+    position: relative; display: inline-flex; align-items: center; gap: 6px; min-width: 0;
+    font-size: var(--fs-xs); font-weight: var(--fw-strong); font-variant-numeric: tabular-nums;
+    padding: 5px 9px; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
   }
-  .due-opt:hover { background: var(--line-soft); }
-  .due-pick input { font: inherit; font-size: var(--fs-sm); border: none; background: transparent; color: var(--ink-soft); cursor: pointer; }
-  .due-clear { color: var(--urgent); }
-  .due-clear:hover { background: var(--urgent-soft); }
+  .due-chip-label > span { overflow: hidden; text-overflow: ellipsis; }
+  .due-chip-label svg { flex-shrink: 0; }
+  /* Das native Datumsfeld liegt unsichtbar darunter und wird per
+     showPicker() geoeffnet - sichtbar wuerde es die Browser-Gestaltung in
+     eine sonst durchgestaltete Oberflaeche holen. */
+  .due-chip-input { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+  .due-chip-x {
+    width: 20px; height: 20px; padding: 0; border: none; background: transparent;
+    color: currentColor; opacity: 0.55; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity var(--dur-fast) ease;
+  }
+  .due-chip-x:hover { opacity: 1; }
+  .due-chip-x svg { width: 11px; height: 11px; }
   .col-progress-row:empty { display: none; }
 
   /* --- Überschrift und Trenner --- */
@@ -589,12 +641,17 @@
   .sel-sep { width: 1px; height: 15px; background: rgba(255, 255, 255, 0.2); margin: 0 4px; }
 
   /* --- "/"-Blockmenü --- */
+  /* Die Einblendung hiess frueher "due-menu-in" und war beim
+     Faelligkeitsmenue definiert. Mit dessen Wegfall waere sie mitgegangen
+     und das Menue haette lautlos ohne Animation aufgeschlagen - deshalb
+     steht sie jetzt bei ihrem einzigen Verwender und heisst neutral. */
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
   .slash-menu {
     position: fixed; z-index: 60; min-width: 208px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
     box-shadow: var(--el-2); padding: 6px;
     display: flex; flex-direction: column; gap: 2px;
-    animation: due-menu-in var(--dur-fast) var(--ease);
+    animation: menu-in var(--dur-fast) var(--ease);
   }
   .slash-opt {
     display: flex; align-items: center; gap: 8px; width: 100%;
@@ -732,7 +789,17 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, dueMenuFor: null };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null };
+
+  // Die kuratierte Reihe aus docs/spec.md. Sie steht hier einmal, damit die
+  // Farbauswahl nicht versehentlich eine sechste Farbe erfindet.
+  var LIST_COLORS = [
+    { token: "var(--list-inbox)", name: "Lehm" },
+    { token: "var(--list-personal)", name: "Salbei" },
+    { token: "var(--list-work)", name: "Terrakotta" },
+    { token: "var(--list-groceries)", name: "Taubenblau" },
+    { token: "var(--list-5)", name: "Ocker" }
+  ];
 
   // Reihenfolge des Darstellungs-Schalters: dunkel links, hell rechts.
   // Steht an genau einer Stelle, weil sie dreifach gebraucht wird - beim
@@ -847,6 +914,14 @@
     return out;
   }
 
+  // Immer Tag und Monat, nie "Heute"/"Morgen" - für Stellen, an denen das
+  // Wort schon woanders steht (siehe Fälligkeits-Chip).
+  function datumKurz(iso) {
+    var d = new Date(iso + "T00:00:00");
+    var months = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+    return d.getDate() + ". " + months[d.getMonth()];
+  }
+
   function formatDue(iso) {
     if (iso === TODAY_ISO) return "Heute";
     if (iso === isoPlusDays(TODAY_ISO, 1)) return "Morgen";
@@ -881,29 +956,43 @@
 
   function svgCalendar() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.34" stroke-linecap="round"><rect x="2" y="3" width="11" height="10" rx="1.6"/><path d="M2 6.2h11M5 1.6v2.2M10 1.6v2.2"/></svg>'; }
 
-  // Fälligkeits-Steuerung im Kopf einer Aufgabenseite: zeigt das Datum,
-  // oder lädt ein, eines zu setzen. Beides öffnet dasselbe Menü.
+  // Fälligkeits-Steuerung im Kopf einer Aufgabenseite. Dauerhaft sichtbar,
+  // kein Aufklappen: Man sieht den Zustand ohne einen einzigen Klick und
+  // setzt die beiden häufigsten Werte mit einem.
   function dueControl(node) {
-    var h = '<div class="due-wrap">';
-    if (node.due) {
-      h += '<button class="due-pill' + duePillClass(node) + ' due-trigger" data-due-menu="' + node.id + '" title="Fälligkeit ändern">' +
-           (isOverdue(node) ? "Überfällig · " : "") + formatDue(node.due) + "</button>";
-    } else {
-      h += '<button class="due-add due-trigger" data-due-menu="' + node.id + '">' + svgCalendar() + " Fällig am …</button>";
-    }
-    if (state.dueMenuFor === node.id) {
-      var tomorrow = isoPlusDays(TODAY_ISO, 1);
-      var nextWeek = isoPlusDays(TODAY_ISO, 7);
-      h += '<div class="due-menu" data-due-menu-panel>';
-      h += '<button class="due-opt" data-set-due="' + node.id + '" data-due-value="' + TODAY_ISO + '">Heute</button>';
-      h += '<button class="due-opt" data-set-due="' + node.id + '" data-due-value="' + tomorrow + '">Morgen</button>';
-      h += '<button class="due-opt" data-set-due="' + node.id + '" data-due-value="' + nextWeek + '">Nächste Woche</button>';
-      h += '<label class="due-opt due-pick">Datum wählen<input type="date" data-pick-due="' + node.id + '" value="' + (node.due || "") + '" /></label>';
-      if (node.due) h += '<button class="due-opt due-clear" data-set-due="' + node.id + '" data-due-value="">Fälligkeit entfernen</button>';
-      h += "</div>";
-    }
+    var tomorrow = isoPlusDays(TODAY_ISO, 1);
+    var chipKlasse = node.due ? (duePillClass(node) || " set") : "";
+    // Der Chip ergänzt die Schnellwahl, statt sie zu wiederholen: Deckt ein
+    // Segment das Datum bereits ab ("Heute"/"Morgen"), zeigt er das
+    // konkrete Datum. Sonst stünde zweimal dasselbe Wort nebeneinander.
+    var vonSegmentGedeckt = node.due === TODAY_ISO || node.due === tomorrow;
+    var beschriftung = node.due
+      ? (isOverdue(node) ? "Überfällig · " : "") + (vonSegmentGedeckt ? datumKurz(node.due) : formatDue(node.due))
+      : "Datum wählen";
+
+    var h = '<div class="due-row">';
+    h += '<div class="due-seg" role="group" aria-label="Fälligkeit">';
+    h += segButton(node, TODAY_ISO, "Heute");
+    h += segButton(node, tomorrow, "Morgen");
     h += "</div>";
+
+    h += '<div class="due-chip' + chipKlasse + '">';
+    h += '<label class="due-chip-label" title="Datum wählen">' + svgCalendar() +
+         "<span>" + beschriftung + "</span>" +
+         '<input type="date" class="due-chip-input" data-pick-due="' + node.id + '" value="' + (node.due || "") + '" tabindex="-1" /></label>';
+    if (node.due) {
+      h += '<button class="due-chip-x" data-set-due="' + node.id + '" data-due-value="" ' +
+           'aria-label="Fälligkeit entfernen" title="Fälligkeit entfernen">' + svgClose() + "</button>";
+    }
+    h += "</div></div>";
     return h;
+  }
+
+  function segButton(node, iso, text) {
+    var aktiv = node.due === iso;
+    return '<button class="due-seg-btn' + (aktiv ? " active" : "") + '" type="button"' +
+           ' aria-pressed="' + (aktiv ? "true" : "false") + '"' +
+           ' data-set-due="' + node.id + '" data-due-value="' + iso + '">' + text + "</button>";
   }
 
   function escapeHtml(s) {
@@ -1668,7 +1757,25 @@
       var list = findList(state.currentListId);
       var c = countAll(list.tasks);
       html += '<div class="column" data-col-index="0" data-col-key="list:' + list.id + '"><div class="col-inner">';
-      html += '<div class="col-header"><div class="col-header-top"><h2 class="col-title">' + escapeHtml(list.name) + '</h2></div>';
+      // Kein Aufklappmenü am Titel: Umbenennen geschieht durch Hineinklicken
+      // und Tippen, die Farbe über den Punkt links daneben. Verschieben und
+      // Löschen gibt es bereits in der Sidebar (Ziehen bzw. Papierkorb) und
+      // bekommen deshalb keinen zweiten Weg.
+      html += '<div class="col-header"><div class="col-header-top">';
+      html += '<button class="col-dot" data-color-for="' + list.id + '" style="background:' + list.color + '"' +
+              ' aria-label="Farbe der Liste ändern" title="Farbe ändern"></button>';
+      html += '<input class="col-title" value="' + escapeHtml(list.name) + '" data-list-title-for="' + list.id + '" aria-label="Listenname" />';
+      html += "</div>";
+      if (state.colorPickFor === list.id) {
+        html += '<div class="color-strip" role="group" aria-label="Listenfarbe">';
+        for (var ci = 0; ci < LIST_COLORS.length; ci++) {
+          var lc = LIST_COLORS[ci];
+          html += '<button class="color-swatch' + (list.color === lc.token ? " active" : "") + '"' +
+                  ' style="background:' + lc.token + '" data-set-color="' + list.id + '"' +
+                  ' data-color-value="' + lc.token + '" title="' + lc.name + '" aria-label="' + lc.name + '"></button>';
+        }
+        html += "</div>";
+      }
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
       html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
       html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-image-at="0">' + svgPlus() + " Bild</button></div>";
@@ -2106,15 +2213,34 @@
       return;
     }
 
-    // --- Fälligkeitsmenü ---
-    el = e.target.closest("[data-due-menu]");
+    // --- Listenfarbe: Punkt klappt die Reihe auf, Klick auf eine Farbe setzt sie ---
+    el = e.target.closest("[data-color-for]");
     if (el) {
-      var dueFor = el.getAttribute("data-due-menu");
-      state.dueMenuFor = state.dueMenuFor === dueFor ? null : dueFor;
+      var cf = el.getAttribute("data-color-for");
+      state.colorPickFor = state.colorPickFor === cf ? null : cf;
       renderColumns();
       return;
     }
 
+    el = e.target.closest("[data-set-color]");
+    if (el) {
+      var cl = findList(el.getAttribute("data-set-color"));
+      if (cl) cl.color = el.getAttribute("data-color-value");
+      state.colorPickFor = null;
+      renderAll();
+      return;
+    }
+
+    // Klick irgendwo sonst schließt die Farbreihe wieder.
+    if (state.colorPickFor && !e.target.closest(".color-strip")) {
+      state.colorPickFor = null;
+      renderColumns();
+      // kein return: der Klick soll trotzdem noch wirken
+    }
+
+    // --- Fälligkeit ---
+    // Kein Menü mehr, das geöffnet und wieder geschlossen werden müsste:
+    // Die Zeile steht dauerhaft im Kopf, ein Klick genügt.
     el = e.target.closest("[data-set-due]");
     if (el) {
       var dNode = findTaskGlobal(el.getAttribute("data-set-due"));
@@ -2122,16 +2248,20 @@
         var val = el.getAttribute("data-due-value");
         dNode.due = val || null;
       }
-      state.dueMenuFor = null;
       renderAll();
       return;
     }
 
-    // Klick irgendwo sonst schließt ein offenes Fälligkeitsmenü.
-    if (state.dueMenuFor && !e.target.closest("[data-due-menu-panel]")) {
-      state.dueMenuFor = null;
-      renderColumns();
-      // kein return: der Klick soll trotzdem noch wirken
+    // Der Chip öffnet den nativen Kalender. Das Datumsfeld liegt unsichtbar
+    // darunter; showPicker() braucht eine Nutzeraktion, ein Klick ist eine.
+    el = e.target.closest(".due-chip-label");
+    if (el) {
+      var picker = el.querySelector(".due-chip-input");
+      if (picker) {
+        try { picker.showPicker(); }
+        catch (err) { picker.focus(); }
+      }
+      return;
     }
 
     el = e.target.closest("[data-open-task]");
@@ -2355,7 +2485,6 @@
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-pick-due")) {
       var pNode = findTaskGlobal(e.target.getAttribute("data-pick-due"));
       if (pNode) pNode.due = e.target.value || null;
-      state.dueMenuFor = null;
       renderAll();
     }
   });
@@ -2368,6 +2497,12 @@
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-group-title-for")) {
       var group = findGroup(e.target.getAttribute("data-group-title-for"));
       if (group) group.name = e.target.value;
+    }
+    // Listen umbenennen: Hineinklicken und tippen. Die Sidebar zieht bei
+    // jedem Anschlag mit, damit man sieht, was man ändert.
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-list-title-for")) {
+      var rl = findList(e.target.getAttribute("data-list-title-for"));
+      if (rl) { rl.name = e.target.value; renderSidebar(); }
     }
   });
 
