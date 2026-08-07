@@ -107,6 +107,46 @@ async function ziehen(page, vonGriff, aufSelektor) {
   console.log('>>> und sie stehen danach nicht mehr in der Herkunftsliste:',
     !(await page.locator('.column[data-col-index="0"]').innerText()).includes(rueckTitel));
 
+  // --- Rueckmeldung waehrend des Ziehens ---
+  // Ohne sie wirkte die Geste, als funktioniere sie nicht: Zwischen Editor
+  // und Sidebar - quer durchs Fenster - gab es keinerlei Anhaltspunkt.
+  await page.locator('.nav-item[data-list="inbox"]').click();
+  await page.waitForTimeout(500);
+  const gr = await page.locator('.column[data-col-index="0"] .inline-embed').first()
+    .locator('[data-embed-grip]').boundingBox();
+  const gezogen = await page.locator('.column[data-col-index="0"] .task-title').first().innerText();
+  await page.mouse.move(gr.x + gr.width / 2, gr.y + gr.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(gr.x + gr.width / 2, gr.y + gr.height / 2 - 12, { steps: 3 });
+  await page.mouse.move(620, 320, { steps: 8 });
+  await page.waitForTimeout(200);
+
+  console.log('>>> ein Etikett folgt dem Zeiger:', await page.locator('.drag-label').isVisible());
+  console.log('>>> das Etikett nennt die gezogene Aufgabe:',
+    (await page.locator('.drag-label span').innerText()) === gezogen);
+  console.log('>>> der Zeiger zeigt die Geste an:',
+    await page.evaluate(() => document.body.classList.contains('is-dragging')));
+  console.log('>>> die Listen zeigen sich als mögliche Ziele:',
+    await page.evaluate(() => document.getElementById('sidebar').classList.contains('drop-armed')));
+  console.log('>>> "Heute" wird nicht als Ziel angeboten:',
+    await page.evaluate(() => {
+      const h = document.querySelector('#sidebar .nav-item[data-nav="today"]');
+      return !h.hasAttribute('data-list');
+    }));
+  console.log('>>> die Quelle bleibt sichtbar, aber gedämpft:',
+    await page.evaluate(() => {
+      const g = document.querySelector('.inline-embed.drag-ghost');
+      return !!g && parseFloat(getComputedStyle(g).opacity) < 1;
+    }));
+
+  await page.mouse.up();
+  await page.waitForTimeout(500);
+  console.log('>>> nach dem Loslassen bleibt nichts zurück:',
+    (await page.locator('.drag-label').count()) === 0 &&
+    await page.evaluate(() => !document.body.classList.contains('is-dragging') &&
+      !document.getElementById('sidebar').classList.contains('drop-armed') &&
+      document.querySelectorAll('.drag-ghost').length === 0));
+
   console.log('>>> keine Seitenfehler:', fehler.length === 0);
   if (fehler.length) console.log(fehler);
   await b.close();

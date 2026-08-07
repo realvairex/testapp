@@ -527,11 +527,43 @@
     transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease;
     touch-action: none; user-select: none;
   }
-  .inline-embed:hover .embed-grip { opacity: 0.55; }
+  /* Der Griff ist der einzige Hinweis darauf, dass sich die Zeile ziehen
+     laesst. Bei 0,55 war er kaum zu erkennen - man kam gar nicht auf die
+     Idee, es zu versuchen. */
+  .inline-embed:hover .embed-grip { opacity: 0.85; }
   .embed-grip:hover { opacity: 1 !important; color: var(--ink-soft); }
   .embed-grip:active { cursor: grabbing; }
-  .page-editor.embed-dragging { cursor: grabbing; }
-  .page-editor.embed-dragging .inline-embed { cursor: grabbing; }
+  /* --- Rueckmeldung beim Ziehen ---
+     Vorher gab es nur die gedaempfte Quelle und den Rahmen am Ziel. Auf dem
+     Weg vom Editor bis in die Sidebar - quer durchs Fenster - passierte
+     nichts, und die Geste fuehlte sich an, als wuerde sie nicht
+     funktionieren. */
+
+  /* Das mitziehende Etikett: zeigt, WAS man zieht, und folgt dem Zeiger.
+     Bewegt wird ausschliesslich per transform (docs/spec.md, Bewegung). */
+  .drag-label {
+    position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none;
+    display: flex; align-items: center; gap: 6px; max-width: 260px;
+    padding: 6px 10px; border-radius: var(--r-md);
+    background: var(--surface); border: 1px solid var(--line);
+    box-shadow: var(--el-2); color: var(--ink);
+    font-size: var(--fs-sm); font-weight: var(--fw-medium);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .drag-label svg { color: var(--ink-faint); flex-shrink: 0; }
+  /* Der Zeiger bleibt waehrend der ganzen Geste "greifend" - auch weit weg
+     vom Griff, wo sonst wieder der Textcursor erschiene. */
+  body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+  /* Sobald eine Aufgabe gezogen wird, zeigen die Listen, dass sie Ziele
+     sind. Ohne das muss man raten, ob die Geste hier ueberhaupt etwas
+     bewirkt. Zurueckhaltend: eine Kontur, keine Flaeche. */
+  #sidebar.drop-armed .nav-item[data-list] {
+    box-shadow: inset 0 0 0 1px var(--accent-line);
+    border-radius: var(--r-md);
+  }
+  #sidebar.drop-armed .nav-item[data-list].drop-into {
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+  }
   @keyframes block-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
   .inline-embed.removing { animation: none; transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; margin: 0 !important; }
   @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity var(--dur-fast) ease; } }
@@ -2808,6 +2840,10 @@
       // never crosses the movement threshold stays an ordinary click, so
       // navigating by clicking a list still works.
       name: "sidebar",
+      label: function (el) {
+        var n = el.querySelector(".nav-name") || el.querySelector(".group-title");
+        return n ? (n.value !== undefined ? n.value : n.textContent) : "";
+      },
       itemFrom: function (t) { return t.closest('[data-drag-type][data-drag-id]'); },
       containerFrom: function () { return sidebarEl; },
       resolveSpot: function (container, x, y, el) {
@@ -2843,6 +2879,17 @@
       // itself is clickable (opens the page) and sits inside editable text
       // where a press would otherwise start selecting.
       name: "embed",
+      label: function (el) {
+        var t = el.querySelector(".task-title");
+        if (t) return t.textContent;
+        var b = el.querySelector(".block-image span");
+        return b ? b.textContent : "Block";
+      },
+      // Nur Aufgaben lassen sich in eine Liste einsortieren - ein Bild
+      // gehoert zu seiner Seite. Also auch nur dann die Ziele andeuten.
+      armsSidebar: function (el) {
+        return (el.getAttribute("data-embed-marker") || "").indexOf("task:") === 0;
+      },
       requiresGrip: "[data-embed-grip]",
       itemFrom: function (t) { return t.closest(".inline-embed[data-embed-marker]"); },
       containerFrom: function (el) { return el.closest(".page-editor"); },
@@ -2904,6 +2951,32 @@
   // is left alone, so selecting and editing text still works normally.
   var SORT_PRESS_EXCLUDE = ".group-chevron, .nav-delete, .row-delete, .check-btn";
 
+  // Zeigt waehrend der Geste, WAS gezogen wird, und folgt dem Zeiger.
+  // Ohne dieses Etikett gibt es zwischen Editor und Sidebar - quer durchs
+  // Fenster - keinerlei Rueckmeldung, und die Geste wirkt wirkungslos.
+  var dragLabelEl = null;
+
+  function showDragLabel(text, x, y) {
+    if (!dragLabelEl) {
+      dragLabelEl = document.createElement("div");
+      dragLabelEl.className = "drag-label";
+      document.body.appendChild(dragLabelEl);
+    }
+    dragLabelEl.innerHTML = svgGrip() + "<span>" + escapeHtml(text) + "</span>";
+    moveDragLabel(x, y);
+  }
+
+  function moveDragLabel(x, y) {
+    // Versetzt neben dem Zeiger, damit das Etikett nicht verdeckt, worauf
+    // man zielt. Nur transform - kein Layout pro Bild.
+    if (dragLabelEl) dragLabelEl.style.transform = "translate3d(" + (x + 14) + "px," + (y + 14) + "px,0)";
+  }
+
+  function hideDragLabel() {
+    if (dragLabelEl && dragLabelEl.parentNode) dragLabelEl.parentNode.removeChild(dragLabelEl);
+    dragLabelEl = null;
+  }
+
   function clearSortIndicator() {
     if (sortDrag && sortDrag.spot) {
       sortDrag.spot.target.classList.remove("drop-before", "drop-after", "drop-into");
@@ -2913,6 +2986,9 @@
   function endSortDrag() {
     if (!sortDrag) return;
     clearSortIndicator();
+    hideDragLabel();
+    document.body.classList.remove("is-dragging");
+    if (sidebarEl) sidebarEl.classList.remove("drop-armed");
     sortDrag.el.classList.remove("drag-ghost");
     if (sortDrag.container) sortDrag.container.classList.remove("is-sorting");
     if (sortDrag.captureEl && sortDrag.captureEl.releasePointerCapture) {
@@ -2972,8 +3048,16 @@
       if (sel && sel.removeAllRanges) sel.removeAllRanges();
       sortDrag.el.classList.add("drag-ghost");
       sortDrag.container.classList.add("is-sorting");
+      document.body.classList.add("is-dragging");
+      showDragLabel(sortDrag.cfg.label ? sortDrag.cfg.label(sortDrag.el) : "", e.clientX, e.clientY);
+      // Wird eine Aufgabe gezogen, zeigen die Listen in der Sidebar, dass
+      // sie Ziele sind - sonst muss man raten, ob die Geste dort wirkt.
+      if (sortDrag.cfg.armsSidebar && sortDrag.cfg.armsSidebar(sortDrag.el) && sidebarEl) {
+        sidebarEl.classList.add("drop-armed");
+      }
     }
     e.preventDefault();
+    moveDragLabel(e.clientX, e.clientY);
     clearSortIndicator();
     var spot = sortDrag.cfg.resolveSpot(sortDrag.container, e.clientX, e.clientY, sortDrag.el);
     sortDrag.spot = spot;

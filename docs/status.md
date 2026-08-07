@@ -155,7 +155,21 @@ Der abgestimmte Plan, in dieser Reihenfolge:
 2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — lässt
    sich im Browser nicht bauen, muss also rein spezifiziert werden.
 3. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
-4. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
+4. **Aufräum-Modus für den Eingang** — vom Nutzer beauftragt (2026-08-07),
+   noch nicht gebaut. Ein geführter Durchgang, der die Aufgaben im Eingang
+   **eine nach der anderen** zeigt, jeweils mit den drei Entscheidungen
+   (in welche Liste · welches Datum · erledigt/weg) groß und direkt, und
+   endet, wenn der Eingang leer ist.
+
+   *Der Gedanke:* Xdo lässt einen selbst durch die Liste wischen. Ein
+   geführter Durchgang macht aus einer Pflicht eine Abfolge von Sekunden —
+   das ist die eigentliche Weiterentwicklung gegenüber dem Vorbild.
+
+   **Zu klären vor dem Bau:** Wo lebt der Modus (eigene Ansicht, oder die
+   Spalte übernimmt)? Wie kommt man raus, ohne fertig zu werden? Was
+   passiert mit Aufgaben, die man bewusst im Eingang lassen will?
+
+5. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
    (Lint/Typecheck/Test bei jedem Push), Session-Start-Hook um
    Build-/Test-Befehle erweitern — und **die Datenschicht zuerst**
    (Speicherformat, Schema-Version, atomares Schreiben, Export), bevor

@@ -2187,3 +2187,54 @@ stieg um fünf — der Zähler summiert alle verschachtelten Aufgaben, und
 die gezogene Aufgabe hatte vier Unteraufgaben. Das Erzeugnis war richtig,
 die Erwartung falsch. Jetzt wird die Sache geprüft (steht die Aufgabe
 dort?) statt der Zahl.
+
+## 2026-08-07 — Rückmeldung beim Ziehen: die Geste sichtbar machen
+
+**Kontext:** Der Nutzer zum neuen Einsortieren: *„am Anfang dachte ich es
+funktioniert gar nicht, weil man keine visuellen Anhaltspunkte hat"* —
+und präzisiert: *„die Funktion ist an sich nicht kaputt, aber man denkt,
+dass sie nicht funktioniert."*
+
+**Das ist der schwerere Fehler.** Eine Funktion, die arbeitet, aber nicht
+zeigt, dass sie arbeitet, ist für den Nutzer nicht vorhanden — schlimmer
+als eine, die sichtbar fehlt, denn er sucht nicht weiter.
+
+**Was es gab und was fehlte** (Muster aus anderen Apps zum Vergleich):
+
+| Muster | Wer macht es | Unfold vorher |
+|---|---|---|
+| Mitziehendes Etikett unter dem Zeiger | Notion, Linear, Trello, Figma | **fehlte** |
+| Quelle bleibt gedämpft stehen | Notion, Linear | vorhanden (0,4) |
+| Marke am Ziel | Notion, Finder | vorhanden |
+| Zeiger „greifend" für die ganze Geste | überall | **fehlte** |
+| Mögliche Ziele andeuten | Trello, Finder | **fehlte** |
+
+Besonders schwer wog es hier, weil der Weg **vom Editor bis in die
+Sidebar quer durchs Fenster** führt. Auf dieser ganzen Strecke gab es
+keinen einzigen Anhaltspunkt.
+
+**Vier Ergänzungen:**
+
+1. **Ein mitziehendes Etikett** mit Griffsymbol und dem Namen des
+   Gezogenen, versetzt neben dem Zeiger, damit es nicht verdeckt, worauf
+   man zielt. Bewegt ausschließlich per `transform`.
+2. **Der Zeiger bleibt „greifend"** über die ganze Geste — vorher wurde er
+   außerhalb des Griffs wieder zum Textcursor, was aussieht, als sei die
+   Geste vorbei.
+3. **Die Listen zeigen sich als Ziele**, sobald eine *Aufgabe* gezogen
+   wird (zurückhaltend: eine Kontur, keine Fläche). Bei einem Bild nicht —
+   es gehört zu seiner Seite. „Heute" ebenfalls nicht, dort lässt sich
+   nichts ablegen.
+4. **Der Griff wird sichtbarer** (0,55 → 0,85 beim Überfahren). Er ist der
+   einzige Hinweis darauf, dass sich die Zeile überhaupt ziehen lässt —
+   bei 0,55 kam man nicht auf die Idee, es zu versuchen.
+
+**Die Beschriftung ist Teil der Zieh-Konfiguration**, nicht fest
+verdrahtet: Jede Zieh-Art liefert ihren eigenen Namen. Damit bekommt auch
+das Umsortieren von Listen und Gruppen in der Sidebar ein Etikett, ohne
+dass dafür etwas Eigenes gebaut werden musste.
+
+**Aufgeräumt wird zentral** beim Ende der Geste — Etikett entfernt,
+Zeiger zurück, Kontur weg. Ein hängengebliebenes Etikett sieht aus wie
+eine eingefrorene App; als Zusicherung festgehalten („nach dem Loslassen
+bleibt nichts zurück").
