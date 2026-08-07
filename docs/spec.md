@@ -85,6 +85,32 @@ Reihenfolge und Position auf der Seite.
 
 ## 2. Verhaltensregeln
 
+### 2.0 Der Eingang — ✅ ENTSCHIEDEN (2026-08-07)
+
+Ein **Ort**, keine Liste des Nutzers. Hier landet alles, was erfasst, aber
+noch nicht einsortiert wurde.
+
+- Steht in der **Übersicht über „Heute"**, trägt ein Symbol statt eines
+  Farbpunkts (er hat kein Thema) und ist die **Startansicht**.
+- Lässt sich **nicht** umbenennen, löschen, umsortieren oder in eine
+  Gruppe ziehen. Feste ID `inbox`.
+- **Keine Bild-Leiste**: Hier wird erfasst, nicht gestaltet. Das
+  Erfassungsfeld steht unten wie überall, mit dem Platzhalter
+  „Was ist zu tun?".
+- **Einsortiert wird durch Ziehen** einer Aufgabe auf eine Liste in der
+  Sidebar — in **beide** Richtungen, auch zurück in den Eingang.
+
+> **Der Gedanke dahinter:** Erfassen und Einsortieren sind getrennte
+> Vorgänge. Beim Notieren muss man nicht wissen, wohin es gehört — nur so
+> gelingt die „unter einer Sekunde" aus `concept.md` §3. Deshalb hat der
+> Eingang **keine Eigenschaften**: kein Thema, kein Datum, keine Liste.
+> Jede Eigenschaft wäre eine Entscheidung, die er gerade aufschieben soll.
+
+**Bewusst nicht enthalten:** ein Stern für „wichtig" (zweite, parallele
+Ordnung neben Datum und Liste — wird bedeutungslos, weil mit der Zeit
+alles wichtig wird; Dringlichkeit trägt die Heute-Seite) und
+Tastenkürzel für die Triage (vom Nutzer abgelehnt).
+
 ### 2.1 Spalten (Miller-Columns)
 - Spalte 0 zeigt die aktive Liste bzw. die Heute-Seite.
 - Klick auf eine Aufgabe öffnet ihre Seite als Spalte rechts daneben und
@@ -161,8 +187,10 @@ lockerer wirken als der Fließtext darüber.
 > schreiben können, und die Blöcke stehen dabei so dicht wie Textzeilen.
 
 ### 2.4 Verschieben (Drag & Drop)
-- Verschiebbar sind: Listen und Gruppen in der Sidebar, sowie Blöcke
-  innerhalb einer Seite.
+- Verschiebbar sind: Listen und Gruppen in der Sidebar, Blöcke innerhalb
+  einer Seite, sowie **Aufgaben von einer Seite auf eine Liste in der
+  Sidebar** (= Einsortieren, siehe §2.0). Bilder nicht — ein Bild gehört
+  zu seiner Seite.
 - **Blöcke** werden an einem eigenen Griff gezogen (die Zeile selbst ist
   klickbar und liegt in editierbarem Text).
 - **Sidebar-Zeilen** werden direkt gezogen; eine Berührung unterhalb von
@@ -369,8 +397,12 @@ erst durch ein **systemweites Kürzel**, das ein kleines Eingabefeld
 öffnet, ohne die App zu wechseln. Das braucht eine systemnahe Komponente
 (Hintergrundprozess, Autostart, Kürzel-Registrierung) und lässt sich
 schlecht nachrüsten.
-**Zu klären:** Welches Kürzel? Was passiert mit der erfassten Aufgabe —
-feste Eingangsliste, oder Listenauswahl im Eingabefeld?
+**Teilweise beantwortet (2026-08-07):** Die erfasste Aufgabe landet im
+**Eingang** (§2.0) — ohne Listenauswahl. Eine Auswahl beim Erfassen
+widerspricht dem ganzen Gedanken: Sie erzwingt genau die Entscheidung,
+die der Eingang aufschieben soll.
+
+**Weiterhin zu klären:** Welches Kürzel?
 
 ### 4.2 Datum und Zeitzonen — ✅ ENTSCHIEDEN (2026-08-06)
 

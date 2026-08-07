@@ -2105,3 +2105,85 @@ Titel kürzt und die Pille vollständig bleibt.
 Superlist-Muster, das Datum unter den Titel zu setzen — es verdoppelt die
 Zeilenhöhe und macht aus einer überfliegbaren Liste eine Reihe
 zweizeiliger Karten.
+
+## 2026-08-07 — Der Eingang: erfassen und einsortieren werden getrennt
+
+**Kontext:** Der Nutzer möchte sich für die Startseite an **Xdo**
+orientieren: eine Seite, die nur dazu dient, Aufgaben schnell
+hineinzuschreiben — und später zu entscheiden, was damit passiert.
+
+**Warum das Muster trägt:** Der eigentliche Gewinn ist nicht der
+Bildschirm, sondern die **Trennung zweier Vorgänge**. Beim Notieren muss
+man nicht wissen, wohin es gehört — deshalb geht es unter einer Sekunde,
+was `concept.md` §3 als Kernprinzip fordert. Der Eingang ist ein **Ort
+ohne Eigenschaften**: kein Thema, kein Datum, keine Liste. Genau deshalb
+kann man dort ohne Entscheidung ablegen.
+
+**Das beantwortet nebenbei eine offene Frage.** `spec.md` §4.1 fragte:
+*„Was passiert mit der erfassten Aufgabe — feste Eingangsliste, oder
+Listenauswahl im Eingabefeld?"* Antwort: **feste Eingangsliste**. Eine
+Listenauswahl beim Erfassen widerspricht dem ganzen Gedanken — sie
+erzwingt genau die Entscheidung, die der Eingang aufschieben soll.
+
+**Entschieden und gebaut:**
+
+1. **Der Eingang ist ein Ort, keine Liste.** Er steht in der Übersicht
+   über „Heute", trägt ein Symbol statt eines Farbpunkts (er hat kein
+   Thema), und lässt sich **nicht** umbenennen, löschen, umsortieren oder
+   in eine Gruppe ziehen.
+
+   *Das behebt einen echten Fehler:* Bisher war die Inbox eine gewöhnliche
+   Liste — man konnte sie löschen, und Schnellerfasstes wäre danach
+   nirgends gelandet.
+
+2. **Der Eingang ist die Startansicht.** Das Erfassungsfeld bleibt
+   **unten** (Wunsch des Nutzers; ich hatte oben vorgeschlagen, was eine
+   Inkonsistenz zu allen anderen Listen erzeugt hätte). Sein Platzhalter
+   lautet dort „Was ist zu tun?" statt „Aufgabe hinzufügen …".
+
+3. **Keine Bild-Leiste im Eingang.** Dort wird erfasst, nicht gestaltet.
+
+4. **Einsortiert wird durch Ziehen** einer Aufgabe auf eine Liste in der
+   Sidebar — die vom Nutzer bevorzugte Vorgehensweise. Das ist die
+   Desktop-Entsprechung von Xdos Wischgeste nach links, und sie geht in
+   **beide** Richtungen: Aufgaben lassen sich auch aus einer Liste zurück
+   in den Eingang ziehen. Ein Ort, in den man nur hineinschreiben kann,
+   wäre eine Einbahnstraße.
+
+**Umsetzung:** Die vorhandene Zieh-Maschinerie (`SORT_CONFIGS`) musste
+nicht umgebaut werden — die Konfiguration `embed` bekam ein zusätzliches
+Ablageziel. Zeigt der Zeiger beim Ziehen auf eine Sidebar-Liste, ist das
+Ziel ein **Ortswechsel** statt eines Umsortierens auf der Seite. Bilder
+sind ausgenommen: Ein Bild gehört zu seiner Seite und hat in einer Liste
+nichts verloren.
+
+**Die heikelste Stelle** ist das Verschieben selbst: Aufgabe **und**
+Blockverweis müssen mitwandern. Die Kinderliste hält die Daten, die
+Blockliste die Reihenfolge auf der Seite. Eines von beiden zu vergessen
+erzeugt eine Aufgabe, die es gibt, die aber nirgends steht — oder einen
+Verweis ins Leere. Zusätzlich wird eine offene Spalte abgeschnitten, die
+auf die verschobene Aufgabe zeigt, und der bisherige Besitzer neu
+berechnet (er kann durch den Weggang fertig werden).
+
+**Nicht übernommen, mit Zustimmung des Nutzers:**
+
+- **Tastenkürzel für die Triage** (`L` Liste, `D` Datum …). Ausdrücklich
+  nicht gewünscht.
+- **Der Stern für „wichtig".** Er wäre eine zweite, parallele Ordnung
+  neben Datum und Liste. Solche Markierungen werden erfahrungsgemäß
+  bedeutungslos, weil mit der Zeit alles wichtig wird. Dringlichkeit
+  trägt die „Heute"-Seite.
+- **Die untere Leiste** (Heute · Eingang · Listen) — ein mobiles Muster;
+  auf dem Desktop ist die Sidebar dasselbe, nur besser.
+
+**Offen, noch zu zeigen:** Die Fälligkeitszeile direkt an der Zeile im
+Eingang (statt erst auf der Aufgabenseite) — der Nutzer will das erst
+sehen. Und der **Aufräum-Modus**, der die Aufgaben eine nach der anderen
+durchgeht; als Idee angenommen, noch nicht beauftragt.
+
+**Fehler in der eigenen Prüfung, zum dritten Mal heute:** Die Zusicherung
+„zurück in den Eingang" erwartete, dass der Zähler um **eins** steigt. Er
+stieg um fünf — der Zähler summiert alle verschachtelten Aufgaben, und
+die gezogene Aufgabe hatte vier Unteraufgaben. Das Erzeugnis war richtig,
+die Erwartung falsch. Jetzt wird die Sache geprüft (steht die Aufgabe
+dort?) statt der Zahl.

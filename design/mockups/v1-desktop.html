@@ -824,13 +824,19 @@
     return l;
   }
 
+  // Der Eingang ist kein Thema, sondern ein Ort: Hier landet alles, was
+  // erfasst, aber noch nicht einsortiert wurde. Er hat deshalb keine Farbe,
+  // laesst sich nicht umbenennen, nicht loeschen und nicht in eine Gruppe
+  // ziehen - und er steht in der Uebersicht, nicht unter den Listen.
+  var INBOX_ID = "inbox";
+
   var groups = [
     { id: "g1", name: "Privat" },
     { id: "g2", name: "Arbeit" }
   ];
 
   var lists = [
-    makeList("inbox", "Inbox", "var(--list-inbox)", [
+    makeList(INBOX_ID, "Eingang", "var(--list-inbox)", [
       task("Zahnarzttermin verschieben", { due: "2026-08-05" }),
       task("Rauchmelder in der Wohnung prüfen", { due: "2026-08-01" }),
       task("Podcast-Folge zu Fokusarbeit hören", { done: true })
@@ -890,6 +896,41 @@
   function findList(id) { for (var i = 0; i < lists.length; i++) { if (lists[i].id === id) return lists[i]; } return null; }
   function findGroup(id) { for (var i = 0; i < groups.length; i++) { if (groups[i].id === id) return groups[i]; } return null; }
   function childrenOf(owner) { return owner.tasks ? owner.tasks : owner.subtasks; }
+
+  // Verschiebt eine Aufgabe samt Unteraufgaben und Seiteninhalt in eine
+  // andere Liste. Aufgabe UND Blockverweis muessen mitwandern - die Liste
+  // der Kinder haelt die Daten, die Blockliste die Reihenfolge auf der
+  // Seite. Eines von beiden zu vergessen erzeugt eine Aufgabe, die es gibt,
+  // die aber nirgends steht (oder umgekehrt einen Verweis ins Leere).
+  function moveTaskToList(taskId, ownerId, targetListId) {
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    var target = findList(targetListId);
+    if (!owner || !target || owner === target) return false;
+
+    var kids = childrenOf(owner);
+    var ki = kids.findIndex(function (k) { return k.id === taskId; });
+    if (ki < 0) return false;
+    var node = kids[ki];
+
+    kids.splice(ki, 1);
+    var bi = owner.blocks.findIndex(function (b) { return b.id === taskId; });
+    if (bi >= 0) owner.blocks.splice(bi, 1);
+
+    childrenOf(target).push(node);
+    target.blocks.push({ type: "task", id: node.id });
+
+    // Eine offene Spalte, die auf die verschobene Aufgabe zeigt, wuerde
+    // sonst auf einen Ort verweisen, den es in diesem Zweig nicht mehr gibt.
+    var si = state.panelStack.indexOf(taskId);
+    if (si >= 0) state.panelStack = state.panelStack.slice(0, si);
+
+    // Der bisherige Besitzer kann durch den Weggang fertig werden.
+    if (owner.subtasks) {
+      owner.done = owner.subtasks.length > 0 && owner.subtasks.every(function (x) { return x.done; });
+      recomputeAncestors(owner.id);
+    }
+    return true;
+  }
 
   function findTaskGlobal(id) {
     function search(nodes) {
@@ -1153,6 +1194,9 @@
   function svgFolderPlus() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M1.5 4.2c0-.55.45-1 1-1h2.7l1.1 1.3H12c.55 0 1 .45 1 1V11c0 .55-.45 1-1 1H2.5c-.55 0-1-.45-1-1V4.2z" stroke="currentColor" stroke-width="1.34" stroke-linejoin="round"/><path d="M7.5 7v3.2M5.9 8.6h3.2" stroke="currentColor" stroke-width="1.34" stroke-linecap="round"/></svg>'; }
   function svgImg() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.34"/><circle cx="5" cy="6" r="1" fill="currentColor"/><path d="M2 11l3.5-3.5L8 10l2-2 3 3" stroke="currentColor" stroke-width="1.34" stroke-linejoin="round"/></svg>'; }
   function svgClose() { return '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M1 1l11 11M12 1L1 12" stroke="currentColor" stroke-width="1.16" stroke-linecap="round"/></svg>'; }
+  // Ablagekorb. Strichstaerke 1,25 bei viewBox 15 und 15px Anzeige.
+  function svgInbox() { return '<svg class="nav-icon" viewBox="0 0 15 15" fill="none"><path d="M1.5 8.6h3.3l.9 1.7h3.6l.9-1.7h3.3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 2.4h8.2l1.9 6.2v3.1c0 .6-.5 1.1-1.1 1.1H2.6c-.6 0-1.1-.5-1.1-1.1V8.6l1.9-6.2z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>'; }
+
   function svgChevronDown() { return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 3.5l3.5 3 3.5-3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   // Effektive Strichstärke 1,25px: 1.34 × (14 ÷ 15). Siehe docs/spec.md, Icons.
   function svgChevronLeft() { return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M9.2 3.5l-4 4 4 4" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
@@ -1913,12 +1957,20 @@
       // und Tippen, die Farbe über den Punkt links daneben. Verschieben und
       // Löschen gibt es bereits in der Sidebar (Ziehen bzw. Papierkorb) und
       // bekommen deshalb keinen zweiten Weg.
+      //
+      // Der Eingang ist davon ausgenommen: Er hat keine Farbe zu waehlen und
+      // keinen Namen zu aendern - er ist ein Ort, keine Liste des Nutzers.
+      var istEingang = list.id === INBOX_ID;
       html += '<div class="col-header"><div class="col-header-top">';
-      html += '<button class="col-dot" data-color-for="' + list.id + '" style="background:' + list.color + '"' +
-              ' aria-label="Farbe der Liste ändern" title="Farbe ändern"></button>';
-      html += '<input class="col-title" value="' + escapeHtml(list.name) + '" data-list-title-for="' + list.id + '" aria-label="Listenname" />';
+      if (istEingang) {
+        html += '<h2 class="col-title">' + escapeHtml(list.name) + "</h2>";
+      } else {
+        html += '<button class="col-dot" data-color-for="' + list.id + '" style="background:' + list.color + '"' +
+                ' aria-label="Farbe der Liste ändern" title="Farbe ändern"></button>';
+        html += '<input class="col-title" value="' + escapeHtml(list.name) + '" data-list-title-for="' + list.id + '" aria-label="Listenname" />';
+      }
       html += "</div>";
-      if (state.colorPickFor === list.id) {
+      if (!istEingang && state.colorPickFor === list.id) {
         html += '<div class="color-strip" role="group" aria-label="Listenfarbe">';
         for (var ci = 0; ci < LIST_COLORS.length; ci++) {
           var lc = LIST_COLORS[ci];
@@ -1930,8 +1982,12 @@
       }
       html += '<div class="col-meta">' + (c.total - c.done) + " offen · " + c.done + " von " + c.total + " erledigt</div></div>";
       html += '<div class="blocks"><div data-editor-slot="' + list.id + '" data-editor-col="0"></div></div>';
-      html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-image-at="0">' + svgPlus() + " Bild</button></div>";
-      html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="Aufgabe hinzufügen …" data-quick-add="0" autocomplete="off" /></div>';
+      // Im Eingang keine Bild-Leiste: Er dient dem schnellen Erfassen, nicht
+      // dem Gestalten einer Seite. Das Erfassungsfeld bleibt unten.
+      if (!istEingang) {
+        html += '<div class="editor-toolbar"><button class="insert-btn" data-insert-image-at="0">' + svgPlus() + " Bild</button></div>";
+      }
+      html += '<div class="quick-add"><span style="display:flex">' + svgPlus() + '</span><input type="text" placeholder="' + (istEingang ? "Was ist zu tun?" : "Aufgabe hinzufügen …") + '" data-quick-add="0" autocomplete="off" /></div>';
       html += "</div></div>";
     }
 
@@ -2114,10 +2170,12 @@
     var html = "";
     html += '<div class="brand"><span class="brand-mark">' + svgLogo() + '</span><span class="brand-name">Unfold</span></div>';
     html += '<div class="nav-label">Übersicht</div>';
+    html += inboxNavItem();
     html += navItem({ kind: "today", active: state.view === "today", label: "Heute", count: collectToday().length, icon: true });
     html += '<div class="nav-label">Listen</div>';
 
-    var ungrouped = lists.filter(function (l) { return !l.groupId; });
+    // Der Eingang steht oben und taucht hier nicht noch einmal auf.
+    var ungrouped = lists.filter(function (l) { return !l.groupId && l.id !== INBOX_ID; });
     for (var i = 0; i < ungrouped.length; i++) { html += listNavItem(ungrouped[i]); }
 
     for (var gi = 0; gi < groups.length; gi++) {
@@ -2201,6 +2259,20 @@
         '<button class="nav-delete" data-delete-group="' + g.id + '" aria-label="Gruppe löschen" title="Gruppe löschen">' + svgTrash() + "</button>" +
       "</span>" +
       "</div>";
+  }
+
+  // Kein Farbpunkt (der Eingang hat kein Thema), kein Loeschknopf und
+  // keine data-drag-* Attribute - er laesst sich nicht umsortieren. Das
+  // data-list bleibt, damit er Ziel fuer hineingezogene Aufgaben ist.
+  function inboxNavItem() {
+    var l = findList(INBOX_ID);
+    if (!l) return "";
+    var c = countAll(l.tasks);
+    var active = state.view === "list" && state.currentListId === INBOX_ID;
+    return '<div class="nav-item-wrap">' +
+      '<button class="nav-item' + (active ? " active" : "") + '" data-nav="list" data-list="' + INBOX_ID + '" type="button">' +
+      svgInbox() + '<span class="nav-name">' + escapeHtml(l.name) + '</span>' +
+      '<span class="nav-count">' + (c.total - c.done) + "</span></button></div>";
   }
 
   function navItem(opts) {
@@ -2778,6 +2850,23 @@
       // task can be dropped between two lines of text as well as between
       // two tasks.
       resolveSpot: function (container, x, y, el) {
+        // Erst die Sidebar: Zeigt der Zeiger auf eine Liste, ist das Ziel
+        // ein Ortswechsel, kein Umsortieren auf der Seite. Nur Aufgaben -
+        // ein Bild gehoert zu seiner Seite und hat in einer Liste nichts
+        // verloren.
+        var marker = el.getAttribute("data-embed-marker") || "";
+        if (marker.indexOf("task:") === 0) {
+          var unter = document.elementFromPoint(x, y);
+          var listenZiel = unter && unter.closest && unter.closest("#sidebar .nav-item[data-list]");
+          if (listenZiel) {
+            var eigen = container.getAttribute("data-editor-for");
+            if (listenZiel.getAttribute("data-list") !== eigen) {
+              return { target: listenZiel, pos: "into", nachListe: listenZiel.getAttribute("data-list") };
+            }
+            return null;
+          }
+        }
+
         var all = container.childNodes;
         var others = [];
         for (var i = 0; i < all.length; i++) {
@@ -2791,6 +2880,12 @@
         return { target: others[others.length - 1], pos: "after" };
       },
       commit: function (el, spot) {
+        if (spot.nachListe) {
+          var eigner = el.closest(".page-editor").getAttribute("data-editor-for");
+          var aufgabenId = (el.getAttribute("data-embed-marker") || "").slice(5);
+          if (moveTaskToList(aufgabenId, eigner, spot.nachListe)) renderAll();
+          return;
+        }
         var editor = spot.target.closest(".page-editor");
         var ownerId = editor.getAttribute("data-editor-for");
         if (spot.pos === "before") { spot.target.parentNode.insertBefore(el, spot.target); }
