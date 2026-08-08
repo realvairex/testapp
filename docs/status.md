@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-07 (zweite Sitzung des Tages)
+Stand: 2026-08-08
 
 ---
 
