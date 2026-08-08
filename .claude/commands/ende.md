@@ -78,6 +78,22 @@ Arbeite dann das Folgende der Reihe nach ab:
     Melde anschließend in einer Zeile, was passiert ist: „`main` per
     Fast-Forward auf `<hash>` gezogen" oder „`main` war schon aktuell"
     oder „nicht möglich, weil …".
+11. **Passt das veröffentlichte Mockup zum Repo-Stand?** Wurde
+    `design/mockups/v1-desktop.html` in dieser Sitzung geändert, muss es
+    unter der **gespeicherten Artifact-URL** (`docs/status.md` §6) neu
+    veröffentlicht sein — mit dem Parameter `url`, sonst entsteht eine
+    zweite, leere Adresse.
+
+    **Warum das hier steht:** Am 2026-08-07 wurde das Mockup nach der
+    letzten Veröffentlichung noch zweimal geändert. Der Nutzer hätte beim
+    Nachsehen den alten Stand vor sich gehabt und zu Recht geglaubt, es
+    sei nichts passiert. Der Fehler ist geräuschlos — im Repo stimmt
+    alles, nur das, was der Nutzer *ansieht*, ist veraltet.
+
+    Mechanisch prüfbar ist das nicht (das Skript läuft ohne Netz), also
+    ist es hier eine bewusste Frage: **Zuletzt veröffentlicht — vor oder
+    nach der letzten Änderung am Mockup?** Im Zweifel neu veröffentlichen;
+    es kostet nichts.
 
 Melde dann in wenigen Zeilen: das Ergebnis des Prüflaufs, was committet
 wurde, was in `docs/status.md` und `docs/session-log.md` neu steht, und

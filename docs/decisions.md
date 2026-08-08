@@ -2297,3 +2297,31 @@ vortäuscht, aber nicht leistet.
 Aufgabe durch einen Klick auf die **Zeilenmitte**. Seit die Pille ein Knopf
 ist, kann die Mitte je nach Titellänge genau auf ihr liegen — dann öffnet
 sich der Kalender statt der Seite. Sie klicken jetzt auf den **Titel**.
+
+## 2026-08-08 — Das Artifact gehört in die Abschlussprozedur
+
+**Anlass:** Der Nutzer fragte, ob Variante 2 überhaupt eingebaut sei. Sie
+war es — Commit `b432eca`, in `main`. **Aber das veröffentlichte Mockup
+war einen Commit älter**, weil ich nach dem Umbau nicht mehr veröffentlicht
+hatte. Wer nachgesehen hätte, hätte Variante 1 gesehen und zu Recht
+geglaubt, es sei nichts passiert.
+
+**Warum dieser Fehler eine eigene Vorkehrung verdient:** Er ist
+geräuschlos und in jeder Prüfung grün. Im Repo stimmt alles, der
+Sitzungs-Check meldet „alles gesichert" — nur das, was der Nutzer
+tatsächlich *ansieht*, ist veraltet. Das ist dieselbe Fehlerklasse wie die
+doppelte Artifact-URL (`status.md` §6), nur in der anderen Richtung: nicht
+eine zweite Adresse, sondern eine vergessene Veröffentlichung.
+
+**Entscheidung:** `ende unfold` bekommt einen Schritt 11 — „Passt das
+veröffentlichte Mockup zum Repo-Stand?"
+
+**Bewusst als Frage in der Anleitung und nicht als Prüfung im Skript:**
+`session-check.sh` läuft ohne Netz (so entschieden am 2026-08-07, damit es
+offline funktioniert und keine stillen Netzzugriffe macht). Ob das
+Artifact aktuell ist, lässt sich ohne Abruf nicht feststellen. Eine
+Prüfung, die dafür heimlich ins Netz greift, wäre ein schlechterer Tausch
+als eine ausdrückliche Frage an der richtigen Stelle.
+
+**Im Zweifel neu veröffentlichen** — es kostet nichts, und die URL bleibt
+dieselbe, solange der `url`-Parameter mitgegeben wird.

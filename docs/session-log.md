@@ -10,6 +10,32 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-08 — Nachtrag: das veröffentlichte Mockup war veraltet
+
+**Gemacht**
+
+- Der Nutzer fragte, ob Variante 2 (Datum an der Zeile) eingebaut sei.
+  Sie war es — `b432eca`, in `main`, Variante 1 restlos entfernt. **Das
+  Artifact war jedoch einen Commit älter**, weil ich nach dem Umbau nicht
+  mehr veröffentlicht hatte. Neu veröffentlicht unter derselben URL.
+- **`ende unfold` um Schritt 11 erweitert:** „Passt das veröffentlichte
+  Mockup zum Repo-Stand?"
+
+**Lehre**
+
+Ein Fehler, der in jeder Prüfung grün ist: Im Repo stimmt alles, der
+Sitzungs-Check meldet „alles gesichert" — nur das, was der Nutzer
+*ansieht*, ist veraltet. Bewusst als Frage in der Anleitung statt als
+Prüfung im Skript, weil `session-check.sh` ohne Netz läuft und das
+Artifact ohne Abruf nicht zu beurteilen ist.
+
+**Offen**
+
+Unverändert die Liste aus `status.md`: Löschregeln und Papierkorb
+(`spec.md` §4.3) als nächster inhaltlicher Schritt, dann das globale
+Kürzel, das Einfrieren des Mockups, der Aufräum-Modus und der
+Flutter-Umstieg.
+
 ## 2026-08-07 (zweite Sitzung) — Vom Aufräumen zur Gestaltung: Eingang, Datum, Ziehen
 
 **Gemacht**

@@ -300,6 +300,12 @@ der Nutzer es anschaut und beurteilt:
 https://claude.ai/code/artifact/84d0d4a2-c9dc-4127-aa49-5f8f5f7e9cbc
 ```
 
+**Zweiter Fallstrick, gleiche Familie (2026-08-08):** Nicht nur eine
+falsche URL schadet — auch eine **vergessene** Veröffentlichung. Wird das
+Mockup geändert und nicht neu veröffentlicht, schaut der Nutzer auf den
+alten Stand, während im Repo alles stimmt und jede Prüfung grün meldet.
+`ende unfold` fragt das jetzt in Schritt 11 ausdrücklich ab.
+
 **Wichtig für jede neue Sitzung:** Wer das Mockup ändert und neu
 veröffentlicht, muss **diese URL mitgeben** (Parameter `url` beim
 Artifact-Werkzeug). Sonst entsteht eine zweite, leere Adresse, und der
