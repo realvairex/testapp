@@ -2402,3 +2402,38 @@ Bearbeitungs-Pfad, wie die Erledigt-Kaskade.
 **Noch nicht umgesetzt:** Der Nutzer wollte erst alles definieren. Was im
 Mockup sichtbar werden soll (Rückfrage beim Gruppenlöschen,
 Rückgängig-Meldung), steht als nächster Bauschritt an.
+
+## 2026-08-08 — Gruppen verschieben: vorhanden, aber der Zeiger log
+
+**Kontext:** Der Nutzer meldete, es fehle noch, ganze Gruppen zu
+verschieben („wenn ich möchte, dass Arbeit über Privat ist"). Nachgemessen
+— **es funktioniert bereits**: `[Privat, Arbeit]` wird zu
+`[Arbeit, Privat]`, mit Etikett und Einfügemarke. Er hat das dann selbst
+bemerkt.
+
+**Trotzdem war die Meldung berechtigt, und der Grund ließ sich messen:**
+
+| Element | Zeiger |
+|---|---|
+| Gruppenzeile | `grab` |
+| **Gruppenname** | **`text`** |
+| Listenzeile | `grab` |
+| Listenname | `grab` |
+
+Der Name ist das **größte Ziel** der Gruppenzeile — und war als einziges
+Element mit einem Textcursor versehen. Ziehen funktionierte dort, aber der
+Zeiger sagte „hier wird getippt". Wer eine Gruppe verschieben will, greift
+naheliegenderweise an ihren Namen, sieht einen Textcursor und schließt
+daraus, dass es nicht geht.
+
+**Behoben:** `.group-title` bekommt `cursor: grab`, im **fokussierten**
+Zustand `cursor: text`. Beides ist dann richtig — vor dem Bearbeiten
+zeigt der Zeiger, dass man ziehen kann, während des Bearbeitens, dass man
+tippt.
+
+**Das ist innerhalb weniger Tage der dritte Fall derselben Sorte:** eine
+Funktion, die arbeitet, aber nicht zeigt, dass sie arbeitet (Ziehen ohne
+Etikett, der zu blasse Ziehgriff, jetzt der falsche Zeiger). Für den
+Nutzer ist eine solche Funktion nicht vorhanden — schlimmer als eine, die
+sichtbar fehlt, denn er sucht nicht weiter. **Beim Flutter-Bau ist das
+eine eigene Prüffrage: Sieht man einer Sache an, was mit ihr möglich ist?**

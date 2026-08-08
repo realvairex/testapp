@@ -351,7 +351,12 @@
   .group-chevron svg { transition: transform var(--dur-fast) ease; }
   .group-chevron.collapsed svg { transform: rotate(-90deg); }
   .group-title { flex: 1; min-width: 0; text-overflow: ellipsis; border: none; background: transparent; font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: var(--r-sm); }
-  .group-title:focus { background: var(--surface); text-transform: none; }
+  /* Der Name ist das groesste Ziel der Gruppenzeile - und war als einziges
+     Element mit Textcursor versehen. Ziehen funktionierte dort, aber der
+     Zeiger sagte "hier wird getippt", also kam niemand auf die Idee. Beim
+     Bearbeiten (fokussiert) ist der Textcursor richtig, vorher nicht. */
+  .group-title { cursor: grab; }
+  .group-title:focus { background: var(--surface); text-transform: none; cursor: text; }
   .group-title:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 1px; }
 
   .drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
