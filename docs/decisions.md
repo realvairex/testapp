@@ -2325,3 +2325,80 @@ als eine ausdrückliche Frage an der richtigen Stelle.
 
 **Im Zweifel neu veröffentlichen** — es kostet nichts, und die URL bleibt
 dieselbe, solange der `url`-Parameter mitgegeben wird.
+
+## 2026-08-08 — Löschregeln: Kaskade nach unten, abgesichert durch den Papierkorb
+
+**Kontext:** `spec.md` §4.3 stand seit dem 2026-08-06 offen und war der
+nächste Schritt vor dem Flutter-Bau, weil die Regeln das Datenmodell
+betreffen. Vier Fragen, alle vom Nutzer entschieden.
+
+**1. Gelöschte Gruppe nimmt ihre Listen mit.**
+
+Ich hatte das **Gegenteil** empfohlen: Eine Gruppe ist laut §1 eine reine
+Sortier-/Faltebene, sie besitzt die Listen nicht — beim Löschen einer
+Sortierhilfe sollten keine Daten sterben. Der Nutzer entschied anders,
+**mit einem Argument, das meinen Einwand aufhebt:** Es ist ohnehin ein
+Papierkorb geplant, aus dem sich im schlimmsten Fall alles zurückholen
+lässt. Damit kostet ein Fehlklick keine Daten mehr, und die Kaskade ist
+das einfachere, erwartbarere Verhalten.
+
+**Daraus folgt eine Reihenfolge, die nicht umgangen werden darf:** Die
+Regel ist **nur zulässig, solange der Papierkorb existiert.** Bis dahin
+fragt „Gruppe löschen" nach („Gruppe und 2 Listen löschen?"). Die
+Alternative — bis zum Papierkorb die andere Regel gelten lassen und danach
+umstellen — wurde verworfen: Dann verließe sich bis zur Umstellung schon
+jemand auf ein Verhalten, das später wechselt. Lieber dieselbe Regel von
+Anfang an und nur die Absicherung wechseln.
+
+**2. Gelöschte Aufgabe nimmt ihre Unteraufgaben mit**, beliebig tief, und
+zwar als **eine Einheit**: Im Papierkorb steht ein Eintrag
+„Urlaub planen (+3 Unteraufgaben)", nicht vier einzelne. Sonst ließe sich
+eine Unteraufgabe zurückholen, deren Elternaufgabe es nicht mehr gibt —
+ein Zustand, den das Datenmodell gar nicht kennt.
+
+**Warum hier kaskadiert wird und bei der Gruppe begründet werden musste:**
+Eine Gruppe *ordnet* nur, eine Elternaufgabe *bedeutet* etwas. „Flüge
+vergleichen" ohne „Urlaub planen" ist sinnlos. Dasselbe Gefälle zeichnet
+die Erledigt-Kaskade (§2.2) schon vor.
+
+**3. Papierkorb, 30 Tage.** Frist zählt **ab dem Löschen**, nicht ab der
+letzten Benutzung — sonst löscht ein langer Urlaub gar nichts und ein
+vielbenutzter Tag alles. **Aufgeräumt wird beim App-Start und beim Öffnen
+des Papierkorbs**, ohne Hintergrundprozess und ohne Zeitgeber.
+
+Der Nutzer fragte hier nach, was der Unterschied überhaupt sei. Er ist
+klein, aber nicht null: Läuft die App wochenlang durch, liegt ein Eintrag
+bei „beim Start" ein paar Tage länger als nötig — harmlos. Bei einem
+laufenden Zeitgeber verschwände er dagegen mitten in der Sitzung, unter
+Umständen während man in den Papierkorb schaut. Zu früh verschwinden ist
+der schlimmere Fehler als zu spät.
+
+**Der Papierkorb erscheint in der Sidebar nur, wenn etwas drin ist** — ein
+dauerhaft leerer Eintrag ist Rauschen.
+
+**Gestaffelte Umsetzung:** „Rückgängig" direkt nach dem Löschen wird
+zuerst gebaut; der Papierkorb kommt **mit der Datenschicht**, weil er ein
+Feld „gelöscht am" im Speicherformat und eine Bereinigung braucht — beides
+gehört dorthin und nicht ins Mockup.
+
+**4. Offene Spalten, die auf Gelöschtes zeigen.**
+
+> Verschwindet ein Knoten aus dem Baum — durch Löschen, Verschieben oder
+> endgültiges Entfernen —, werden alle geöffneten Spalten ab diesem Knoten
+> geschlossen. Wird er wiederhergestellt, öffnen sie sich **nicht** von
+> selbst wieder.
+
+Verworfen: Spalten stehen lassen und „Diese Aufgabe wurde gelöscht"
+anzeigen. Das erzeugt einen Zustand, in dem man auf einer Seite steht, die
+es nicht gibt, und jede weitere Aktion braucht dafür einen Sonderfall.
+
+**Der Gewinn ist nicht das Verhalten, sondern der Status als Regel.** Im
+Mockup passierte das Richtige schon, aber als Reparatur an einer Stelle im
+Code. Als Regel gilt es an **drei** Stellen: beim Löschen, beim
+Verschieben in eine andere Liste (seit 2026-08-07 gebaut) und beim
+endgültigen Leeren des Papierkorbs. In Flutter gehört sie zentral in den
+Bearbeitungs-Pfad, wie die Erledigt-Kaskade.
+
+**Noch nicht umgesetzt:** Der Nutzer wollte erst alles definieren. Was im
+Mockup sichtbar werden soll (Rückfrage beim Gruppenlöschen,
+Rückgängig-Meldung), steht als nächster Bauschritt an.

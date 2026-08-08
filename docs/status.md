@@ -122,8 +122,9 @@ Was fertig ist:
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen: **45 grün, 1 Wackelkandidat** (`test_4bugs`, siehe
-  Abschnitt 4).
+  nachgemessen. **Stand 2026-08-08: 50 grün, 0 rot, 0 abgestürzt** —
+  `test_4bugs` war in diesem Lauf grün, was **Glück ist, keine
+  Reparatur** (siehe Abschnitt 4, er trifft etwa jeden zweiten Lauf).
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
   Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
@@ -145,19 +146,18 @@ Was fertig ist:
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
-1. **Löschregeln und Papierkorb** (`spec.md` §4.3) — offen. **Die vier
-   Fragen wurden dem Nutzer am 2026-08-07 gestellt, aber nicht mehr
-   beantwortet** — die Sitzung endete vorher. Sie können unverändert
-   wieder aufgemacht werden:
-   1. Gelöschte Gruppe — löscht sie die Listen darin mit, oder rutschen
-      die eine Ebene hoch (ungruppiert)?
-   2. Gelöschte Aufgabe — nehmen die Unteraufgaben den Weg mit, oder
-      rücken sie an die Stelle der Elternaufgabe?
-   3. Papierkorb mit Wiederherstellung (und wie lange?) oder nur eine
-      Rückgängig-Meldung direkt nach der Aktion?
-   4. Offene Spalte zeigt auf Gelöschtes — welche Regel gilt? (Im Mockup
-      wird der `panelStack` abgeschnitten, das ist die Reparatur eines
-      Einzelfalls.)
+1. **Löschregeln umsetzen** — die Regeln sind seit 2026-08-08
+   **entschieden** (`spec.md` §4.3), gebaut ist noch nichts. Im Mockup
+   sichtbar werden soll:
+   - **Rückfrage beim Löschen einer Gruppe** („Gruppe und 2 Listen
+     löschen?") — zwingend, solange es keinen Papierkorb gibt.
+   - **Rückgängig-Meldung** direkt nach dem Löschen.
+   - Die Regel „Spalten ab dem verschwundenen Knoten schließen" als
+     **eine** Stelle im Code statt als Einzelfall-Reparatur.
+
+   Der **Papierkorb selbst** kommt bewusst erst mit der Datenschicht
+   (Schritt 5) — er braucht ein Feld „gelöscht am" im Speicherformat.
+
 2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — lässt
    sich im Browser nicht bauen, muss also rein spezifiziert werden.
 3. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
@@ -229,6 +229,8 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Neuentwurf des unteren Sidebar-Bereichs | Vier Varianten wurden vorgelegt und **alle abgelehnt** (2026-08-06). Der Bereich bleibt wie er ist. Nicht erneut vorschlagen. |
 | „+ Bild" in der unteren Leiste | Bleibt. |
 | Datum an der Zeile | **Ein** Steuerelement: ohne Datum ein Kalendersymbol beim Überfahren, mit Datum ist die **Pille selbst der Knopf**. Variante mit `Heute · Morgen · 📅` wurde gebaut, angesehen und verworfen — nicht erneut vorschlagen. |
+| Löschen kaskadiert nach unten | Gelöschte **Gruppe** nimmt ihre Listen mit, gelöschte **Aufgabe** ihre Unteraufgaben (als *eine* Einheit im Papierkorb). Entschieden 2026-08-08 — ich hatte bei der Gruppe das Gegenteil empfohlen, das Argument des Nutzers (Papierkorb macht es gefahrlos) hebt den Einwand auf. **Nicht neu aufrollen.** |
+| Papierkorb | **30 Tage**, Frist ab dem Löschen. Aufgeräumt beim App-Start und beim Öffnen des Papierkorbs — kein Zeitgeber. In der Sidebar nur sichtbar, wenn etwas drin ist. |
 | Der Eingang | **Ort, keine Liste.** Startansicht, steht über „Heute", Symbol statt Farbpunkt, nicht umbenennbar/löschbar/verschiebbar. Keine Bild-Leiste. Einsortiert wird durch **Ziehen auf eine Sidebar-Liste**, in beide Richtungen. Angeregt durch Xdo, siehe `spec.md` §2.0. |
 | Triage im Eingang | **Keine Tastenkürzel** (vom Nutzer abgelehnt) und **kein Stern für „wichtig"** — nicht erneut vorschlagen. |
 | Kopf einer Listenspalte | **Kein Aufklappmenü.** Umbenennen = in den Titel klicken und tippen; Farbe = Punkt davor, klappt die fünf Farben **im Fluss** unter dem Titel auf. Verschieben und Löschen bleiben in der Sidebar — kein zweiter Weg. Grundsatz in `spec.md` §2.5. |

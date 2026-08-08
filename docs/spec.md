@@ -1,6 +1,6 @@
 # Spezifikation: Unfold
 
-Stand: 2026-08-07 · **Status: in Arbeit**
+Stand: 2026-08-08 · **Status: in Arbeit**
 
 Dieses Dokument ist die **Vorlage für die Umsetzung in Flutter**. Es hält
 fest, was übertragbar ist: Datenmodell, Verhaltensregeln und
@@ -471,15 +471,82 @@ gerade beurteilt, kostet einen Klick zum Öffnen und einen zum Schließen,
 und verbirgt den aktuellen Zustand, bis man es öffnet. Bei zwei bis drei
 Werten ist das reiner Verlust.
 
-### 4.3 Regeln fürs Löschen (referentielle Integrität)
-**Zu klären:**
-- Was passiert mit den Unteraufgaben einer gelöschten Aufgabe?
-- Was mit den Aufgaben einer gelöschten Liste?
-- Was mit einer offenen Spalte, die auf etwas Gelöschtes zeigt? (Im
-  Mockup wird der `panelStack` abgeschnitten — das ist die Reparatur eines
-  Einzelfalls, kein Regelwerk.)
-- Zusammenspiel mit dem beschlossenen **Papierkorb**: Ist Gelöschtes
-  wiederherstellbar, und wie lange?
+### 4.3 Regeln fürs Löschen — ✅ ENTSCHIEDEN (2026-08-08)
+
+Der Leitgedanke: **Löschen kaskadiert nach unten, und der Papierkorb macht
+das gefahrlos.** Ohne Papierkorb wäre eine Kaskade fahrlässig — die beiden
+Festlegungen hängen zusammen und dürfen nicht getrennt umgesetzt werden.
+
+#### Gelöschte Gruppe
+
+Eine gelöschte Gruppe **nimmt die Listen darin mit**. Gruppe und Listen
+landen gemeinsam im Papierkorb und werden gemeinsam wiederhergestellt.
+
+> ⚠️ **Diese Regel ist nur zulässig, solange der Papierkorb existiert.**
+> Bis dahin — im Mockup und in einer frühen Flutter-Version — **fragt**
+> „Gruppe löschen" nach: „Gruppe und 2 Listen löschen?". So bleibt die
+> Regel von Anfang an dieselbe und nur die Absicherung wechselt; würde man
+> stattdessen erst eine andere Regel gelten lassen, verließe sich bis zur
+> Umstellung schon jemand darauf.
+
+#### Gelöschte Aufgabe
+
+Eine gelöschte Aufgabe **nimmt ihre Unteraufgaben mit, beliebig tief**.
+
+Der Teilbaum wandert als **eine Einheit** in den Papierkorb und wird als
+eine Einheit wiederhergestellt: Dort steht **ein** Eintrag
+„Urlaub planen (+3 Unteraufgaben)", nicht vier einzelne. Sonst ließe sich
+eine Unteraufgabe zurückholen, deren Elternaufgabe es nicht mehr gibt.
+
+**Warum hier kaskadiert wird, bei der Gruppe aber begründet werden musste:**
+Eine Gruppe *ordnet* nur (siehe §1: reine Sortier-/Faltebene), eine
+Elternaufgabe *bedeutet* etwas. „Flüge vergleichen" ohne „Urlaub planen"
+ist sinnlos. Dasselbe Gefälle zeichnet schon die Erledigt-Kaskade in §2.2
+vor: nach unten wirkt alles mit.
+
+#### Papierkorb
+
+- Gelöschtes wird **30 Tage** aufbewahrt, danach endgültig entfernt.
+- Die Frist zählt **ab dem Löschen**, nicht ab der letzten Benutzung —
+  sonst löscht ein langer Urlaub gar nichts und ein vielbenutzter Tag
+  alles.
+- **Aufgeräumt wird beim App-Start und beim Öffnen des Papierkorbs.**
+  Kein Hintergrundprozess, kein Zeitgeber. Läuft die App wochenlang durch,
+  liegt ein Eintrag dadurch ein paar Tage länger als nötig — harmlos.
+  Schädlich wäre nur das Umgekehrte, dass etwas zu früh verschwindet; und
+  ein Eintrag, der einem beim Hinsehen unter dem Zeiger verschwindet, wäre
+  irritierend.
+- **Der Papierkorb erscheint in der Sidebar nur, wenn etwas drin ist.**
+  Ein dauerhaft leerer Eintrag ist Rauschen.
+- Zusätzlich erscheint unmittelbar nach dem Löschen eine
+  **Rückgängig-Meldung** für den sofortigen Fehlklick.
+
+> **Gestaffelte Umsetzung:** „Rückgängig" wird zuerst gebaut. Der
+> Papierkorb ist beschlossen und kommt **mit der Datenschicht** — er
+> braucht ein Feld „gelöscht am" im Speicherformat und eine Bereinigung,
+> beides gehört dorthin und nicht ins Mockup.
+
+#### Offene Spalten, die auf Gelöschtes zeigen
+
+> **Regel:** Verschwindet ein Knoten aus dem Baum — durch Löschen,
+> Verschieben oder endgültiges Entfernen —, werden **alle geöffneten
+> Spalten ab diesem Knoten geschlossen**. Wird er wiederhergestellt,
+> öffnen sie sich **nicht** von selbst wieder.
+
+Beispiel: Bei `[ Persönlich ] [ Urlaub planen ] [ Flüge vergleichen ]` und
+gelöschtem „Urlaub planen" bleibt `[ Persönlich ]` übrig.
+
+Die Alternative — Spalten stehen lassen und „Diese Aufgabe wurde gelöscht"
+anzeigen — wurde verworfen: Sie erzeugt einen Zustand, in dem man auf einer
+Seite steht, die es nicht gibt, und jede weitere Aktion braucht dafür einen
+Sonderfall.
+
+**Das ist ausdrücklich eine Regel und keine Einzelfall-Reparatur.** Sie
+gilt an drei Stellen: beim Löschen, beim Verschieben in eine andere Liste
+(im Mockup seit 2026-08-07 gebaut) und beim endgültigen Leeren des
+Papierkorbs. Im Mockup ist das Verhalten korrekt, aber an einer Stelle im
+Code festgeschrieben — in Flutter gehört es zentral in den
+Bearbeitungs-Pfad, wie die Erledigt-Kaskade (§2.2).
 
 ### 4.4 Formatierung und weitere Blocktypen — ✅ ENTSCHIEDEN (2026-08-06)
 
