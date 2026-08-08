@@ -10,6 +10,57 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-08 — Löschregeln: entschieden und gebaut
+
+**Gemacht**
+
+- **Alle vier Löschregel-Fragen entschieden** (`spec.md` §4.3, seit dem
+  2026-08-06 offen) und anschließend umgesetzt.
+- **Rückgängig-Zeile an Ort und Stelle**, fünf Sekunden, dann endgültig.
+  Zwei Platzierungen wurden als Bild vorgelegt; der Nutzer wählte die
+  Zeile am Ort des Geschehens.
+- **Rückfrage beim Löschen einer Gruppe** mit Listen.
+- **`closePanelsFrom()`** ersetzt zwei Einzelfall-Reparaturen und wird an
+  vier Stellen benutzt.
+- **Gruppenname zeigt jetzt die greifende Hand.** Der Nutzer meldete, das
+  Verschieben ganzer Gruppen fehle — es gab es längst, aber der Name war
+  als einziges Element der Zeile mit Textcursor versehen.
+- **Artifact-Prüfung in `ende unfold`** (Schritt 11) — das veröffentlichte
+  Mockup war einen Commit älter als das Repo.
+
+**Entschieden** (Begründungen in `docs/decisions.md`)
+
+- Gelöschte **Gruppe** nimmt ihre Listen mit, gelöschte **Aufgabe** ihre
+  Unteraufgaben. Ich hatte bei der Gruppe das Gegenteil empfohlen; das
+  Argument des Nutzers (der geplante Papierkorb macht es gefahrlos) hebt
+  den Einwand auf — **erzwingt aber die Rückfrage, solange es ihn nicht
+  gibt.**
+- **Papierkorb: 30 Tage ab dem Löschen**, aufgeräumt beim App-Start und
+  beim Öffnen. In der Sidebar nur sichtbar, wenn etwas drin ist. Kommt mit
+  der Datenschicht, nicht ins Mockup.
+- Rückgängig **am Ort des Geschehens** statt als schwebende Meldung.
+
+**Lehre**
+
+Zum dritten Mal in wenigen Tagen eine Funktion, die arbeitet, aber nicht
+zeigt, dass sie arbeitet — diesmal der Gruppenname mit Textcursor. Für den
+Nutzer ist so etwas nicht vorhanden, schlimmer als eine sichtbare Lücke,
+denn er sucht nicht weiter. Als **Prüffrage für den Flutter-Bau**
+festgehalten: *Sieht man einer Sache an, was mit ihr möglich ist?*
+
+Und beim Bauen der Rückgängig-Zeile: Der eigentliche Gewinn zeigte sich
+erst im gebauten Zustand — **nichts springt**. Das war in keiner der
+beiden Skizzen zu sehen und hätte sich nicht erraten lassen.
+
+**Offen**
+
+- **Globales Tastenkürzel** (`spec.md` §4.1) — nur noch „welches Kürzel?".
+- **Mockup einfrieren** (§4.5), **Aufräum-Modus**, **Flutter-Umstieg**.
+- `test_4bugs` bleibt der bekannte Wackelkandidat (Lauf vom 2026-08-08:
+  50 grün, 1 rot — dieses eine).
+- `verify_center` meldet die Gruppenzeilen weiter als „MISALIGNED";
+  veraltete Erwartung im Skript, kein Fehler.
+
 ## 2026-08-08 — Nachtrag: das veröffentlichte Mockup war veraltet
 
 **Gemacht**
