@@ -118,7 +118,7 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 50 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 51 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
@@ -132,7 +132,7 @@ Was fertig ist:
   Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
   Anfassen des Skripts die Erwartung nachziehen.
 
-  ⚠️ **Wichtige Einschränkung:** Nur **zwölf** der 50 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **dreizehn** der 51 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -146,22 +146,12 @@ Was fertig ist:
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
-1. **Löschregeln umsetzen** — die Regeln sind seit 2026-08-08
-   **entschieden** (`spec.md` §4.3), gebaut ist noch nichts. Im Mockup
-   sichtbar werden soll:
-   - **Rückfrage beim Löschen einer Gruppe** („Gruppe und 2 Listen
-     löschen?") — zwingend, solange es keinen Papierkorb gibt.
-   - **Rückgängig-Meldung** direkt nach dem Löschen.
-   - Die Regel „Spalten ab dem verschwundenen Knoten schließen" als
-     **eine** Stelle im Code statt als Einzelfall-Reparatur.
+1. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
+   „welches Kürzel?"; das Ziel ist seit 2026-08-07 der Eingang. Lässt sich
+   im Browser nicht bauen, muss also rein spezifiziert werden.
 
-   Der **Papierkorb selbst** kommt bewusst erst mit der Datenschicht
-   (Schritt 5) — er braucht ein Feld „gelöscht am" im Speicherformat.
-
-2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — lässt
-   sich im Browser nicht bauen, muss also rein spezifiziert werden.
-3. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
-4. **Aufräum-Modus für den Eingang** — vom Nutzer beauftragt (2026-08-07),
+2. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
+3. **Aufräum-Modus für den Eingang** — vom Nutzer beauftragt (2026-08-07),
    noch nicht gebaut. Ein geführter Durchgang, der die Aufgaben im Eingang
    **eine nach der anderen** zeigt, jeweils mit den drei Entscheidungen
    (in welche Liste · welches Datum · erledigt/weg) groß und direkt, und
@@ -175,7 +165,7 @@ Der abgestimmte Plan, in dieser Reihenfolge:
    Spalte übernimmt)? Wie kommt man raus, ohne fertig zu werden? Was
    passiert mit Aufgaben, die man bewusst im Eingang lassen will?
 
-5. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
+4. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
    (Lint/Typecheck/Test bei jedem Push), Session-Start-Hook um
    Build-/Test-Befehle erweitern — und **die Datenschicht zuerst**
    (Speicherformat, Schema-Version, atomares Schreiben, Export), bevor
@@ -187,6 +177,13 @@ Auf der Merkliste, bewusst zurückgestellt: Befehlspalette ⌘K
 Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
+
+**Erledigt — die Löschregeln sind gebaut (2026-08-08).** Rückgängig-Zeile
+an der Stelle des Gelöschten (fünf Sekunden, dann endgültig), Rückfrage
+beim Löschen einer Gruppe mit Listen, und `closePanelsFrom()` als **eine**
+Stelle für die Spaltenregel. Der **Papierkorb** kommt bewusst erst mit der
+Datenschicht — er braucht ein Feld „gelöscht am" im Speicherformat.
+Geprüft von `test_loeschen.js` (18 Zusicherungen).
 
 **Erledigt — der Löschknopf steht jetzt im Fluss hinter dem Inhalt**
 (Things-Weg, gewählt am 2026-08-07). Nicht mehr am rechten Zeilenrand:

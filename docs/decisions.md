@@ -2437,3 +2437,71 @@ Etikett, der zu blasse Ziehgriff, jetzt der falsche Zeiger). Für den
 Nutzer ist eine solche Funktion nicht vorhanden — schlimmer als eine, die
 sichtbar fehlt, denn er sucht nicht weiter. **Beim Flutter-Bau ist das
 eine eigene Prüffrage: Sieht man einer Sache an, was mit ihr möglich ist?**
+
+## 2026-08-08 — Rückgängig steht dort, wo gelöscht wurde
+
+**Kontext:** Umsetzung der Löschregeln (`spec.md` §4.3). Zwei Platzierungen
+für die Rückgängig-Meldung wurden gebaut und als Bild vorgelegt.
+
+**Variante A — schwebende Meldung unten im Fenster.** Das übliche Muster
+(Gmail, macOS, Slack). Beim Bauen sofort ein Problem: Sie lag über dem
+**Erfassungsfeld** — ausgerechnet dem wichtigsten Element im Eingang. Sie
+ließ sich höher setzen, aber das ist die Kernschwäche der Form: Eine
+schwebende Meldung nimmt Platz vor Inhalt und muss überall ausweichen.
+Zweiter Nachteil: Sie steht immer am selben Ort, egal wo gelöscht wurde.
+
+**Variante B — an der Stelle, wo gelöscht wurde. Gewählt.** Die Zeile
+bleibt stehen und wird zu ihrer eigenen Rückgängig-Meldung:
+durchgestrichener Name, „gelöscht", rechts der Knopf. Nach **fünf
+Sekunden** klappt sie weich ein.
+
+**Der Gewinn, den ich unterschätzt hatte, bis es gebaut war: nichts
+springt.** Der Platz bleibt belegt — die Liste rutscht beim Löschen nicht
+hoch und beim Zurückholen nicht wieder runter. Gemessen: Die Folgezeile
+bewegt sich um **1 px** (die gestrichelte Umrandung ist minimal höher als
+eine Aufgabenzeile). Bei Variante A rutscht die ganze Liste zweimal.
+
+Das folgt außerdem dem Grundsatz aus `spec.md` §2.5: *Wo etwas passiert,
+steht es auch.*
+
+**Umsetzung — der Trick liegt im Datenmodell, nicht in der Oberfläche:**
+Der Blockverweis der gelöschten Aufgabe wird nicht entfernt, sondern
+**an Ort und Stelle durch einen Block vom Typ `undo` ersetzt**, der den
+herausgenommenen Knoten und seinen alten Kindindex mitträgt. Dadurch
+- steht die Zeile automatisch an der richtigen Position, ohne zweite
+  Mechanik für Platzhalter,
+- überlebt sie jeden Neuaufbau des Editors,
+- und das Zurückholen ist dieselbe Paarung wie beim Verschieben: Knoten in
+  die Kinderliste, Blockverweis zurück auf `task`.
+
+Die Aufgabe ist dabei aus der Kinderliste **sofort** entfernt — der Zähler
+sinkt augenblicklich, und die Erledigt-Kaskade rechnet richtig. Nur der
+Platz auf der Seite bleibt reserviert.
+
+**Nicht ziehbar:** Was gerade verschwindet, sortiert man nicht um. Die
+Zieh-Konfiguration überspringt Blöcke mit `undo:`-Marker.
+
+## 2026-08-08 — Gruppe löschen fragt nach, und die Spaltenregel steht an einer Stelle
+
+**Rückfrage beim Gruppenlöschen.** Umgesetzt wie in §4.3 festgelegt: Enthält
+die Gruppe Listen, erscheint „„Privat" und 2 Listen löschen?" samt Namen
+der betroffenen Listen. **Diese Rückfrage ist kein Komfort, sondern die
+Bedingung dafür, dass die Kaskade überhaupt zulässig ist** — solange es
+keinen Papierkorb gibt, wäre es sonst unwiderruflicher Datenverlust mit
+einem Klick. Sie entfällt, sobald sich Gelöschtes zurückholen lässt.
+
+Eine leere Gruppe wird ohne Rückfrage gelöscht — dort gibt es nichts zu
+verlieren.
+
+**Die Spaltenregel steht jetzt an einer Stelle.** `closePanelsFrom(id)`
+ersetzt die zwei Stellen, an denen der `panelStack` bisher einzeln
+abgeschnitten wurde, und wird an **vier** Stellen benutzt: Aufgabe
+löschen, Aufgabe verschieben, Liste löschen, Liste über eine gelöschte
+Gruppe verlieren. Damit ist aus einer Einzelfall-Reparatur die Regel
+geworden, die `spec.md` §4.3 verlangt.
+
+**Nebenbefund, gleich mitbehoben:** Beim Löschen der aktuell geöffneten
+Liste fiel die App auf `lists[0]` zurück — und auf `today`, falls gar
+keine Liste mehr da war. Seit es den Eingang gibt (§2.0), ist der
+richtige Rückfallort **immer** der Eingang: Es gibt ihn per Definition
+immer, und er ist die Startansicht.

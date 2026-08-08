@@ -581,6 +581,28 @@
      es ist also keine Spur mehr freizuhalten. */
   .inline-embed .task-row { padding-right: 6px; }
 
+  /* Rueckgaengig-Zeile: steht an der Stelle, an der geloescht wurde.
+     Dadurch bleibt der Platz belegt - die Liste rutscht beim Loeschen nicht
+     hoch und beim Zurueckholen nicht wieder runter. Eine schwebende Meldung
+     unten im Fenster wurde verworfen: Sie verdeckt Inhalt (im Entwurf
+     ausgerechnet das Erfassungsfeld) und steht immer am selben Ort, egal wo
+     geloescht wurde. Siehe docs/decisions.md, 2026-08-08. */
+  .undo-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; margin-right: 24px;
+    border: 1px dashed var(--line); border-radius: var(--r-md);
+    color: var(--ink-faint); font-size: var(--fs-md);
+  }
+  .undo-row-name { text-decoration: line-through; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .undo-row-meta { flex-shrink: 0; }
+  .undo-btn {
+    margin-left: auto; flex-shrink: 0; border: none; background: transparent;
+    color: var(--accent-strong); font: inherit; font-size: var(--fs-sm);
+    font-weight: var(--fw-strong); padding: 3px 8px; border-radius: var(--r-pill); cursor: pointer;
+    transition: background-color var(--dur-fast) ease;
+  }
+  .undo-btn:hover { background: var(--accent-soft); }
+
   .block-image { display: flex; align-items: center; gap: 8px; padding: 12px 12px; border: 1px dashed var(--line); border-radius: var(--r-md); color: var(--ink-faint); font-size: var(--fs-sm); margin-right: 24px; }
   .block-image svg { flex-shrink: 0; }
 
@@ -964,6 +986,72 @@
   // der Kinder haelt die Daten, die Blockliste die Reihenfolge auf der
   // Seite. Eines von beiden zu vergessen erzeugt eine Aufgabe, die es gibt,
   // die aber nirgends steht (oder umgekehrt einen Verweis ins Leere).
+  // --- Rueckgaengig ---
+  // Fuenf Sekunden, dann ist es endgueltig. Danach uebernimmt der Papierkorb
+  // (spec.md 4.3), der mit der Datenschicht kommt.
+  var UNDO_MS = 5000;
+  var undoTimers = {};
+
+  function startUndoTimer(blockId, ownerId) {
+    clearUndoTimer(blockId);
+    undoTimers[blockId] = setTimeout(function () {
+      delete undoTimers[blockId];
+      finishUndo(blockId, ownerId);
+    }, UNDO_MS);
+  }
+
+  function clearUndoTimer(blockId) {
+    if (undoTimers[blockId]) { clearTimeout(undoTimers[blockId]); delete undoTimers[blockId]; }
+  }
+
+  // Zeit abgelaufen: Die Zeile klappt weich ein und der Block verschwindet.
+  function finishUndo(blockId, ownerId) {
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (!owner) return;
+    var idx = owner.blocks.findIndex(function (b) { return b.type === "undo" && b.id === blockId; });
+    if (idx < 0) return;
+    var el = document.querySelector('.inline-embed[data-embed-marker="undo:' + blockId + '"]');
+    animateRemove(el, function () {
+      var i2 = owner.blocks.findIndex(function (b) { return b.type === "undo" && b.id === blockId; });
+      if (i2 >= 0) owner.blocks.splice(i2, 1);
+      renderAll();
+    });
+  }
+
+  // Zurueckholen: Knoten und Blockverweis wandern gemeinsam an ihren Platz
+  // zurueck - dieselbe Paarung wie beim Verschieben.
+  function undoDelete(blockId, ownerId) {
+    clearUndoTimer(blockId);
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (!owner) return;
+    var idx = owner.blocks.findIndex(function (b) { return b.type === "undo" && b.id === blockId; });
+    if (idx < 0) return;
+    var blk = owner.blocks[idx];
+
+    if (blk.kind === "task" && blk.node) {
+      var kids = childrenOf(owner);
+      var at = Math.min(blk.childIndex >= 0 ? blk.childIndex : kids.length, kids.length);
+      kids.splice(at, 0, blk.node);
+      owner.blocks[idx] = { type: "task", id: blk.id };
+      if (owner.subtasks) {
+        owner.done = owner.subtasks.length > 0 && owner.subtasks.every(function (x) { return x.done; });
+        recomputeAncestors(owner.id);
+      }
+    } else if (blk.kind === "image" && blk.block) {
+      owner.blocks[idx] = blk.block;
+    }
+    renderAll();
+  }
+
+  // Zentrale Regel aus spec.md 4.3: Verschwindet ein Knoten aus dem Baum -
+  // durch Loeschen, Verschieben oder endgueltiges Entfernen -, werden alle
+  // geoeffneten Spalten ab diesem Knoten geschlossen. Stand vorher an zwei
+  // Stellen einzeln im Code.
+  function closePanelsFrom(nodeId) {
+    var i = state.panelStack.indexOf(nodeId);
+    if (i >= 0) state.panelStack = state.panelStack.slice(0, i);
+  }
+
   function moveTaskToList(taskId, ownerId, targetListId) {
     var owner = findList(ownerId) || findTaskGlobal(ownerId);
     var target = findList(targetListId);
@@ -983,8 +1071,7 @@
 
     // Eine offene Spalte, die auf die verschobene Aufgabe zeigt, wuerde
     // sonst auf einen Ort verweisen, den es in diesem Zweig nicht mehr gibt.
-    var si = state.panelStack.indexOf(taskId);
-    if (si >= 0) state.panelStack = state.panelStack.slice(0, si);
+    closePanelsFrom(taskId);
 
     // Der bisherige Besitzer kann durch den Weggang fertig werden.
     if (owner.subtasks) {
@@ -1372,6 +1459,23 @@
     return wrap;
   }
 
+  // Die Zeile, die an der Stelle des Geloeschten stehen bleibt. Bewusst ein
+  // Embed wie Aufgabe und Bild: Dann traegt sie die Blockliste an genau der
+  // richtigen Position, ohne dass es dafuer eine zweite Mechanik braucht.
+  // Keinen Ziehgriff - was gerade verschwindet, sortiert man nicht um.
+  function makeUndoNode(block, ownerId) {
+    var wrap = document.createElement("div");
+    wrap.className = "inline-embed";
+    wrap.contentEditable = "false";
+    wrap.setAttribute("data-embed-marker", "undo:" + block.id);
+    wrap.innerHTML = '<div class="undo-row">' +
+      '<span class="undo-row-name">' + escapeHtml(block.label || "Aufgabe") + "</span>" +
+      '<span class="undo-row-meta">· gelöscht</span>' +
+      '<button class="undo-btn" data-undo="' + block.id + '" data-undo-owner="' + ownerId + '">Rückgängig</button>' +
+      "</div>";
+    return wrap;
+  }
+
   function makeInlineImageNode(block, ownerId) {
     var wrap = document.createElement("div");
     wrap.className = "inline-embed";
@@ -1443,6 +1547,8 @@
         if (child) el.appendChild(makeInlineTaskNode(child, colIndex, owner.id));
       } else if (b.type === "image") {
         el.appendChild(makeInlineImageNode(b, owner.id));
+      } else if (b.type === "undo") {
+        el.appendChild(makeUndoNode(b, owner.id));
       }
     }
     normalizeEditor(el);
@@ -1862,6 +1968,12 @@
         } else if (kind === "image") {
           var oldImg = owner.blocks.filter(function (b) { return b.type === "image" && b.id === mid; })[0];
           newBlocks.push({ type: "image", id: mid, caption: oldImg ? oldImg.caption : "Bild" });
+        } else if (kind === "undo") {
+          // Aus dem DOM allein laesst sich der gemerkte Knoten nicht
+          // wiederherstellen - der alte Block wird deshalb unveraendert
+          // uebernommen, wie beim Bild die Bildunterschrift.
+          var oldUndo = owner.blocks.filter(function (b) { return b.type === "undo" && b.id === mid; })[0];
+          if (oldUndo) newBlocks.push(oldUndo);
         }
       } else if (isDivider(n)) {
         newBlocks.push({ type: "divider" });
@@ -2476,9 +2588,11 @@
       animateRemove(wrap, function () {
         var idx = lists.findIndex(function (l) { return l.id === delListId; });
         if (idx >= 0) lists.splice(idx, 1);
+        closePanelsFrom(delListId);
         if (state.currentListId === delListId) {
-          state.currentListId = lists.length ? lists[0].id : null;
-          state.view = lists.length ? "list" : "today";
+          // Zurueck in den Eingang - den gibt es immer (spec.md 2.0).
+          state.currentListId = INBOX_ID;
+          state.view = "list";
           state.panelStack = [];
         }
         renderAll();
@@ -2490,8 +2604,34 @@
     if (el) {
       var delGroupId = el.getAttribute("data-delete-group");
       var groupRow = el.closest(".group-row");
+      var drin = lists.filter(function (l) { return l.groupId === delGroupId; });
+      var gObj = findGroup(delGroupId);
+
+      // Eine geloeschte Gruppe nimmt ihre Listen mit (spec.md 4.3). Diese
+      // Rueckfrage ist zwingend, SOLANGE ES KEINEN PAPIERKORB GIBT - bis
+      // dahin waere es unwiderruflicher Datenverlust mit einem Klick.
+      // Sie entfaellt, sobald sich Geloeschtes zurueckholen laesst.
+      if (drin.length > 0) {
+        var frage = '„' + (gObj ? gObj.name : "Gruppe") + '“ und ' +
+          (drin.length === 1 ? "1 Liste" : drin.length + " Listen") + " löschen?\n\n" +
+          drin.map(function (l) { return "· " + l.name; }).join("\n");
+        if (!window.confirm(frage)) return;
+      }
+
       animateRemove(groupRow, function () {
-        for (var gi2 = 0; gi2 < lists.length; gi2++) { if (lists[gi2].groupId === delGroupId) lists[gi2].groupId = null; }
+        // Die Listen wandern MIT, sie rutschen nicht eine Ebene hoch.
+        for (var gi2 = lists.length - 1; gi2 >= 0; gi2--) {
+          if (lists[gi2].groupId === delGroupId) {
+            var weg = lists[gi2];
+            closePanelsFrom(weg.id);
+            if (state.currentListId === weg.id) {
+              state.currentListId = INBOX_ID;
+              state.view = "list";
+              state.panelStack = [];
+            }
+            lists.splice(gi2, 1);
+          }
+        }
         var gidx = groups.findIndex(function (g) { return g.id === delGroupId; });
         if (gidx >= 0) groups.splice(gidx, 1);
         delete state.collapsedGroups[delGroupId];
@@ -2518,25 +2658,44 @@
       var blockId = el.getAttribute("data-delete-block");
       var kind = el.getAttribute("data-delete-kind");
       var deleteOwner = findList(ownerId) || findTaskGlobal(ownerId);
-      var embedEl = el.closest(".inline-embed");
       if (deleteOwner) {
-        animateRemove(embedEl, function () {
-          var bidx = deleteOwner.blocks.findIndex(function (b) { return b.id === blockId; });
-          if (kind === "task" && bidx >= 0) {
-            var kids = childrenOf(deleteOwner);
-            var ki = kids.findIndex(function (k) { return k.id === blockId; });
-            if (ki >= 0) kids.splice(ki, 1);
-            var stackIdx = state.panelStack.indexOf(blockId);
-            if (stackIdx >= 0) state.panelStack = state.panelStack.slice(0, stackIdx);
-            if (deleteOwner.subtasks) {
-              deleteOwner.done = deleteOwner.subtasks.length > 0 && deleteOwner.subtasks.every(function (s) { return s.done; });
-              recomputeAncestors(deleteOwner.id);
-            }
+        var bidx = deleteOwner.blocks.findIndex(function (b) { return b.id === blockId; });
+        if (bidx < 0) return;
+
+        // Der Block wird nicht entfernt, sondern durch eine Rueckgaengig-
+        // Zeile ERSETZT. Dadurch bleibt der Platz belegt: Die Liste rutscht
+        // beim Loeschen nicht hoch und beim Zurueckholen nicht wieder runter.
+        if (kind === "task") {
+          var kids = childrenOf(deleteOwner);
+          var ki = kids.findIndex(function (k) { return k.id === blockId; });
+          var node = ki >= 0 ? kids[ki] : null;
+          if (ki >= 0) kids.splice(ki, 1);
+          closePanelsFrom(blockId);
+          if (deleteOwner.subtasks) {
+            deleteOwner.done = deleteOwner.subtasks.length > 0 && deleteOwner.subtasks.every(function (s) { return s.done; });
+            recomputeAncestors(deleteOwner.id);
           }
-          if (bidx >= 0) deleteOwner.blocks.splice(bidx, 1);
-          renderAll();
-        });
+          deleteOwner.blocks[bidx] = {
+            type: "undo", kind: "task", id: blockId,
+            label: node ? node.title : "Aufgabe",
+            node: node, childIndex: ki
+          };
+        } else {
+          var imgBlock = deleteOwner.blocks[bidx];
+          deleteOwner.blocks[bidx] = {
+            type: "undo", kind: "image", id: blockId,
+            label: imgBlock.caption || "Bild", block: imgBlock
+          };
+        }
+        startUndoTimer(blockId, deleteOwner.id);
+        renderAll();
       }
+      return;
+    }
+
+    el = e.target.closest("[data-undo]");
+    if (el) {
+      undoDelete(el.getAttribute("data-undo"), el.getAttribute("data-undo-owner"));
       return;
     }
 
@@ -2977,7 +3136,12 @@
         return (el.getAttribute("data-embed-marker") || "").indexOf("task:") === 0;
       },
       requiresGrip: "[data-embed-grip]",
-      itemFrom: function (t) { return t.closest(".inline-embed[data-embed-marker]"); },
+      itemFrom: function (t) {
+        var e2 = t.closest(".inline-embed[data-embed-marker]");
+        // Was gerade verschwindet, sortiert man nicht um.
+        if (e2 && (e2.getAttribute("data-embed-marker") || "").indexOf("undo:") === 0) return null;
+        return e2;
+      },
       containerFrom: function (el) { return el.closest(".page-editor"); },
       // Every top-level block is a drop anchor, not just other embeds, so a
       // task can be dropped between two lines of text as well as between
