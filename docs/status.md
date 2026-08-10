@@ -122,9 +122,11 @@ Was fertig ist:
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Stand 2026-08-08: 50 grün, 0 rot, 0 abgestürzt** —
-  `test_4bugs` war in diesem Lauf grün, was **Glück ist, keine
-  Reparatur** (siehe Abschnitt 4, er trifft etwa jeden zweiten Lauf).
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-08, nach den
+  Löschregeln): 50 grün, 1 rot** — das eine ist `test_4bugs`, der bekannte
+  Wackelkandidat (siehe Abschnitt 4). Ein früherer Lauf desselben Tages
+  war 50/0; dass er dort grün war, ist **Glück, keine Reparatur** — er
+  trifft etwa jeden zweiten Lauf.
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
   Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
