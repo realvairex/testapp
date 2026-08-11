@@ -2540,3 +2540,105 @@ Behälter**, die Spalte statt das Fenster. `spec.md` §2.5 verweist darauf.
 **was** gebaut wird; die Design-Richtung, **wie** entschieden wird, wenn
 etwas Neues dazukommt. Diese Regel ist die zweite Sorte — sie soll auch
 für Bildschirme gelten, die es noch nicht gibt.
+
+## 2026-08-11 — Aufräum-Modus: entschieden und gebaut
+
+**Kontext:** Der Modus stand seit dem 2026-08-07 als beauftragter, aber
+ungebauter Punkt in `status.md`, mit drei offenen Fragen. Der Nutzer hat
+sich nach mehreren Entwurfsrunden für die **schlichte, seitenbasierte
+Variante** entschieden — nicht für eine der drei stärker gestalteten
+Alternativen aus dem zweiten Anlauf. Sein Auftrag dazu:
+
+> „da spricht mich das vom Anfang noch am meisten an, können wir das
+> ausarbeiten? und es so satisfying wie möglich machen? dass der Benutzer
+> sich belohnt fühlt wenn er eine Aufgabe macht und man dadurch den Modus
+> auch benutzen will" — „weil er haptisch auch geil sich anfühlt"
+
+Vollständig festgeschrieben in `spec.md` §2.8.
+
+### Die drei offenen Fragen, beantwortet
+
+**Wo lebt der Modus?** *Die Spalte übernimmt.* Folgt der Design-Richtung
+vom 2026-08-08, hat hier aber ein eigenes, stärkeres Argument: Die
+Sidebar muss **sichtbar bleiben**, weil sie das Ziel der
+Wegflug-Bewegung ist. Ein Overlay hätte die Belohnung, um die es
+eigentlich geht, selbst verdeckt.
+
+**Wie kommt man raus, ohne fertig zu werden?** „Fertig" und `Escape`.
+Entschiedenes bleibt entschieden, der Rest bleibt im Eingang. Keine
+Rückfrage — es gibt nichts zu verlieren.
+
+**Was ist mit Aufgaben, die bewusst im Eingang bleiben sollen?**
+Ein Knopf „Später", der **keinen dauerhaften Zustand** erzeugt. Ich hatte
+eine Eigenschaft „zurückgestellt" erwogen und verworfen: Sie wäre eine
+dritte Ordnung neben Liste und Datum, mit demselben Verfallsdatum wie
+der abgelehnte Stern für „wichtig" (§2.0) — nach vier Wochen ist alles
+zurückgestellt. Stattdessen gilt die Sperre nur für den laufenden
+Durchgang, damit er sich nicht im Kreis dreht.
+
+### Warum das Belohnungsgefühl in der Spec steht
+
+Es wäre der naheliegende Kandidat gewesen, um es „später beim Feinschliff"
+zu machen. Genau das ist die Falle: Der Aufräum-Modus hat keinen
+funktionalen Vorteil gegenüber dem Einsortieren per Ziehen — er kann
+nichts, was das Ziehen nicht auch kann. **Sein einziger Vorteil ist, dass
+man ihn gern öffnet.** Fällt die Bewegungsschicht heraus, bleibt ein
+Formular mit sieben Runden übrig, und der Modus ist wertlos. Deshalb
+steht sie als Tabelle in §2.8 und nicht als Kommentar im Mockup.
+
+Der tragende Gedanke: **Jede Entscheidung bekommt ihre eigene Bewegung.**
+Liste = nach links zur Sidebar, Erledigt = sinkt zusammen, Löschen =
+fällt nach unten, Später = schiebt nach rechts. So unterscheiden sich die
+Entscheidungen körperlich und nicht nur inhaltlich — man merkt an der
+Bewegung, was man getan hat, bevor man es liest. „Zurück" führt die
+Karte aus derselben Richtung zurück, in die sie ging.
+
+### Eine zweite Bewegungskurve — die einzige Ausnahme
+
+`ease-spring` (`cubic-bezier(0.22, 1.4, 0.36, 1)`) schwingt über das Ziel
+hinaus. Bisher galt: **eine** Kurve für die ganze App. Diese Regel wird
+bewusst um genau einen Fall erweitert, den Fortschrittsbalken des
+Aufräum-Modus, und die Ausnahme steht als solche in `spec.md` §3.
+
+Begründung: Ein Überschwingen sagt „geschafft". Das ist an einer
+Quittung richtig und überall sonst Unruhe. Die Alternative wäre gewesen,
+die Belohnung mit der vorhandenen Kurve zu bauen — sie ist eine starke
+Verzögerungskurve und damit sauber, aber sie kommt nirgends an, sie
+*hält nur an*. Zwei Kurven, keine dritte; wer eine vierte braucht, hat
+vermutlich ein anderes Problem.
+
+### Haptik
+
+Der Nutzer nannte ausdrücklich das haptische Gefühl. Auf dem Desktop gibt
+es das nicht, deshalb zwei Ebenen: **sichtbar** gibt jeder Knopf beim
+Drücken nach (`scale(0.96)` auf `:active`, `dur-fast`) — das ist der
+Ersatz, den ein Zeigegerät bieten kann; **spürbar** kommt auf
+Mobilgeräten ein Tick pro Entscheidung dazu (Flutter
+`HapticFeedback.selectionClick()`, beim Abschluss `mediumImpact()`), im
+Mockup stellvertretend `navigator.vibrate()`. Kein Tick bei „Später" —
+Aufschieben ist keine Leistung, und eine Rückmeldung, die alles quittiert,
+quittiert nichts.
+
+**Bewusst nicht:** Konfetti und Klänge. Die Palette ist warm und ruhig,
+die ganze App verzichtet auf Ausrufezeichen; ein Feuerwerk wäre der erste
+Fremdkörper. Auch kein Zeitmesser („in 1:12 geschafft") — das macht aus
+Aufräumen einen Wettkampf gegen sich selbst, und wer einmal langsam war,
+öffnet den Modus nicht wieder.
+
+## 2026-08-11 — Unteraufgaben im Eingang bleiben erlaubt
+
+**Ich hatte das Gegenteil vorgeschlagen.** Der Eingang soll keine
+Eigenschaften tragen (§2.0), und eine Unteraufgabe ist eine — sie legt
+eine Struktur fest, die der Eingang gerade aufschieben soll.
+
+Der Nutzer hat widersprochen, und das Argument hebt den Einwand auf: Wer
+„Umzug" notiert und im selben Atemzug „Kartons besorgen" darunter
+schreibt, hat nicht einsortiert, sondern **einen Gedanken zu Ende
+gedacht**. Das ist genau der Vorgang, den der Eingang schützen soll. Ein
+Verbot würde ihn unterbrechen, um eine Regel zu retten, die für den
+*anderen* Fall gedacht war (Liste, Datum, Wichtigkeit — Eigenschaften,
+die eine Einordnung *vorwegnehmen*).
+
+Praktisch fällt dabei nichts an: Der Aufräum-Modus verschiebt eine
+Aufgabe ohnehin samt ihrem Unterbau, weil `moveTaskToList()` den Knoten
+als Ganzes umhängt. Eingetragen in `spec.md` §2.0.

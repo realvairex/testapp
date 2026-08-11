@@ -78,6 +78,11 @@
     --dur-base: 200ms;  /* Zustandswechsel */
     --dur-slow: 400ms;  /* Panels, Sidebar */
     --ease: cubic-bezier(0.32, 0.72, 0, 1);
+    /* Zweite Kurve, und es bleibt bei zweien: Sie schwingt ueber ihr Ziel
+       hinaus und sagt damit "geschafft". Das ist an einer Quittung richtig
+       und ueberall sonst Unruhe - deshalb ausschliesslich in der
+       Belohnungsschicht des Aufraeum-Modus (docs/spec.md 2.8). */
+    --ease-spring: cubic-bezier(0.22, 1.4, 0.36, 1);
 
     /* Hoehen-Sprache: drei Ebenen statt beliebiger Schatten */
     --el-1: 0 1px 2px rgba(41, 50, 65, 0.06);
@@ -768,6 +773,10 @@
   .due-cal-day.heute { box-shadow: inset 0 0 0 1px var(--ink-faint); font-weight: var(--fw-strong); }
   .due-cal-day.gewaehlt { background: var(--accent); color: var(--accent-ink); font-weight: var(--fw-strong); }
   .due-cal-day.gewaehlt:hover { background: var(--accent); }
+  /* Im Aufraeum-Modus steht derselbe Kalender IM FLUSS statt zu schweben:
+     Die Seite ist leer genug, es gibt nichts zu verdecken, und schwebende
+     Flaechen sind hier die Ausnahme (concept.md, Design-Richtung). */
+  .due-cal.tidy-cal { position: static; margin-top: var(--sp-4); box-shadow: none; }
   .due-chip-x {
     width: 20px; height: 20px; padding: 0; border: none; background: transparent;
     color: currentColor; opacity: 0.55; border-radius: 50%; cursor: pointer; flex-shrink: 0;
@@ -862,6 +871,176 @@
   .theme-seg-btn.active { color: var(--ink); font-weight: var(--fw-strong); }
   .theme-seg-btn:not(.active):hover { color: var(--ink-soft); }
 
+  /* ==================== Aufräum-Modus (docs/spec.md 2.8) ====================
+     Ein gefuehrter Durchgang durch den Eingang. KEIN Overlay: Die Spalte
+     tauscht ihren Inhalt aus, Sidebar und Fensterrahmen bleiben stehen.
+     Das folgt der Design-Richtung, hat hier aber ein eigenes Argument -
+     die Zielliste in der Sidebar ist das Ziel der Wegflug-Bewegung und
+     muss deshalb sichtbar bleiben. Ein Overlay haette ausgerechnet die
+     Belohnung verdeckt, um die es geht. */
+
+  .tidy-start {
+    display: inline-flex; align-items: center; gap: var(--sp-3);
+    border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft);
+    font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-medium);
+    padding: 5px 12px 5px 9px; border-radius: var(--r-pill); cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) var(--ease);
+  }
+  .tidy-start:hover { background: var(--chip-hover); color: var(--ink); }
+  .tidy-start svg { color: var(--accent); }
+
+  .tidy { display: flex; flex-direction: column; flex: 1 1 auto; height: 100%; min-height: 0; }
+  .tidy-head { padding: 24px 24px 0; }
+  .tidy-head-top { display: flex; align-items: baseline; gap: var(--sp-5); }
+  .tidy-title { font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--ink); letter-spacing: -0.01em; }
+  .tidy-quit {
+    margin-left: auto; border: none; background: transparent; color: var(--ink-faint);
+    font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-medium);
+    padding: 4px 8px; border-radius: var(--r-sm); cursor: pointer;
+    transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease;
+  }
+  .tidy-quit:hover { color: var(--ink); background: var(--line-soft); }
+
+  .tidy-meta { margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  /* Der Zaehler rollt, statt umzuspringen: die alte Zahl nach oben hinaus,
+     die neue von unten herein. Der Kasten schneidet ab, damit die Bewegung
+     einen Rand hat - ohne ihn wanderte die Ziffer sichtbar durch die
+     Nachbartexte. */
+  .tidy-zahl { display: inline-block; overflow: hidden; vertical-align: bottom; }
+  .tidy-zahl > span { display: inline-block; }
+  .tidy-meta.rollt .tidy-zahl > span { animation: tidy-roll var(--dur-base) var(--ease); }
+  @keyframes tidy-roll { from { transform: translateY(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* Fortschritt ueber transform: scaleX, nicht ueber width - dieselbe Regel
+     wie ueberall (docs/spec.md, "Bewegung"). Nur hier darf die Bewegung
+     ueberschwingen. */
+  .tidy-bar { margin-top: var(--sp-5); height: 3px; border-radius: var(--r-pill); background: var(--line); overflow: hidden; }
+  .tidy-bar > span {
+    display: block; height: 100%; width: 100%; border-radius: var(--r-pill);
+    background: var(--accent); transform-origin: left center;
+    transition: transform var(--dur-slow) var(--ease-spring);
+  }
+
+  /* Senkrecht mittig: Die eine Aufgabe soll der Gegenstand des Bildschirms
+     sein, nicht ein Formular, das oben klebt - und die Karte verlaesst beim
+     Wegfliegen die Mitte, was die Bewegung deutlicher macht. "safe center"
+     ist wichtig: Bei einer langen Aufgabe waere zentrierter Inhalt sonst
+     oben abgeschnitten und nicht mehr erreichbar. */
+  .tidy-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px; display: flex; flex-direction: column; justify-content: safe center; }
+
+  .tidy-card { flex: 0 0 auto; padding: 24px 0; }
+  .tidy-card-title { font-size: var(--fs-lg); font-weight: var(--fw-strong); color: var(--ink); line-height: 1.35; }
+  .tidy-card-note {
+    margin-top: var(--sp-3); font-size: var(--fs-sm); color: var(--ink-faint); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  /* Unteraufgaben sind im Eingang erlaubt (spec.md 2.0) und wandern beim
+     Einsortieren mit. Wer das nicht sieht, verschiebt drei Aufgaben und
+     denkt, es sei eine gewesen. */
+  .tidy-card-sub { margin-top: var(--sp-3); font-size: var(--fs-xs); color: var(--ink-faint); display: flex; align-items: center; gap: var(--sp-3); }
+  .tidy-card-sub svg { flex-shrink: 0; }
+
+  .tidy-sep { height: 1px; background: var(--line-soft); margin-top: var(--sp-6); }
+
+  .tidy-rubrik { padding: var(--sp-6) 0 var(--sp-4); font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); }
+  .tidy-wahl { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+
+  /* Ein Knopftyp fuer alle drei Rubriken. Wichtig ist das :active - auf dem
+     Zeigegeraet ist das Nachgeben beim Druecken der einzige Ersatz fuer
+     das, was auf dem Telefon die Haptik macht. */
+  .tidy-btn {
+    display: inline-flex; align-items: center; gap: var(--sp-3);
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    font: inherit; font-size: var(--fs-md); font-weight: var(--fw-medium);
+    padding: 7px 14px; border-radius: var(--r-pill); cursor: pointer;
+    transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease,
+                color var(--dur-fast) ease, transform var(--dur-fast) var(--ease);
+  }
+  .tidy-btn:hover { background: var(--chip-hover); border-color: var(--tree-line); }
+  .tidy-btn:active, .tidy-start:active, .tidy-quit:active, .tidy-fuss-btn:active { transform: scale(0.96); }
+  .tidy-btn .list-dot { width: 8px; height: 8px; }
+  /* Gesetztes Datum bleibt stehen und ist markiert: WANN? rueckt nicht
+     weiter, solange die Aufgabe noch im Eingang liegt. */
+  .tidy-btn.gewaehlt { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-strong); font-weight: var(--fw-strong); }
+  .tidy-btn.gerade-gewaehlt { animation: tidy-pop var(--dur-base) var(--ease-spring); }
+  @keyframes tidy-pop { 0% { transform: scale(0.92); } 100% { transform: none; } }
+  .tidy-btn.leise { color: var(--ink-faint); }
+  .tidy-btn.leise:hover { color: var(--ink); }
+  .tidy-btn.warnend:hover { background: var(--urgent-soft); border-color: var(--urgent); color: var(--urgent); }
+
+  .tidy-fuss { display: flex; align-items: center; padding: var(--sp-5) 24px; border-top: 1px solid var(--line-soft); }
+  .tidy-fuss-btn {
+    border: none; background: transparent; font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-medium);
+    color: var(--ink-faint); padding: 6px 8px; border-radius: var(--r-sm); cursor: pointer;
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    transition: color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease);
+  }
+  .tidy-fuss-btn:hover:not(:disabled) { color: var(--ink); background: var(--line-soft); }
+  .tidy-fuss-btn:disabled { opacity: 0.4; cursor: default; }
+  .tidy-fuss-btn.weiter { margin-left: auto; color: var(--accent-strong); }
+  .tidy-fuss-btn.weiter:hover { background: var(--accent-soft); }
+
+  /* --- Die Belohnungsschicht ---
+     Jede Entscheidung bekommt ihre EIGENE Bewegung, damit sie sich
+     koerperlich unterscheiden und nicht nur inhaltlich: Liste = nach links
+     zur Sidebar (dorthin geht die Aufgabe), Erledigt = sinkt in sich
+     zusammen, Loeschen = faellt nach unten aus dem Bild, Spaeter = schiebt
+     nach rechts. Man merkt an der Bewegung, was man getan hat, bevor man
+     es liest. Tabelle in docs/spec.md 2.8. */
+  .tidy-karte-weg { pointer-events: none; }
+  .tidy-karte-weg.nach-links   { animation: tidy-weg-links   260ms var(--ease) forwards; }
+  .tidy-karte-weg.nach-rechts  { animation: tidy-weg-rechts  260ms var(--ease) forwards; }
+  .tidy-karte-weg.nach-unten   { animation: tidy-weg-unten   260ms var(--ease) forwards; }
+  .tidy-karte-weg.zusammen     { animation: tidy-weg-zusammen 260ms var(--ease) forwards; }
+  @keyframes tidy-weg-links   { to { transform: translateX(-52px) scale(0.96); opacity: 0; } }
+  @keyframes tidy-weg-rechts  { to { transform: translateX(52px)  scale(0.96); opacity: 0; } }
+  @keyframes tidy-weg-unten   { to { transform: translateY(34px); opacity: 0; } }
+  @keyframes tidy-weg-zusammen{ to { transform: scale(0.9); opacity: 0; } }
+
+  /* Die naechste Karte kommt aus der Richtung, die zur Bewegung davor
+     passt. Beim "Zurueck" ist das dieselbe, in die sie gegangen war -
+     die Aufgabe kommt sichtbar denselben Weg zurueck. */
+  .tidy-karte-rein.von-unten  { animation: tidy-rein-unten  var(--dur-slow) var(--ease-spring); }
+  .tidy-karte-rein.von-links  { animation: tidy-rein-links  var(--dur-slow) var(--ease-spring); }
+  .tidy-karte-rein.von-rechts { animation: tidy-rein-rechts var(--dur-slow) var(--ease-spring); }
+  @keyframes tidy-rein-unten  { from { transform: translateY(16px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes tidy-rein-links  { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes tidy-rein-rechts { from { transform: translateX(40px);  opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* Die Zielzeile in der Sidebar blitzt kurz auf: die Quittung "dort liegt
+     es jetzt". Ohne sie fliegt die Karte irgendwohin. */
+  .nav-item.tidy-ziel { animation: tidy-ziel var(--dur-slow) var(--ease) 2; }
+  @keyframes tidy-ziel {
+    0%   { background: var(--accent-soft); }
+    100% { background: transparent; }
+  }
+
+  /* --- Abschlussbild --- kein Verschwinden, sondern ein eigener Zustand
+     mit der Bilanz des Durchgangs. */
+  .tidy-ende { text-align: center; padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
+  .tidy-ende-mark { color: var(--accent); animation: tidy-ende-mark var(--dur-slow) var(--ease-spring); }
+  .tidy-ende-mark svg { width: 44px; height: 44px; }
+  @keyframes tidy-ende-mark { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+  .tidy-ende-titel { font-size: var(--fs-lg); font-weight: var(--fw-strong); color: var(--ink); }
+  .tidy-ende-zahl { font-size: var(--fs-md); color: var(--ink-soft); }
+  .tidy-ende-bilanz { margin-top: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); font-size: var(--fs-sm); color: var(--ink-faint); }
+  .tidy-ende-zeile { display: flex; align-items: center; gap: var(--sp-3); justify-content: center; }
+  .tidy-ende-zeile b { color: var(--ink-soft); font-weight: var(--fw-strong); font-variant-numeric: tabular-nums; }
+  /* Gestaffelt, damit die Bilanz gelesen und nicht ueberflogen wird. */
+  .tidy-ende-zeile { animation: tidy-rein-unten var(--dur-slow) var(--ease-spring) both; }
+  .tidy-ende-zeile:nth-child(1) { animation-delay: 120ms; }
+  .tidy-ende-zeile:nth-child(2) { animation-delay: 200ms; }
+  .tidy-ende-zeile:nth-child(3) { animation-delay: 280ms; }
+  .tidy-ende-zeile:nth-child(4) { animation-delay: 360ms; }
+  .tidy-ende-zeile:nth-child(n+5) { animation-delay: 440ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tidy-bar > span { transition: none; }
+    .tidy-karte-weg, .tidy-karte-rein, .tidy-ende-mark, .tidy-ende-zeile,
+    .nav-item.tidy-ziel, .tidy-meta.rollt .tidy-zahl > span,
+    .tidy-btn.gerade-gewaehlt { animation: none; }
+  }
+
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .page-editor:focus, .page-editor:focus-visible { outline: none; }
 </style>
@@ -923,7 +1102,22 @@
     makeList(INBOX_ID, "Eingang", "var(--list-inbox)", [
       task("Zahnarzttermin verschieben", { due: "2026-08-05" }),
       task("Rauchmelder in der Wohnung prüfen", { due: "2026-08-01" }),
-      task("Podcast-Folge zu Fokusarbeit hören", { done: true })
+      task("Podcast-Folge zu Fokusarbeit hören", { done: true }),
+      // Ein Eingang mit drei Zeilen laesst den Aufraeum-Modus nicht erleben -
+      // und genau das ist hier zu beurteilen. Die letzten drei stehen
+      // ABSICHTLICH hinten: Mehrere Pruefskripte greifen die erste Zeile des
+      // Eingangs mit .first().
+      task("Geschenk für Papas Geburtstag", {
+        text: "Er hat von dieser Kaffeemühle geschwärmt — Modell noch heraussuchen."
+      }),
+      // Unteraufgaben sind im Eingang erlaubt (spec.md 2.0): Wer "Fahrrad zum
+      // Service" notiert und gleich anhaengt, was dazugehoert, sortiert nicht
+      // ein - er denkt einen Gedanken zu Ende. Sie wandern beim Einsortieren
+      // als Einheit mit.
+      task("Fahrrad zum Service bringen", {
+        subtasks: [task("Termin in der Werkstatt anfragen"), task("Alte Rechnung raussuchen")]
+      }),
+      task("Steuerunterlagen zusammensuchen")
     ]),
     makeList("personal", "Persönlich", "var(--list-personal)", [
       task("Urlaub planen", {
@@ -958,7 +1152,7 @@
     ], null, "g1")
   ];
 
-  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null, calendarFor: null, calMonth: null, calAnchor: "header" };
+  var state = { view: "list", currentListId: "inbox", panelStack: [], collapsedGroups: {}, colorPickFor: null, calendarFor: null, calMonth: null, calAnchor: "header", tidy: null };
 
   // Die kuratierte Reihe aus docs/spec.md. Sie steht hier einmal, damit die
   // Farbauswahl nicht versehentlich eine sechste Farbe erfindet.
@@ -1079,6 +1273,238 @@
       recomputeAncestors(owner.id);
     }
     return true;
+  }
+
+  // ==================== Aufräum-Modus (docs/spec.md 2.8) ====================
+  //
+  // Ein gefuehrter Durchgang durch den Eingang: eine Aufgabe nach der
+  // anderen, zu jeder die drei Entscheidungen (Liste - Datum - erledigt/weg)
+  // gross und direkt. Er kann NICHTS, was das Einsortieren per Ziehen nicht
+  // auch koennte; sein einziger Vorteil ist, dass man ihn gern oeffnet.
+  // Deshalb ist die Belohnungsschicht hier kein Zierrat, sondern der Zweck -
+  // faellt sie weg, bleibt ein Formular mit sieben Runden uebrig.
+  var TIDY_FLUG_MS = 260;
+
+  // Ein- und Aushaengen mit MERKEN DER STELLE. moveTaskToList() haengt hinten
+  // an, was zum Einsortieren richtig ist - fuer "Zurueck" braucht es aber die
+  // urspruengliche Position, sonst kommt die Aufgabe an einem anderen Platz
+  // zurueck als sie weg war. Knoten UND Blockverweis wandern immer gemeinsam.
+  function knotenAushaengen(ownerId, taskId) {
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (!owner) return null;
+    var kids = childrenOf(owner);
+    var ki = kids.findIndex(function (k) { return k.id === taskId; });
+    if (ki < 0) return null;
+    var node = kids[ki];
+    var bi = owner.blocks.findIndex(function (b) { return b.id === taskId; });
+    kids.splice(ki, 1);
+    if (bi >= 0) owner.blocks.splice(bi, 1);
+    closePanelsFrom(taskId);
+    return { node: node, kidIndex: ki, blockIndex: bi };
+  }
+
+  function knotenEinhaengen(ownerId, node, kidIndex, blockIndex) {
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (!owner || !node) return;
+    var kids = childrenOf(owner);
+    kids.splice(Math.max(0, Math.min(kidIndex, kids.length)), 0, node);
+    var bi = blockIndex >= 0 ? Math.min(blockIndex, owner.blocks.length) : owner.blocks.length;
+    owner.blocks.splice(bi, 0, { type: "task", id: node.id });
+  }
+
+  // Auf dem Desktop folgenlos - dort traegt das Nachgeben der Knoepfe beim
+  // Druecken (:active, scale 0.96). Auf dem Telefon wird daraus in Flutter
+  // HapticFeedback.selectionClick() bzw. mediumImpact(). Nie ohne die
+  // sichtbare Bewegung: Die Haptik verstaerkt, sie ersetzt nicht.
+  function haptik(muster) {
+    if (navigator.vibrate) { try { navigator.vibrate(muster); } catch (e) {} }
+  }
+
+  function tidyStart() {
+    var l = findList(INBOX_ID);
+    // Nur Offenes. Erledigtes ist kein Triage-Material.
+    var offen = l.tasks.filter(function (t) { return !t.done; });
+    state.tidy = {
+      queue: offen.map(function (t) { return t.id; }),
+      i: 0,
+      einflug: "von-unten",
+      rollt: false,
+      busy: false,
+      kalender: false,
+      verlauf: [],
+      proListe: {},
+      erledigt: 0, geloescht: 0, spaeter: 0
+    };
+    state.view = "list";
+    state.currentListId = INBOX_ID;
+    state.panelStack = [];
+    state.calendarFor = null;
+    renderAll();
+  }
+
+  function tidyBeenden() {
+    if (!state.tidy) return;
+    var etwasGeschafft = state.tidy.verlauf.length > 0;
+    state.tidy = null;
+    if (etwasGeschafft) haptik([12, 40, 18]);
+    renderAll();
+  }
+
+  function tidyAktuell() {
+    var t = state.tidy;
+    if (!t || t.i >= t.queue.length) return null;
+    return findTaskGlobal(t.queue[t.i]);
+  }
+
+  // Erst die Bewegung, dann die Aenderung. Solange die Karte fliegt, sind
+  // weitere Klicks gesperrt - sonst ueberholt die zweite Entscheidung die
+  // erste und landet auf der falschen Aufgabe.
+  function tidySchritt(wegKlasse, einflug, tick, aendern) {
+    var t = state.tidy;
+    if (!t || t.busy) return;
+    var karte = document.querySelector(".tidy-card");
+    if (tick) haptik(tick);
+
+    function fertig() {
+      aendern();
+      t.busy = false;
+      t.einflug = einflug;
+      t.rollt = true;
+      t.kalender = false;
+      var puls = t.zielPuls;
+      t.zielPuls = null;
+      renderAll();
+      // Die Quittung "dort liegt es jetzt". Ohne sie fliegt die Karte
+      // irgendwohin - deshalb bleibt die Sidebar auch sichtbar (kein Overlay).
+      if (puls && !prefersReducedMotion()) {
+        var zeile = document.querySelector('.nav-item[data-list="' + puls + '"]');
+        if (zeile) zeile.classList.add("tidy-ziel");
+      }
+    }
+
+    if (!karte || prefersReducedMotion()) { fertig(); return; }
+    t.busy = true;
+    karte.classList.remove("tidy-karte-rein", "von-unten", "von-links", "von-rechts");
+    karte.classList.add("tidy-karte-weg", wegKlasse);
+    setTimeout(fertig, TIDY_FLUG_MS);
+  }
+
+  function tidyInListe(listId) {
+    var node = tidyAktuell();
+    var t = state.tidy;
+    if (!node || !t) return;
+    tidySchritt("nach-links", "von-unten", 12, function () {
+      var pos = knotenAushaengen(INBOX_ID, node.id);
+      if (!pos) return;
+      var ziel = findList(listId);
+      if (!ziel) { knotenEinhaengen(INBOX_ID, pos.node, pos.kidIndex, pos.blockIndex); return; }
+      knotenEinhaengen(listId, pos.node, childrenOf(ziel).length, -1);
+      t.verlauf.push({ art: "liste", id: node.id, ziel: listId, pos: pos, i: t.i });
+      t.proListe[listId] = (t.proListe[listId] || 0) + 1;
+      t.zielPuls = listId;
+      t.i++;
+    });
+  }
+
+  // WANN? rueckt NICHT weiter: Ein Datum allein laesst die Aufgabe im
+  // Eingang liegen, und der Durchgang waere umsonst gewesen. Der gewaehlte
+  // Wert wird markiert, die Karte bleibt stehen, erst die Listenwahl
+  // schliesst sie ab.
+  function tidyDatum(iso) {
+    var node = tidyAktuell();
+    var t = state.tidy;
+    if (!node || !t || t.busy) return;
+    haptik(8);
+    t.verlauf.push({ art: "datum", id: node.id, vorher: node.due, i: t.i });
+    node.due = node.due === iso ? null : iso;
+    t.einflug = null;
+    t.rollt = false;
+    t.pop = node.due;
+    t.kalender = false;
+    renderAll();
+  }
+
+  function tidyErledigt() {
+    var node = tidyAktuell();
+    var t = state.tidy;
+    if (!node || !t) return;
+    tidySchritt("zusammen", "von-unten", [10, 30, 14], function () {
+      setDoneCascade(node, true);
+      recomputeAncestors(node.id);
+      t.verlauf.push({ art: "erledigt", id: node.id, i: t.i });
+      t.erledigt++;
+      t.i++;
+    });
+  }
+
+  // Kein Rueckgaengig-Streifen wie sonst beim Loeschen (spec.md 4.3): Es gibt
+  // hier keine Zeile, an der er stehen koennte. "Zurueck" IST das
+  // Rueckgaengig, danach uebernimmt der Papierkorb.
+  function tidyLoeschen() {
+    var node = tidyAktuell();
+    var t = state.tidy;
+    if (!node || !t) return;
+    tidySchritt("nach-unten", "von-unten", 12, function () {
+      var pos = knotenAushaengen(INBOX_ID, node.id);
+      if (!pos) return;
+      t.verlauf.push({ art: "geloescht", id: node.id, pos: pos, i: t.i });
+      t.geloescht++;
+      t.i++;
+    });
+  }
+
+  // Kein Tick: Aufschieben ist keine Leistung, und eine Rueckmeldung, die
+  // alles quittiert, quittiert nichts. Es entsteht auch kein dauerhafter
+  // Zustand - die Sperre gilt nur fuer diesen Durchgang, damit er sich nicht
+  // im Kreis dreht.
+  function tidySpaeter() {
+    var node = tidyAktuell();
+    var t = state.tidy;
+    if (!node || !t) return;
+    tidySchritt("nach-rechts", "von-unten", 0, function () {
+      t.verlauf.push({ art: "spaeter", id: node.id, i: t.i });
+      t.spaeter++;
+      t.i++;
+    });
+  }
+
+  // Die Karte kommt aus derselben Richtung zurueck, in die sie gegangen ist.
+  var TIDY_RUECKWEG = { liste: "von-links", geloescht: "von-unten", erledigt: "von-unten", spaeter: "von-rechts" };
+
+  function tidyZurueck() {
+    var t = state.tidy;
+    if (!t || t.busy || !t.verlauf.length) return;
+    var e = t.verlauf.pop();
+    haptik(8);
+
+    if (e.art === "liste") {
+      var raus = knotenAushaengen(e.ziel, e.id);
+      if (raus) knotenEinhaengen(INBOX_ID, raus.node, e.pos.kidIndex, e.pos.blockIndex);
+      t.proListe[e.ziel] = (t.proListe[e.ziel] || 1) - 1;
+      if (t.proListe[e.ziel] <= 0) delete t.proListe[e.ziel];
+      t.i = e.i;
+    } else if (e.art === "geloescht") {
+      knotenEinhaengen(INBOX_ID, e.pos.node, e.pos.kidIndex, e.pos.blockIndex);
+      t.geloescht--;
+      t.i = e.i;
+    } else if (e.art === "erledigt") {
+      var n = findTaskGlobal(e.id);
+      if (n) { setDoneCascade(n, false); recomputeAncestors(n.id); }
+      t.erledigt--;
+      t.i = e.i;
+    } else if (e.art === "spaeter") {
+      t.spaeter--;
+      t.i = e.i;
+    } else if (e.art === "datum") {
+      var dn = findTaskGlobal(e.id);
+      if (dn) dn.due = e.vorher;
+      t.i = e.i;
+    }
+
+    t.einflug = TIDY_RUECKWEG[e.art] || null;
+    t.rollt = e.art !== "datum";
+    t.kalender = false;
+    renderAll();
   }
 
   function findTaskGlobal(id) {
@@ -1350,6 +1776,161 @@
       if (node.due && t.iso === node.due) kl += " gewaehlt";
       h += '<button class="' + kl + '" data-cal-day="' + node.id + '" data-cal-value="' + t.iso + '">' + t.tag + "</button>";
     }
+    h += "</div></div>";
+    return h;
+  }
+
+  // --- Die Seite des Aufräum-Modus ---------------------------------------
+  // Sie ersetzt den Inhalt der Eingang-Spalte, nicht das Fenster: Sidebar und
+  // Spaltenrahmen bleiben stehen. Kein Overlay (concept.md, Design-Richtung)
+  // - und die Sidebar MUSS hier sichtbar bleiben, weil sie das Ziel der
+  // Wegflug-Bewegung ist.
+  function svgInboxGross() {
+    return '<svg viewBox="0 0 15 15" fill="none"><path d="M1.5 8.6h3.3l.9 1.7h3.6l.9-1.7h3.3" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 2.4h8.2l1.9 6.2v3.1c0 .6-.5 1.1-1.1 1.1H2.6c-.6 0-1.1-.5-1.1-1.1V8.6l1.9-6.2z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>';
+  }
+  function svgBesen() {
+    return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 1.9L6.2 5.3"/><path d="M4.6 5.1h4.2l1 3.1H3.6l1-3.1z"/><path d="M4 8.2l-.7 4.9M6.2 8.2v4.9M8.4 8.2l.7 4.9"/></svg>';
+  }
+  function svgUnterbau() {
+    return '<svg width="12" height="12" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v6.5c0 1.1.9 2 2 2h5"/><path d="M9 8.5l2 2-2 2"/></svg>';
+  }
+
+  // Erster Textblock der Seite als leise Zeile unter dem Titel. Der Editor
+  // legt dort Auszeichnung ab; die faellt hier weg, es geht nur um den Sinn.
+  function ersterText(node) {
+    for (var i = 0; i < node.blocks.length; i++) {
+      if (node.blocks[i].type === "text" && node.blocks[i].text) {
+        var roh = String(node.blocks[i].text).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+        if (roh) return roh;
+      }
+    }
+    return "";
+  }
+
+  function tidyKnopf(attr, wert, text, klasse) {
+    return '<button class="tidy-btn' + (klasse ? " " + klasse : "") + '" type="button" ' +
+           attr + '="' + wert + '">' + text + "</button>";
+  }
+
+  function renderTidy() {
+    var t = state.tidy;
+    var node = tidyAktuell();
+    var gesamt = t.queue.length;
+    var anteil = gesamt ? t.i / gesamt : 1;
+
+    var h = '<div class="tidy">';
+    h += '<div class="tidy-head"><div class="tidy-head-top">';
+    h += '<span class="tidy-title">Aufräumen</span>';
+    // Am Ende traegt die Fusszeile den Abschluss - zweimal "Fertig" auf einem
+    // Bild ist einmal zu viel, und abbrechen laesst sich nichts mehr.
+    if (node) h += '<button class="tidy-quit" type="button" data-tidy="quit">Fertig</button>';
+    h += "</div>";
+    h += '<div class="tidy-meta' + (t.rollt ? " rollt" : "") + '">' +
+         '<span class="tidy-zahl"><span>' + t.i + "</span></span> von " + gesamt +
+         (node ? " · noch " + (gesamt - t.i) + " übrig" : " · fertig") + "</div>";
+    // scaleX statt width: Layout-Eigenschaften werden nicht animiert. Die
+    // Kurve darf hier als EINZIGER Stelle der App ueberschwingen.
+    h += '<div class="tidy-bar"><span style="transform: scaleX(' + anteil.toFixed(4) + ')"></span></div>';
+    h += "</div>";
+
+    if (node) {
+      var einflug = t.einflug ? " tidy-karte-rein " + t.einflug : "";
+      h += '<div class="tidy-body"><div class="tidy-card' + einflug + '">';
+      h += '<div class="tidy-card-title">' + escapeHtml(node.title) + "</div>";
+      var notiz = ersterText(node);
+      if (notiz) h += '<div class="tidy-card-note">' + escapeHtml(notiz) + "</div>";
+      // Unteraufgaben sind im Eingang erlaubt (spec.md 2.0) und wandern beim
+      // Einsortieren mit. Wer das nicht sieht, verschiebt drei Aufgaben und
+      // denkt, es sei eine gewesen.
+      if (node.subtasks.length) {
+        h += '<div class="tidy-card-sub">' + svgUnterbau() +
+             "<span>" + node.subtasks.length +
+             (node.subtasks.length === 1 ? " Unteraufgabe wandert mit" : " Unteraufgaben wandern mit") +
+             "</span></div>";
+      }
+      h += '<div class="tidy-sep"></div>';
+
+      h += '<div class="tidy-rubrik">In welche Liste?</div><div class="tidy-wahl">';
+      for (var i = 0; i < lists.length; i++) {
+        if (lists[i].id === INBOX_ID) continue;
+        h += '<button class="tidy-btn" type="button" data-tidy-liste="' + lists[i].id + '">' +
+             '<span class="list-dot" style="background:' + lists[i].color + '"></span>' +
+             escapeHtml(lists[i].name) + "</button>";
+      }
+      h += "</div>";
+
+      var morgen = isoPlusDays(TODAY_ISO, 1);
+      h += '<div class="tidy-rubrik">Wann?</div><div class="tidy-wahl">';
+      // Die Karte bleibt hier stehen, also braucht die Quittung einen anderen
+      // Traeger: Der gewaehlte Knopf gibt einmal kurz nach und kommt zurueck.
+      var pop = function (iso) { return t.pop === iso ? " gerade-gewaehlt" : ""; };
+      h += tidyKnopf("data-tidy-datum", TODAY_ISO, "Heute", (node.due === TODAY_ISO ? "gewaehlt" : "") + pop(TODAY_ISO));
+      h += tidyKnopf("data-tidy-datum", morgen, "Morgen", (node.due === morgen ? "gewaehlt" : "") + pop(morgen));
+      var eigenes = node.due && node.due !== TODAY_ISO && node.due !== morgen;
+      // pop() nur, wenn dieser Knopf den Wert auch traegt: Sonst quittierte
+      // "Datum waehlen" die Wahl von "Heute" gleich mit.
+      h += '<button class="tidy-btn' + (eigenes ? " gewaehlt" + pop(node.due) : " leise" + (node.due ? "" : pop(null))) + '" type="button" data-tidy="kalender">' +
+           svgCalendar() + "<span>" + (eigenes ? formatDue(node.due) : "Datum wählen") + "</span></button>";
+      h += "</div>";
+      if (t.kalender) h += kalender(node).replace('class="due-cal"', 'class="due-cal tidy-cal"');
+
+      h += '<div class="tidy-rubrik">Oder</div><div class="tidy-wahl">';
+      h += tidyKnopf("data-tidy", "erledigt", "Erledigt", "leise");
+      h += tidyKnopf("data-tidy", "loeschen", "Löschen", "leise warnend");
+      h += "</div>";
+
+      h += "</div></div>";
+
+      h += '<div class="tidy-fuss">';
+      h += '<button class="tidy-fuss-btn" type="button" data-tidy="zurueck"' +
+           (t.verlauf.length ? "" : " disabled") + ">" + svgChevronLeft() + "Zurück</button>";
+      h += '<button class="tidy-fuss-btn weiter" type="button" data-tidy="spaeter">Später' + svgChevronRight() + "</button>";
+      h += "</div>";
+    } else {
+      h += '<div class="tidy-body">' + tidyAbschluss() + "</div>";
+      h += '<div class="tidy-fuss">';
+      h += '<button class="tidy-fuss-btn" type="button" data-tidy="zurueck"' +
+           (t.verlauf.length ? "" : " disabled") + ">" + svgChevronLeft() + "Zurück</button>";
+      h += '<button class="tidy-fuss-btn weiter" type="button" data-tidy="quit">Fertig' + svgChevronRight() + "</button>";
+      h += "</div>";
+    }
+
+    h += "</div>";
+
+    // Beide Kennzeichen sind Einmal-Zeichen: Sie loesen genau eine Bewegung
+    // aus und duerfen den naechsten Aufbau nicht noch einmal anstossen.
+    t.einflug = null;
+    t.rollt = false;
+    t.pop = undefined;
+    return h;
+  }
+
+  // Kein Verschwinden, sondern ein eigener Zustand mit der Bilanz des
+  // Durchgangs. Wer etwas liegen gelassen hat, sieht das auch - ohne Tadel,
+  // als Zahl.
+  function tidyAbschluss() {
+    var t = state.tidy;
+    var eingang = findList(INBOX_ID);
+    var nochOffen = eingang.tasks.filter(function (x) { return !x.done; }).length;
+    var entschieden = t.queue.length - t.spaeter;
+
+    var h = '<div class="tidy-ende">';
+    h += '<span class="tidy-ende-mark">' + svgInboxGross() + "</span>";
+    h += '<div class="tidy-ende-titel">' + (nochOffen === 0 ? "Eingang leer" : "Durchgang beendet") + "</div>";
+    h += '<div class="tidy-ende-zahl">' + entschieden + " von " + t.queue.length +
+         (entschieden === 1 ? " Aufgabe" : " Aufgaben") + " entschieden</div>";
+
+    h += '<div class="tidy-ende-bilanz">';
+    for (var i = 0; i < lists.length; i++) {
+      var n = t.proListe[lists[i].id];
+      if (!n) continue;
+      h += '<div class="tidy-ende-zeile"><span class="list-dot" style="background:' + lists[i].color + '"></span>' +
+           "<b>" + n + "</b> in " + escapeHtml(lists[i].name) + "</div>";
+    }
+    if (t.erledigt) h += '<div class="tidy-ende-zeile"><b>' + t.erledigt + "</b> gleich erledigt</div>";
+    if (t.geloescht) h += '<div class="tidy-ende-zeile"><b>' + t.geloescht + "</b> gelöscht</div>";
+    if (t.spaeter) h += '<div class="tidy-ende-zeile"><b>' + t.spaeter + "</b> bleiben im Eingang</div>";
+    if (!t.queue.length) h += '<div class="tidy-ende-zeile">Hier lag nichts an.</div>';
     h += "</div></div>";
     return h;
   }
@@ -2165,6 +2746,18 @@
       var list = findList(state.currentListId);
       var c = countAll(list.tasks);
       html += '<div class="column" data-col-index="0" data-col-key="list:' + list.id + '"><div class="col-inner">';
+
+      // Der Aufraeum-Modus tauscht den INHALT der Spalte aus, nicht das
+      // Fenster. Spaltenrahmen, Sidebar und Fensterrahmen bleiben stehen
+      // (docs/spec.md 2.8).
+      if (state.tidy && list.id === INBOX_ID) {
+        html += renderTidy() + "</div></div>";
+        el.innerHTML = html;
+        sizeColumns();
+        el.scrollLeft = 0;
+        prevPanelStack = state.panelStack.slice();
+        return;
+      }
       // Kein Aufklappmenü am Titel: Umbenennen geschieht durch Hineinklicken
       // und Tippen, die Farbe über den Punkt links daneben. Verschieben und
       // Löschen gibt es bereits in der Sidebar (Ziehen bzw. Papierkorb) und
@@ -2176,6 +2769,14 @@
       html += '<div class="col-header"><div class="col-header-top">';
       if (istEingang) {
         html += '<h2 class="col-title">' + escapeHtml(list.name) + "</h2>";
+        // Der Einstieg in den Aufraeum-Modus steht dort, wo aufgeraeumt wird,
+        // und nur dann, wenn es etwas aufzuraeumen gibt. Ein Knopf, der auf
+        // einen leeren Eingang zeigt, waere eine Aufforderung ins Leere.
+        var zuTun = list.tasks.filter(function (x) { return !x.done; }).length;
+        if (zuTun) {
+          html += '<button class="tidy-start" type="button" data-tidy="start" title="Eingang durchgehen">' +
+                  svgBesen() + "Aufräumen</button>";
+        }
       } else {
         html += '<button class="col-dot" data-color-for="' + list.id + '" style="background:' + list.color + '"' +
                 ' aria-label="Farbe der Liste ändern" title="Farbe ändern"></button>';
@@ -2533,8 +3134,56 @@
   }
 
   document.addEventListener("click", function (e) {
-    var el = e.target.closest("[data-nav]");
+    // --- Aufräum-Modus zuerst -------------------------------------------
+    // Er steht ganz oben, weil weiter unten zwei Aufraeumer stehen ("Klick
+    // irgendwo sonst schliesst Farbreihe/Kalender"), die renderColumns()
+    // aufrufen. Die wuerden die Karte aus dem Dokument nehmen, bevor die
+    // Wegflug-Bewegung sie ueberhaupt zu fassen bekommt.
+    var el = e.target.closest("[data-tidy-liste]");
+    if (el) { tidyInListe(el.getAttribute("data-tidy-liste")); return; }
+
+    el = e.target.closest("[data-tidy-datum]");
+    if (el) { tidyDatum(el.getAttribute("data-tidy-datum")); return; }
+
+    if (state.tidy) {
+      // Der Kalender des Aufraeum-Modus laeuft ueber eigenen Zustand
+      // (state.tidy.kalender) statt ueber state.calendarFor - sonst griffe
+      // der Aufraeumer weiter unten und schloesse ihn beim ersten Klick.
+      el = e.target.closest("[data-cal-day]");
+      if (el) { tidyDatum(el.getAttribute("data-cal-value")); return; }
+      el = e.target.closest("[data-cal-step]");
+      if (el) {
+        state.calMonth = monatVerschieben(state.calMonth || TODAY_ISO.slice(0, 7),
+                                          parseInt(el.getAttribute("data-cal-step"), 10));
+        renderColumns();
+        return;
+      }
+    }
+
+    el = e.target.closest("[data-tidy]");
     if (el) {
+      var was = el.getAttribute("data-tidy");
+      if (was === "start") tidyStart();
+      else if (was === "quit") tidyBeenden();
+      else if (was === "zurueck") tidyZurueck();
+      else if (was === "spaeter") tidySpaeter();
+      else if (was === "erledigt") tidyErledigt();
+      else if (was === "loeschen") tidyLoeschen();
+      else if (was === "kalender" && state.tidy) {
+        var offenerKnoten = tidyAktuell();
+        state.tidy.kalender = !state.tidy.kalender;
+        state.calMonth = ((offenerKnoten && offenerKnoten.due) || TODAY_ISO).slice(0, 7);
+        renderColumns();
+      }
+      return;
+    }
+
+    el = e.target.closest("[data-nav]");
+    if (el) {
+      // Wer den Eingang verlaesst, verlaesst den Durchgang. Ihn im
+      // Hintergrund weiterlaufen zu lassen hiesse, spaeter mit einer
+      // veralteten Warteschlange zurueckzukehren.
+      state.tidy = null;
       if (el.getAttribute("data-nav") === "today") { state.view = "today"; } else { state.view = "list"; state.currentListId = el.getAttribute("data-list"); }
       state.panelStack = [];
       renderAll();
@@ -2959,6 +3608,15 @@
       renderAll();
       var again = document.querySelector('[data-quick-add="' + colIndex + '"]');
       if (again) again.focus();
+      return;
+    }
+    // Escape verlaesst den Aufraeum-Modus (spec.md 2.8). Ohne Rueckfrage:
+    // Entschiedenes bleibt entschieden, der Rest bleibt im Eingang - es gibt
+    // nichts zu verlieren. Steht vor der Spaltenregel, weil im Durchgang
+    // ohnehin keine Spalte offen ist.
+    if (e.key === "Escape" && state.tidy) {
+      if (state.tidy.kalender) { state.tidy.kalender = false; renderColumns(); }
+      else tidyBeenden();
       return;
     }
     if (e.key === "Escape" && state.panelStack.length) {

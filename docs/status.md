@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-08
+Stand: 2026-08-11
 
 ---
 
@@ -118,15 +118,14 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 51 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 52 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Letzter vollständiger Lauf (2026-08-08, nach den
-  Löschregeln): 50 grün, 1 rot** — das eine ist `test_4bugs`, der bekannte
-  Wackelkandidat (siehe Abschnitt 4). Ein früherer Lauf desselben Tages
-  war 50/0; dass er dort grün war, ist **Glück, keine Reparatur** — er
-  trifft etwa jeden zweiten Lauf.
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-11, nach dem
+  Aufräum-Modus): 52 grün, 0 rot.** Dass `test_4bugs` dabei grün war, ist
+  **Glück, keine Reparatur** — der Wackelkandidat trifft etwa jeden
+  zweiten Lauf (siehe Abschnitt 4).
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
   Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
@@ -134,7 +133,7 @@ Was fertig ist:
   Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
   Anfassen des Skripts die Erwartung nachziehen.
 
-  ⚠️ **Wichtige Einschränkung:** Nur **dreizehn** der 51 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **vierzehn** der 52 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -148,24 +147,23 @@ Was fertig ist:
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
-1. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
+1. **Aufgaben in andere Aufgaben ziehen** (→ Unteraufgabe) — vom Nutzer
+   am 2026-08-11 angemerkt, **noch nicht gebaut**. Heute lässt sich eine
+   Aufgabe nur auf eine **Liste** in der Sidebar ziehen, nicht auf eine
+   andere Aufgabe.
+
+   *Vorgeschlagene Lösung:* dieselbe Sprache wie in der Sidebar, wo Listen
+   schon in Gruppen wandern — **Mitte der Zeile = hinein**, oberes/unteres
+   Drittel = daneben. Die Zieh-Maschinerie (`SORT_CONFIGS`) kennt diese
+   Unterscheidung bereits (`resolveSpot`, `drop-into` vs.
+   `drop-before/after`); es fehlt die Verdrahtung für Aufgabenzeilen.
+   Vorher entscheiden lassen, dann bauen.
+
+2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
    „welches Kürzel?"; das Ziel ist seit 2026-08-07 der Eingang. Lässt sich
    im Browser nicht bauen, muss also rein spezifiziert werden.
 
-2. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
-3. **Aufräum-Modus für den Eingang** — vom Nutzer beauftragt (2026-08-07),
-   noch nicht gebaut. Ein geführter Durchgang, der die Aufgaben im Eingang
-   **eine nach der anderen** zeigt, jeweils mit den drei Entscheidungen
-   (in welche Liste · welches Datum · erledigt/weg) groß und direkt, und
-   endet, wenn der Eingang leer ist.
-
-   *Der Gedanke:* Xdo lässt einen selbst durch die Liste wischen. Ein
-   geführter Durchgang macht aus einer Pflicht eine Abfolge von Sekunden —
-   das ist die eigentliche Weiterentwicklung gegenüber dem Vorbild.
-
-   **Zu klären vor dem Bau:** Wo lebt der Modus (eigene Ansicht, oder die
-   Spalte übernimmt)? Wie kommt man raus, ohne fertig zu werden? Was
-   passiert mit Aufgaben, die man bewusst im Eingang lassen will?
+3. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
 
 4. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
    (Lint/Typecheck/Test bei jedem Push), Session-Start-Hook um
@@ -180,12 +178,32 @@ Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
 
+**Erledigt — der Aufräum-Modus ist entschieden und gebaut (2026-08-11).**
+Ein geführter Durchgang durch den Eingang: eine Aufgabe nach der anderen,
+zu jeder die drei Entscheidungen (Liste · Datum · erledigt/weg) groß und
+direkt. **Die Spalte übernimmt**, kein Overlay — die Sidebar muss stehen
+bleiben, weil sie das Ziel der Wegflug-Bewegung ist. Die drei offenen
+Fragen sind beantwortet (raus über „Fertig"/`Escape`; „Später" ohne
+dauerhaften Zustand; „Zurück" nimmt jeden Schritt zurück). Vollständig in
+`spec.md` §2.8, Begründungen in `docs/decisions.md`.
+
+> **Die Belohnungsschicht ist Teil der Funktion, nicht Zierrat.** Jede
+> Entscheidung hat ihre eigene Bewegung (Liste → nach links zur Sidebar,
+> Erledigt → sinkt zusammen, Löschen → fällt nach unten, Später → nach
+> rechts), dazu federnder Balken, rollender Zähler, aufblitzende
+> Zielzeile, nachgebende Knöpfe und Haptik auf Mobilgeräten. **Grund:**
+> Der Modus kann nichts, was das Ziehen nicht auch könnte — sein einziger
+> Vorteil ist, dass man ihn gern öffnet. Beim Flutter-Bau darf das nicht
+> als „Feinschliff später" herausfallen. Geprüft von `test_aufraeumen.js`
+> (42 Zusicherungen, davon die Hälfte auf die Bewegungen).
+
 **Erledigt — die Löschregeln sind gebaut (2026-08-08).** Rückgängig-Zeile
 an der Stelle des Gelöschten (fünf Sekunden, dann endgültig), Rückfrage
 beim Löschen einer Gruppe mit Listen, und `closePanelsFrom()` als **eine**
 Stelle für die Spaltenregel. Der **Papierkorb** kommt bewusst erst mit der
 Datenschicht — er braucht ein Feld „gelöscht am" im Speicherformat.
-Geprüft von `test_loeschen.js` (18 Zusicherungen).
+Geprüft von `test_loeschen.js` (17 Zusicherungen — hier stand vorher 18,
+eine ungeprüft übernommene Zahl; nachgezählt am 2026-08-11).
 
 **Erledigt — der Löschknopf steht jetzt im Fluss hinter dem Inhalt**
 (Things-Weg, gewählt am 2026-08-07). Nicht mehr am rechten Zeilenrand:
@@ -232,6 +250,9 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Papierkorb | **30 Tage**, Frist ab dem Löschen. Aufgeräumt beim App-Start und beim Öffnen des Papierkorbs — kein Zeitgeber. In der Sidebar nur sichtbar, wenn etwas drin ist. |
 | Der Eingang | **Ort, keine Liste.** Startansicht, steht über „Heute", Symbol statt Farbpunkt, nicht umbenennbar/löschbar/verschiebbar. Keine Bild-Leiste. Einsortiert wird durch **Ziehen auf eine Sidebar-Liste**, in beide Richtungen. Angeregt durch Xdo, siehe `spec.md` §2.0. |
 | Triage im Eingang | **Keine Tastenkürzel** (vom Nutzer abgelehnt) und **kein Stern für „wichtig"** — nicht erneut vorschlagen. |
+| Unteraufgaben im Eingang | **Erlaubt.** Ich hatte das Gegenteil vorgeschlagen; der Nutzer hat widersprochen (2026-08-11) und behält recht: Wer gleich anhängt, was dazugehört, sortiert nicht ein, sondern denkt einen Gedanken zu Ende. Nicht neu aufrollen. |
+| Aufräum-Modus | **Die Spalte übernimmt** (kein Overlay, keine Karte). Drei Rubriken: In welche Liste? · Wann? · Oder. „Später" ohne dauerhaften Zustand, „Zurück" nimmt jeden Schritt zurück. Die **Belohnungsschicht ist verbindlich**, nicht Feinschliff — `spec.md` §2.8. Die drei stärker gestalteten Varianten A/B/C aus dem zweiten Entwurfsanlauf wurden **abgelehnt**; gewählt ist die schlichte Seite. |
+| Konfetti, Klänge, Zeitmesser im Aufräum-Modus | **Bewusst nicht.** Die Palette ist ruhig, die Belohnung liegt in der Bewegung. Ein Zeitmesser macht aus Aufräumen einen Wettkampf gegen sich selbst. Nicht vorschlagen. |
 | Kopf einer Listenspalte | **Kein Aufklappmenü.** Umbenennen = in den Titel klicken und tippen; Farbe = Punkt davor, klappt die fünf Farben **im Fluss** unter dem Titel auf. Verschieben und Löschen bleiben in der Sidebar — kein zweiter Weg. Grundsatz in `spec.md` §2.5. |
 | Fälligkeit | **Dauerhafte Zeile** im Kopf der Aufgabenseite: `Heute · Morgen` + Datums-Chip. **„Nächste Woche" ist entfernt** (Entscheidung des Nutzers, 2026-08-07) — mit drei Feldern passt die Zeile nicht in die schmalste Spalte. Kein Menü mehr. Der Chip öffnet einen **eigenen** Kalender, der im Fluss aufklappt — kein natives Datumsfeld. Der Kalender schwebt **an der Spalte verankert** (nicht am Fenster): schiebt keinen Inhalt und wird nicht am Rand abgeschnitten. |
 | Darstellungs-Schalter | Segmentiert mit **gleitendem Knopf**, genau **zwei** Felder: **Dunkel links, Hell rechts**. „System" wurde auf Wunsch des Nutzers **entfernt** (2026-08-07) — nicht erneut vorschlagen. Der Schalter steht **direkt in der Sidebar** und hat den Knopf „Optionen" samt Aufklapp-Panel ersetzt. Geprüft von `test_theme_switch.js`. |

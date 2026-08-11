@@ -45,11 +45,12 @@ NODE_PATH="$(npm root -g)" node design/mockups/tests/test_align.js
 
 ## Was die Skripte aussagen — und was nicht
 
-Nur **dreizehn** der 51 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
-`true` = in Ordnung): `test_4bugs`, `test_accum`, `test_due_row`,
-`test_eingang`, `test_gaps`, `test_group_add_hover`, `test_list_header`,
-`test_loeschen`, `test_theme_switch`, `test_typing`, `test_typing2`,
-`test_typing3`, `test_window_min`. Alle übrigen sind **Messskripte**: Sie
+Nur **vierzehn** der 52 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
+`true` = in Ordnung): `test_4bugs`, `test_accum`, `test_aufraeumen`,
+`test_due_row`, `test_eingang`, `test_gaps`, `test_group_add_hover`,
+`test_list_header`, `test_loeschen`, `test_theme_switch`, `test_typing`,
+`test_typing2`, `test_typing3`, `test_window_min`. Alle übrigen sind
+**Messskripte**: Sie
 drucken Zahlen, die ein Mensch beurteilen muss. Ein grüner Lauf heißt bei
 ihnen nur „ohne Absturz durchgelaufen", nicht „Werte sind richtig".
 
@@ -80,6 +81,7 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Schmales Fenster: Mindestbreite und Abstand | `test_window_min` |
 | Eingang als Ort, Einsortieren per Ziehen | `test_eingang` |
 | Löschregeln: Rückgängig, Rückfrage, Spalten | `test_loeschen` |
+| Aufräum-Modus: Entscheidungen **und** Belohnungsschicht | `test_aufraeumen` |
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
 
@@ -88,6 +90,14 @@ tatsächlich mittig in seinem Knopf sitzt — das war ein hartnäckiger
 Fehler, weil `getBBox()` ein Motiv als zentriert meldet, sobald ein
 äußeres Element (der Deckel des Papierkorbs) die Ausmaße bestimmt. Wer
 ein Icon neu zeichnet, prüft damit nach.
+
+**`test_aufraeumen.js` prüft die Bewegungen mit, nicht nur die Wirkung.**
+Das ist Absicht und kein übereifriger Test: Der Aufräum-Modus kann nichts,
+was das Einsortieren per Ziehen nicht auch könnte — sein einziger Vorteil
+ist, dass man ihn gern öffnet (`docs/spec.md` §2.8). Fällt eine der vier
+Wegflug-Bewegungen aus, ist der Modus kaputt, auch wenn die Daten stimmen.
+Wer hier einen roten Punkt sieht, hat also **keinen** Kosmetikfehler vor
+sich.
 
 `test_fuzz_all.js` ist mit Absicht langsam (mehrere hundert
 Drag-Kombinationen, mehrere Minuten Laufzeit) — es war das Werkzeug, mit

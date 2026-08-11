@@ -111,6 +111,16 @@ Ordnung neben Datum und Liste — wird bedeutungslos, weil mit der Zeit
 alles wichtig wird; Dringlichkeit trägt die Heute-Seite) und
 Tastenkürzel für die Triage (vom Nutzer abgelehnt).
 
+**Unteraufgaben im Eingang sind erlaubt** (2026-08-11). Ich hatte das
+Gegenteil erwogen — der Eingang soll ja keine Eigenschaften tragen, und
+eine Unteraufgabe ist eine. Der Nutzer hat widersprochen, und zu Recht:
+Wer „Umzug" notiert und im selben Atemzug „Kartons besorgen" darunter
+schreibt, hat nichts einsortiert, sondern **einen Gedanken zu Ende
+gedacht**. Das ist genau der Vorgang, den der Eingang schützen soll.
+Ein Verbot würde ihn unterbrechen, um eine Regel zu retten, die für den
+*anderen* Fall gedacht war. Der Aufräum-Modus verschiebt eine Aufgabe
+ohnehin **samt ihrem Unterbau**, siehe 2.8.
+
 ### 2.1 Spalten (Miller-Columns)
 - Spalte 0 zeigt die aktive Liste bzw. die Heute-Seite.
 - Klick auf eine Aufgabe öffnet ihre Seite als Spalte rechts daneben und
@@ -266,6 +276,118 @@ Zeilenbreite verteilt.
 - Der Zähler in der Sidebar umfasst beides.
 - Details und Begründung siehe 4.2.
 
+### 2.8 Aufräum-Modus — ✅ ENTSCHIEDEN (2026-08-11)
+
+Ein **geführter Durchgang** durch den Eingang: Er zeigt die offenen
+Aufgaben **eine nach der anderen** und stellt zu jeder die drei
+Entscheidungen groß und direkt zur Wahl. Er endet, wenn keine mehr
+übrig ist.
+
+> **Der Gedanke:** Xdo lässt einen selbst durch die Liste wischen. Ein
+> geführter Durchgang macht aus einer Pflicht eine Abfolge von Sekunden.
+> Das ist die eigentliche Weiterentwicklung gegenüber dem Vorbild — und
+> der Grund, warum der Modus sich **gut anfühlen muss**: Ein
+> Aufräum-Werkzeug, das niemand freiwillig öffnet, ist wertlos, egal wie
+> richtig es funktioniert.
+
+#### Wo er lebt
+
+**Die Spalte übernimmt** — kein Overlay, kein Vollbild, kein Dialog.
+Sidebar, Fenster und Spaltenrahmen bleiben stehen; nur der Inhalt der
+Eingang-Spalte wird ausgetauscht. Das folgt der Design-Richtung aus
+`concept.md` („Overlays so gut es geht vermeiden") und hat einen
+praktischen Grund dazu: Die Zielliste, in die gerade einsortiert wird,
+muss **sichtbar bleiben** — sie ist das Ziel der Wegflug-Bewegung.
+
+Gestartet wird über einen Knopf im Kopf der Eingang-Spalte. Er erscheint
+nur, wenn dort etwas Offenes liegt.
+
+#### Aufbau der Seite
+
+1. **Kopfzeile** — „Aufräumen" + Knopf „Fertig" rechts
+2. **Fortschritt** — `n von m` und ein 3 px hoher Balken in `--accent`
+3. **Die Aufgabe** — Titel groß (`fs-lg`), darunter der erste Textblock
+   ihrer Seite als leise Zeile (`ink-faint`), falls vorhanden
+4. **Drei Rubriken** (`fs-xs`, Großbuchstaben, `ink-faint`):
+   - **IN WELCHE LISTE?** — je eine Pille pro Liste, mit Farbpunkt
+   - **WANN?** — `Heute` · `Morgen` · `Datum wählen`
+   - **ODER** — `Erledigt` · `Löschen`
+5. **Fußzeile** — `‹ Zurück` links, `Später ›` rechts
+
+#### Verhalten
+
+- **Eine Entscheidung genügt.** Jeder Knopf führt die Aktion aus **und**
+  rückt weiter. Wer Liste *und* Datum setzen will, setzt zuerst das
+  Datum (bleibt stehen, siehe unten) und dann die Liste.
+- **WANN? rückt nicht weiter**, wenn die Aufgabe noch im Eingang liegt —
+  ein Datum ohne Liste lässt sie dort. Der gewählte Wert wird an der
+  Pille markiert. Erst die Listenwahl schließt die Aufgabe ab.
+- **Später** überspringt, ohne etwas zu ändern. Die Aufgabe bleibt im
+  Eingang und kommt **im selben Durchgang nicht wieder** — sonst dreht
+  sich der Modus im Kreis. Es entsteht **kein dauerhafter Zustand**
+  („zurückgestellt" als Eigenschaft gibt es nicht).
+- **Zurück** nimmt den letzten Schritt zurück — Verschieben, Datum,
+  Erledigt, Löschen und Überspringen gleichermaßen — und zeigt die
+  Aufgabe erneut. Der Durchgang ist damit vollständig umkehrbar,
+  solange er läuft.
+- **Verlassen** über „Fertig" oder `Escape`. Was entschieden wurde,
+  bleibt entschieden; der Rest bleibt im Eingang.
+- Die **Warteschlange steht beim Start fest**. Was währenddessen neu in
+  den Eingang kommt (Quick Capture), taucht erst im nächsten Durchgang
+  auf.
+- **Löschen** im Aufräum-Modus zeigt **keine** Rückgängig-Zeile (§4.3) —
+  es gibt keine Zeile, an der sie stehen könnte. „Zurück" ist hier das
+  Rückgängig; danach übernimmt der Papierkorb.
+
+#### Das Belohnungsgefühl — verbindlich, nicht Zierrat
+
+Das ist der Teil, den man weglassen könnte und der genau deshalb
+festgeschrieben wird. **Jede Entscheidung bekommt eine eigene
+Bewegung**, damit sich die Entscheidungen körperlich unterscheiden und
+nicht nur inhaltlich:
+
+| Entscheidung | Bewegung |
+|---|---|
+| In eine Liste | Karte fliegt **nach links zur Sidebar**, die Zielzeile blitzt kurz auf |
+| Erledigt | Karte **sinkt in sich zusammen** (Skalierung), Haken zeichnet sich |
+| Löschen | Karte **fällt nach unten** aus dem Bild |
+| Später | Karte **schiebt nach rechts** weg |
+| Zurück | Die vorherige Karte kommt **aus derselben Richtung zurück**, in die sie gegangen ist |
+
+Dazu:
+
+- **Der Balken federt.** Er ist die einzige Stelle der App, an der eine
+  Bewegung über ihr Ziel hinausschwingen darf — dafür gibt es die Kurve
+  `ease-spring` (siehe §3, Bewegung). Überall sonst gilt weiter `ease`.
+- **Der Zähler rollt**, statt umzuspringen: die alte Zahl nach oben
+  hinaus, die neue von unten herein.
+- **Jeder Knopf gibt beim Drücken nach** (`scale(0.96)` auf
+  `:active`, `dur-fast`). Auf dem Zeigegerät ist das der Ersatz für das,
+  was auf dem Telefon die Haptik macht.
+- **Haptische Rückmeldung, wo es sie gibt.** Auf Mobilgeräten:
+  ein leichter Tick pro Entscheidung
+  (Flutter `HapticFeedback.selectionClick()`), ein spürbarerer beim
+  Abschluss (`mediumImpact()`), keiner bei „Später". Im Mockup
+  stellvertretend `navigator.vibrate()`, das auf dem Desktop folgenlos
+  bleibt. **Nie ohne die sichtbare Bewegung** — die Haptik verstärkt,
+  sie ersetzt nicht.
+- **Der Abschluss ist ein eigenes Bild**, kein Verschwinden: das
+  Eingangs-Symbol, „Eingang leer", darunter die Bilanz des Durchgangs
+  („7 Aufgaben einsortiert"), aufgeschlüsselt nach Zielliste. Wer etwas
+  liegen gelassen hat, sieht das dort ebenfalls — ohne Tadel, als Zahl.
+
+> **Warum das in die Spec gehört und nicht ins Mockup allein:** Diese
+> Bewegungen sind die Funktion, nicht ihre Verpackung. Ein Durchgang
+> ohne sie ist ein Formular; mit ihnen ist er eine Abfolge von
+> Quittungen. Beim Flutter-Bau darf das nicht als „Feinschliff später"
+> herausfallen — dann fehlt der Grund, den Modus überhaupt zu öffnen.
+
+**Bewusst nicht enthalten:** Tastenkürzel für die Triage (vom Nutzer
+abgelehnt, §2.0), Konfetti oder Klänge (passen nicht zur ruhigen
+Palette; die Belohnung liegt in der Bewegung, nicht im Feuerwerk),
+ein Zeitmesser („in 1:12 geschafft" — macht aus Aufräumen einen
+Wettkampf gegen sich selbst).
+
 ---
 
 ## 3. Design-Tokens
@@ -308,8 +430,14 @@ Stärken: `400` normal · `500` medium · `600` betont · `700` fett.
 | `dur-base` | 200ms | Zustandswechsel |
 | `dur-slow` | 400ms | Panels, Sidebar |
 | Kurve | `cubic-bezier(0.32, 0.72, 0, 1)` → Flutter `Cubic(0.32, 0.72, 0.0, 1.0)` | überall dieselbe |
+| `ease-spring` | `cubic-bezier(0.22, 1.4, 0.36, 1)` → Flutter `Cubic(0.22, 1.4, 0.36, 1.0)` | **nur** die Belohnungsschicht des Aufräum-Modus (2.8) |
 
 Alle Bewegungen animieren ausschließlich `transform`, nie Layout-Eigenschaften.
+
+`ease-spring` schwingt über das Ziel hinaus und ist deshalb bewusst
+**eingegrenzt**: Ein Überschwingen sagt „geschafft" und ist genau dort
+richtig, wo etwas quittiert wird. Überall sonst — Spalten, Menüs,
+Zeilen — wäre es Unruhe. Zweite Kurve, keine dritte.
 
 ### Höhen (Schatten)
 | Stufe | Verwendung |
