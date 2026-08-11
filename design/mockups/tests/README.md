@@ -99,8 +99,8 @@ ein Icon neu zeichnet, prüft damit nach.
 **`test_aufraeumen.js` prüft die Bewegungen mit, nicht nur die Wirkung.**
 Das ist Absicht und kein übereifriger Test: Der Aufräum-Modus kann nichts,
 was das Einsortieren per Ziehen nicht auch könnte — sein einziger Vorteil
-ist, dass man ihn gern öffnet (`docs/spec.md` §2.8). Fällt eine der vier
-Wegflug-Bewegungen aus, ist der Modus kaputt, auch wenn die Daten stimmen.
+ist, dass man ihn gern öffnet (`docs/spec.md` §2.8). Fällt eine der
+Bewegungen aus, ist der Modus kaputt, auch wenn die Daten stimmen.
 Wer hier einen roten Punkt sieht, hat also **keinen** Kosmetikfehler vor
 sich.
 
