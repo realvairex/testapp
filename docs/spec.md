@@ -1,6 +1,6 @@
 # Spezifikation: Unfold
 
-Stand: 2026-08-08 · **Status: in Arbeit**
+Stand: 2026-08-11 · **Status: in Arbeit**
 
 Dieses Dokument ist die **Vorlage für die Umsetzung in Flutter**. Es hält
 fest, was übertragbar ist: Datenmodell, Verhaltensregeln und
@@ -311,7 +311,12 @@ nur, wenn dort etwas Offenes liegt.
    schmal). Der Balken läuft damit sichtbar auf den *nächsten Punkt* zu,
    statt nur länger zu werden.
 3. **Die Aufgabe** — Titel in `fs-xl`, darunter der erste Textblock
-   ihrer Seite als leise Zeile (`ink-faint`), falls vorhanden
+   ihrer Seite als leise Zeile (`ink-faint`), falls vorhanden, sowie
+   **was sie schon mitbringt**: ein gesetztes Datum als Pille (überfällig
+   entsprechend markiert) und der Hinweis, wie viele Unteraufgaben
+   mitwandern. Ein vorhandenes Datum hinter den Knöpfen zu verstecken
+   wäre eine verschwiegene Entscheidungsgrundlage — es ist genau die
+   Angabe, die „Wann?" beeinflusst.
 
 > **Rangfolge der Schrift:** In der ganzen App trägt `fs-xl` das, was man
 > gerade ansieht — eine Spalte zeigt so ihren Titel. Der Gegenstand
@@ -324,10 +329,31 @@ nur, wenn dort etwas Offenes liegt.
 > Balken, und nicht senkrecht mittig: Der Zusammenhang zwischen
 > Fortschritt und Aufgabe ist wichtiger als eine optische Mitte.
 4. **Drei Rubriken** (`fs-xs`, Großbuchstaben, `ink-faint`):
-   - **IN WELCHE LISTE?** — je eine Pille pro Liste, mit Farbpunkt
+   - **IN WELCHE LISTE?** — je eine Pille pro Liste, mit Farbpunkt,
+     zuletzt `+ Neue Liste`: klappt ein Namensfeld **an Ort und Stelle**
+     auf, legt die Liste an und sortiert die Aufgabe gleich hinein
    - **WANN?** — `Heute` · `Morgen` · `Datum wählen`
-   - **ODER** — `Erledigt` · `Löschen`
+   - **ODER** — `Erledigt` (**ein** Knopf, siehe unten)
 5. **Fußzeile** — `‹ Zurück` links, `Später ›` rechts
+
+#### Erledigt und Löschen sind hier dasselbe — also gibt es einen Knopf
+
+Innerhalb einer **Liste** ist der Unterschied echt: Erledigtes bleibt
+durchgestrichen stehen, zählt in „3 von 7 erledigt" und füllt den
+Fortschritt der übergeordneten Aufgabe. Es ist ein **Beleg**.
+
+Im **Eingang** bricht das zusammen. Eine abgehakte Eingangs-Aufgabe hat
+keinen Ort — sie bliebe als durchgestrichene Zeile liegen, obwohl der
+Eingang für *Unsortiertes* da ist und etwas Erledigtes per Definition
+nicht mehr unsortiert ist. Der Unterschied wäre benannt, aber nicht
+gebaut.
+
+Deshalb hat der Aufräum-Modus **einen** Knopf: **„Erledigt" hakt ab und
+räumt aus dem Eingang.** Wiederherstellbar über „Zurück", danach über den
+Papierkorb (§4.3). „Löschen" bleibt in den Listen erhalten und fällt nur
+hier weg. Entschieden vom Nutzer am 2026-08-11, nachdem er die Frage
+gestellt hatte: *„in meinem Kopf sollten Erledigt und Löschen das gleiche
+sein."*
 
 #### Verhalten
 
@@ -350,9 +376,9 @@ nur, wenn dort etwas Offenes liegt.
 - Die **Warteschlange steht beim Start fest**. Was währenddessen neu in
   den Eingang kommt (Quick Capture), taucht erst im nächsten Durchgang
   auf.
-- **Löschen** im Aufräum-Modus zeigt **keine** Rückgängig-Zeile (§4.3) —
-  es gibt keine Zeile, an der sie stehen könnte. „Zurück" ist hier das
-  Rückgängig; danach übernimmt der Papierkorb.
+- **Erledigt** zeigt **keine** Rückgängig-Zeile wie sonst das Löschen
+  (§4.3) — es gibt keine Zeile, an der sie stehen könnte. „Zurück" ist
+  hier das Rückgängig; danach übernimmt der Papierkorb.
 
 #### Das Belohnungsgefühl — verbindlich, nicht Zierrat
 
@@ -364,20 +390,26 @@ nicht nur inhaltlich:
 | Entscheidung | Bewegung |
 |---|---|
 | In eine Liste | Karte fliegt **nach links zur Sidebar**, die Zielzeile blitzt kurz auf |
+| Später | **Dieselbe Bewegung wie „in eine Liste"** |
 | Erledigt | Ein **Strich zieht sich über den Titel**, *danach* sinkt die Karte in sich zusammen |
-| Löschen | Karte **fällt nach unten** aus dem Bild |
-| Später | Karte **schiebt nach rechts** weg |
 | Zurück | Die vorherige Karte kommt **aus derselben Richtung zurück**, in die sie gegangen ist |
+
+> **„Später" bewegt sich absichtlich wie das Einsortieren** (Entscheidung
+> des Nutzers, 2026-08-11). Es hatte vorher eine eigene Richtung — nach
+> rechts, in Richtung seines Knopfes — und war damit *„ähnlich, aber
+> nicht gleich"*, was als Unsauberkeit auffiel. Der Preis ist benannt:
+> Die Bewegung sagt nicht mehr, **was** geschehen ist. Das trägt jetzt
+> allein der Zähler, der beim Überspringen nicht weiterzählt.
 
 Dazu:
 
-- **Der Balken läuft und federt.** Er ist die einzige Stelle der App, an
-  der eine Bewegung über ihr Ziel hinausschwingen darf — dafür gibt es
-  die Kurve `ease-spring` (siehe §3, Bewegung). Überall sonst gilt weiter
-  `ease`. Er ist außerdem das Einzige, dem man beim Laufen **zusehen**
-  soll: Dauer `dur-slow + dur-base` (600 ms, zwei vorhandene Stufen
-  addiert, kein neuer Skalenwert). Bei 400 ms war er am Ziel, bevor der
-  Blick von der weggeflogenen Karte zurück war.
+- **Der Balken läuft an, statt loszuschießen.** Kurve `ease-lauf` (§3):
+  langsam anfangen, immer schneller werden, am Ende einrasten — und
+  **kein Überschwingen**, denn er zeigt eine Menge an. Er ist das
+  Einzige, dem man beim Laufen **zusehen** soll: Dauer
+  `dur-slow + dur-base` (600 ms, zwei vorhandene Stufen addiert, kein
+  neuer Skalenwert). Bei 400 ms war er am Ziel, bevor der Blick von der
+  weggeflogenen Karte zurück war.
 - **Er läuft in beide Richtungen.** „Zurück" lässt ihn genauso gefedert
   zurücklaufen; er springt nie.
 
@@ -390,8 +422,10 @@ Dazu:
   > `AnimatedContainer`/`TweenAnimationBuilder` seinen Zustand über den
   > Neuaufbau hinweg. **Die Regel bleibt trotzdem:** Fortschritt läuft,
   > vorwärts wie rückwärts.
-- **Der Zähler rollt**, statt umzuspringen: die alte Zahl nach oben
-  hinaus, die neue von unten herein.
+- **Zähler rollen**, statt umzuspringen — und zwar in die Richtung, in
+  die sich der Wert bewegt: Wird weniger, kommt die neue Zahl von oben
+  herein. Das gilt **in der ganzen Sidebar**, nicht nur hier: Es ist
+  dieselbe Aussage („eins weniger"), egal wo abgehakt wurde.
 - **Jeder Knopf gibt beim Drücken nach** (`scale(0.96)` auf
   `:active`, `dur-fast`). Auf dem Zeigegerät ist das der Ersatz für das,
   was auf dem Telefon die Haptik macht.
@@ -461,14 +495,27 @@ Stärken: `400` normal · `500` medium · `600` betont · `700` fett.
 | `dur-base` | 200ms | Zustandswechsel |
 | `dur-slow` | 400ms | Panels, Sidebar |
 | Kurve | `cubic-bezier(0.32, 0.72, 0, 1)` → Flutter `Cubic(0.32, 0.72, 0.0, 1.0)` | überall dieselbe |
-| `ease-spring` | `cubic-bezier(0.22, 1.4, 0.36, 1)` → Flutter `Cubic(0.22, 1.4, 0.36, 1.0)` | **nur** die Belohnungsschicht des Aufräum-Modus (2.8) |
+| `ease-spring` | `cubic-bezier(0.34, 1.28, 0.52, 1)` → Flutter `Cubic(0.34, 1.28, 0.52, 1.0)` | etwas, das **ankommt**: Karteneinflug, Knopf-Quittung, Abschlussbild (2.8) |
+| `ease-lauf` | `cubic-bezier(0.85, 0, 0.35, 1)` → Flutter `Cubic(0.85, 0.0, 0.35, 1.0)` | etwas, das eine **Menge** anzeigt: Fortschrittsbalken, Zähler |
 
 Alle Bewegungen animieren ausschließlich `transform`, nie Layout-Eigenschaften.
 
-`ease-spring` schwingt über das Ziel hinaus und ist deshalb bewusst
-**eingegrenzt**: Ein Überschwingen sagt „geschafft" und ist genau dort
-richtig, wo etwas quittiert wird. Überall sonst — Spalten, Menüs,
-Zeilen — wäre es Unruhe. Zweite Kurve, keine dritte.
+**Drei Kurven, jede mit einer klaren Zuständigkeit — und keine vierte:**
+
+- `ease` trägt alles Gewöhnliche.
+- `ease-spring` schwingt über das Ziel hinaus. Das sagt „geschafft" und ist
+  richtig, wo etwas **ankommt**. Überall sonst — Spalten, Menüs, Zeilen —
+  wäre es Unruhe.
+- `ease-lauf` fängt langsam an, wird immer schneller und rastet ein. Sie
+  schwingt bewusst **nicht** über, denn sie bewegt Dinge, die eine Menge
+  anzeigen: **Ein Fortschrittsbalken, der über seine Kerbe hinausschießt,
+  zeigt für einen Moment einen Fortschritt an, den es nicht gibt.** Das ist
+  nicht nur unruhig, es ist falsch.
+
+Hier stand bis zum 2026-08-11 „zweite Kurve, keine dritte". Die dritte kam
+dazu, weil der Überschwinger am Fortschrittsbalken auffiel — die Regel
+dahinter ist aber schärfer geworden, nicht weicher: **Überschwingen dort,
+wo etwas ankommt; nie dort, wo etwas gemessen wird.**
 
 ### Höhen (Schatten)
 | Stufe | Verwendung |

@@ -83,6 +83,14 @@
        und ueberall sonst Unruhe - deshalb ausschliesslich in der
        Belohnungsschicht des Aufraeum-Modus (docs/spec.md 2.8). */
     --ease-spring: cubic-bezier(0.34, 1.28, 0.52, 1);
+    /* Dritte und letzte Kurve, fuer Dinge die eine MENGE anzeigen:
+       Fortschrittsbalken und Zaehler. Sie faengt langsam an, wird immer
+       schneller und rastet am Ende ein - und sie schwingt bewusst NICHT
+       ueber. Ein Balken, der ueber seine Kerbe hinausschiesst, zeigt fuer
+       einen Moment einen Fortschritt an, den es nicht gibt; das ist nicht
+       nur unruhig, es ist falsch. Der Ueberschwinger bleibt dort, wo etwas
+       ANKOMMT (--ease-spring), nicht dort, wo etwas gemessen wird. */
+    --ease-lauf: cubic-bezier(0.85, 0, 0.35, 1);
 
     /* Hoehen-Sprache: drei Ebenen statt beliebiger Schatten */
     --el-1: 0 1px 2px rgba(41, 50, 65, 0.06);
@@ -285,6 +293,16 @@
      the button's centre line. Right-aligned text put the glyph ~4px to the
      right of that centre, which read as the two being right-edge aligned. */
   .nav-count { font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--ink-faint); min-width: 16px; text-align: center; }
+  /* Zaehler springen nicht, sie rollen - und zwar in die Richtung, in die
+     sich der Wert bewegt: Wird weniger, kommt die neue Zahl von oben herein.
+     Gilt in der ganzen Sidebar, nicht nur im Aufraeum-Modus: Es ist dieselbe
+     Aussage ("eins weniger"), egal wo man etwas abgehakt hat. Die Klasse
+     setzt zaehlerRollen() nach jedem Aufbau der Sidebar. */
+  .nav-count.rollt-runter { animation: nav-count-runter var(--dur-slow) var(--ease-lauf); }
+  .nav-count.rollt-hoch   { animation: nav-count-hoch   var(--dur-slow) var(--ease-lauf); }
+  @keyframes nav-count-runter { from { transform: translateY(-0.75em); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes nav-count-hoch   { from { transform: translateY(0.75em);  opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .nav-count.rollt-runter, .nav-count.rollt-hoch { animation: none; } }
   .nav-item.active .nav-count { color: var(--accent-strong); }
   .nav-item-indented { padding-left: 24px; }
   /* Feine L-Linie, die die Zugehoerigkeit zur Gruppe nachzieht. Beim
@@ -913,7 +931,7 @@
      Nachbartexte. */
   .tidy-zahl { display: inline-block; overflow: hidden; vertical-align: bottom; }
   .tidy-zahl > span { display: inline-block; }
-  .tidy-meta.rollt .tidy-zahl > span { animation: tidy-roll var(--dur-base) var(--ease); }
+  .tidy-meta.rollt .tidy-zahl > span { animation: tidy-roll var(--dur-slow) var(--ease-lauf); }
   @keyframes tidy-roll { from { transform: translateY(100%); opacity: 0; } to { transform: none; opacity: 1; } }
 
   /* Fortschritt ueber transform: scaleX, nicht ueber width - dieselbe Regel
@@ -928,7 +946,7 @@
        Der Balken ist das Einzige, das man beim Laufen ZUSEHEN soll; bei
        400 ms war er am Ziel, bevor der Blick von der weggeflogenen Karte
        zurueck war. */
-    transition: transform calc(var(--dur-slow) + var(--dur-base)) var(--ease-spring);
+    transition: transform calc(var(--dur-slow) + var(--dur-base)) var(--ease-lauf);
   }
   /* Kerben: eine je Aufgabe. Der Balken laeuft damit sichtbar auf den
      NAECHSTEN PUNKT zu, statt nur laenger zu werden - jeder Schritt ist ein
@@ -976,8 +994,19 @@
   /* Unteraufgaben sind im Eingang erlaubt (spec.md 2.0) und wandern beim
      Einsortieren mit. Wer das nicht sieht, verschiebt drei Aufgaben und
      denkt, es sei eine gewesen. */
-  .tidy-card-sub { margin-top: var(--sp-3); font-size: var(--fs-xs); color: var(--ink-faint); display: flex; align-items: center; gap: var(--sp-3); }
+  .tidy-card-meta { margin-top: var(--sp-3); display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3) var(--sp-5); }
+  .tidy-card-sub { font-size: var(--fs-xs); color: var(--ink-faint); display: inline-flex; align-items: center; gap: var(--sp-3); }
   .tidy-card-sub svg { flex-shrink: 0; }
+
+  /* Feld fuer eine neue Liste, an der Stelle der Pille. Es sieht aus wie
+     eine Pille, nicht wie ein Eingabefeld in einem Formular - der Wechsel
+     soll nicht wie ein Moduswechsel wirken. */
+  .tidy-btn.neu-feld { cursor: text; border-color: var(--accent-line); background: var(--accent-soft); }
+  .tidy-btn.neu-feld input {
+    border: none; background: transparent; font: inherit; font-size: var(--fs-md);
+    font-weight: var(--fw-medium); color: var(--ink); width: 11ch; padding: 0; outline: none;
+  }
+  .tidy-btn.neu-feld input::placeholder { color: var(--ink-faint); font-weight: var(--fw-normal); }
 
   .tidy-sep { height: 1px; background: var(--line-soft); margin-top: var(--sp-6); }
 
@@ -1028,8 +1057,6 @@
      es liest. Tabelle in docs/spec.md 2.8. */
   .tidy-karte-weg { pointer-events: none; }
   .tidy-karte-weg.nach-links   { animation: tidy-weg-links   260ms var(--ease) forwards; }
-  .tidy-karte-weg.nach-rechts  { animation: tidy-weg-rechts  260ms var(--ease) forwards; }
-  .tidy-karte-weg.nach-unten   { animation: tidy-weg-unten   260ms var(--ease) forwards; }
   /* Erledigen dauert laenger als die anderen drei: Erst wird der Strich
      gezogen, DANN sinkt die Karte. Ohne den Strich war es die schwaechste
      der vier Bewegungen - ein blosses Kleinerwerden liest sich wie "nichts
@@ -1037,8 +1064,6 @@
   .tidy-karte-weg.zusammen     { animation: tidy-weg-zusammen 260ms var(--ease) 140ms forwards; }
   .tidy-karte-weg.zusammen .tidy-card-title::after { animation: tidy-strich 180ms var(--ease) forwards; }
   @keyframes tidy-weg-links   { to { transform: translateX(-52px) scale(0.96); opacity: 0; } }
-  @keyframes tidy-weg-rechts  { to { transform: translateX(52px)  scale(0.96); opacity: 0; } }
-  @keyframes tidy-weg-unten   { to { transform: translateY(34px); opacity: 0; } }
   @keyframes tidy-weg-zusammen{ to { transform: scale(0.88); opacity: 0; } }
   @keyframes tidy-strich      { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
@@ -1047,10 +1072,8 @@
      die Aufgabe kommt sichtbar denselben Weg zurueck. */
   .tidy-karte-rein.von-unten  { animation: tidy-rein-unten  var(--dur-slow) var(--ease-spring); }
   .tidy-karte-rein.von-links  { animation: tidy-rein-links  var(--dur-slow) var(--ease-spring); }
-  .tidy-karte-rein.von-rechts { animation: tidy-rein-rechts var(--dur-slow) var(--ease-spring); }
   @keyframes tidy-rein-unten  { from { transform: translateY(16px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes tidy-rein-links  { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @keyframes tidy-rein-rechts { from { transform: translateX(40px);  opacity: 0; } to { transform: none; opacity: 1; } }
 
   /* Die Zielzeile in der Sidebar blitzt kurz auf: die Quittung "dort liegt
      es jetzt". Ohne sie fliegt die Karte irgendwohin. */
@@ -1393,10 +1416,11 @@
       rollt: false,
       busy: false,
       kalender: false,
+      neueListe: false,
       verlauf: [],
       balkenAlt: 0,
       proListe: {},
-      erledigt: 0, geloescht: 0, spaeter: 0
+      erledigt: 0, spaeter: 0
     };
     state.view = "list";
     state.currentListId = INBOX_ID;
@@ -1434,6 +1458,7 @@
       t.einflug = einflug;
       t.rollt = true;
       t.kalender = false;
+      t.neueListe = false;
       var puls = t.zielPuls;
       t.zielPuls = null;
       renderAll();
@@ -1488,44 +1513,61 @@
     renderAll();
   }
 
+  // EIN Knopf, nicht zwei. "Erledigt" und "Loeschen" waren im Eingang
+  // dasselbe mit zwei Namen: Der Unterschied - Erledigtes bleibt als Beleg
+  // stehen - traegt nur INNERHALB einer Liste, wo es einen Fortschritt
+  // fuellt und wiederzufinden ist. Im Eingang hat Erledigtes keinen Ort und
+  // blieb als durchgestrichene Zeile liegen, obwohl der Eingang fuer
+  // UNSORTIERTES da ist. Deshalb hakt "Erledigt" hier ab UND raeumt aus.
+  // Wiederherstellbar ueber "Zurueck", danach ueber den Papierkorb
+  // (spec.md 4.3, kommt mit der Datenschicht).
   function tidyErledigt() {
     var node = tidyAktuell();
     var t = state.tidy;
     if (!node || !t) return;
     tidySchritt("zusammen", "von-unten", [10, 30, 14], function () {
       setDoneCascade(node, true);
-      recomputeAncestors(node.id);
-      t.verlauf.push({ art: "erledigt", id: node.id, i: t.i });
+      var pos = knotenAushaengen(INBOX_ID, node.id);
+      if (!pos) { setDoneCascade(node, false); return; }
+      t.verlauf.push({ art: "erledigt", id: node.id, pos: pos, i: t.i });
       t.erledigt++;
       t.i++;
     });
   }
 
-  // Kein Rueckgaengig-Streifen wie sonst beim Loeschen (spec.md 4.3): Es gibt
-  // hier keine Zeile, an der er stehen koennte. "Zurueck" IST das
-  // Rueckgaengig, danach uebernimmt der Papierkorb.
-  function tidyLoeschen() {
+  // Passt keine der Listen, wird eine angelegt, ohne den Durchgang zu
+  // verlassen: Das Feld klappt an der Stelle der Pille auf, im Fluss.
+  function tidyNeueListe(name) {
     var node = tidyAktuell();
     var t = state.tidy;
     if (!node || !t) return;
-    tidySchritt("nach-unten", "von-unten", 12, function () {
-      var pos = knotenAushaengen(INBOX_ID, node.id);
-      if (!pos) return;
-      t.verlauf.push({ art: "geloescht", id: node.id, pos: pos, i: t.i });
-      t.geloescht++;
-      t.i++;
-    });
+    var sauber = (name || "").trim();
+    if (!sauber) { t.neueListe = false; renderColumns(); return; }
+    // Farbe reihum aus der kuratierten Reihe, damit keine sechste entsteht.
+    var farbe = LIST_COLORS[lists.length % LIST_COLORS.length].token;
+    var neu = makeList("list" + Date.now(), sauber, farbe, []);
+    lists.push(neu);
+    t.neueListe = false;
+    tidyInListe(neu.id);
   }
 
   // Kein Tick: Aufschieben ist keine Leistung, und eine Rueckmeldung, die
   // alles quittiert, quittiert nichts. Es entsteht auch kein dauerhafter
   // Zustand - die Sperre gilt nur fuer diesen Durchgang, damit er sich nicht
   // im Kreis dreht.
+  //
+  // Die Bewegung ist DIESELBE wie beim Einsortieren - ausdrueckliche
+  // Entscheidung des Nutzers (2026-08-11): "die Animation, wenn man Später
+  // drückt, sollte so sein wie wenn man die Aufgabe einer Liste zuordnet".
+  // Sie war vorher eine eigene (nach rechts, in Richtung des Knopfes) und
+  // damit "ähnlich, aber nicht gleich" - genau das stoerte. Der Preis ist
+  // benannt: Die Bewegung sagt nicht mehr, WAS geschehen ist; das traegt
+  // jetzt allein der Zaehler, der beim Ueberspringen nicht weiterzaehlt.
   function tidySpaeter() {
     var node = tidyAktuell();
     var t = state.tidy;
     if (!node || !t) return;
-    tidySchritt("nach-rechts", "von-unten", 0, function () {
+    tidySchritt("nach-links", "von-unten", 0, function () {
       t.verlauf.push({ art: "spaeter", id: node.id, i: t.i });
       t.spaeter++;
       t.i++;
@@ -1533,7 +1575,7 @@
   }
 
   // Die Karte kommt aus derselben Richtung zurueck, in die sie gegangen ist.
-  var TIDY_RUECKWEG = { liste: "von-links", geloescht: "von-unten", erledigt: "von-unten", spaeter: "von-rechts" };
+  var TIDY_RUECKWEG = { liste: "von-links", erledigt: "von-unten", spaeter: "von-links" };
 
   function tidyZurueck() {
     var t = state.tidy;
@@ -1547,13 +1589,9 @@
       t.proListe[e.ziel] = (t.proListe[e.ziel] || 1) - 1;
       if (t.proListe[e.ziel] <= 0) delete t.proListe[e.ziel];
       t.i = e.i;
-    } else if (e.art === "geloescht") {
-      knotenEinhaengen(INBOX_ID, e.pos.node, e.pos.kidIndex, e.pos.blockIndex);
-      t.geloescht--;
-      t.i = e.i;
     } else if (e.art === "erledigt") {
-      var n = findTaskGlobal(e.id);
-      if (n) { setDoneCascade(n, false); recomputeAncestors(n.id); }
+      setDoneCascade(e.pos.node, false);
+      knotenEinhaengen(INBOX_ID, e.pos.node, e.pos.kidIndex, e.pos.blockIndex);
       t.erledigt--;
       t.i = e.i;
     } else if (e.art === "spaeter") {
@@ -1920,11 +1958,23 @@
       // Unteraufgaben sind im Eingang erlaubt (spec.md 2.0) und wandern beim
       // Einsortieren mit. Wer das nicht sieht, verschiebt drei Aufgaben und
       // denkt, es sei eine gewesen.
-      if (node.subtasks.length) {
-        h += '<div class="tidy-card-sub">' + svgUnterbau() +
-             "<span>" + node.subtasks.length +
-             (node.subtasks.length === 1 ? " Unteraufgabe wandert mit" : " Unteraufgaben wandern mit") +
-             "</span></div>";
+      // Was die Aufgabe schon mitbringt, gehoert auf die Karte. Ein
+      // gesetztes - erst recht ein ueberfaelliges - Datum ist genau die
+      // Angabe, die "Wann?" beeinflusst; sie erst hinter den Knoepfen
+      // erraten zu lassen, waere eine verschwiegene Entscheidungsgrundlage.
+      if (node.due || node.subtasks.length) {
+        h += '<div class="tidy-card-meta">';
+        if (node.due) {
+          h += '<span class="due-pill' + duePillClass(node) + '">' +
+               (isOverdue(node) ? "Überfällig · " : "Fällig · ") + formatDue(node.due) + "</span>";
+        }
+        if (node.subtasks.length) {
+          h += '<span class="tidy-card-sub">' + svgUnterbau() +
+               "<span>" + node.subtasks.length +
+               (node.subtasks.length === 1 ? " Unteraufgabe wandert mit" : " Unteraufgaben wandern mit") +
+               "</span></span>";
+        }
+        h += "</div>";
       }
       h += '<div class="tidy-sep"></div>';
 
@@ -1934,6 +1984,17 @@
         h += '<button class="tidy-btn" type="button" data-tidy-liste="' + lists[i].id + '">' +
              '<span class="list-dot" style="background:' + lists[i].color + '"></span>' +
              escapeHtml(lists[i].name) + "</button>";
+      }
+      // Passt keine, wird eine angelegt - an Ort und Stelle, im Fluss, ohne
+      // den Durchgang zu verlassen.
+      if (t.neueListe) {
+        h += '<span class="tidy-btn neu-feld"><span class="list-dot" style="background:' +
+             LIST_COLORS[lists.length % LIST_COLORS.length].token + '"></span>' +
+             '<input type="text" data-tidy-neu-feld placeholder="Name der Liste …" ' +
+             'aria-label="Name der neuen Liste" autocomplete="off" /></span>';
+      } else {
+        h += '<button class="tidy-btn leise" type="button" data-tidy="neue-liste">' +
+             svgPlus() + "Neue Liste</button>";
       }
       h += "</div>";
 
@@ -1952,9 +2013,10 @@
       h += "</div>";
       if (t.kalender) h += kalender(node).replace('class="due-cal"', 'class="due-cal tidy-cal"');
 
+      // Nur noch EIN Knopf. "Erledigt" und "Löschen" waren im Eingang
+      // dasselbe mit zwei Namen - Begründung in spec.md 2.8.
       h += '<div class="tidy-rubrik">Oder</div><div class="tidy-wahl">';
       h += tidyKnopf("data-tidy", "erledigt", "Erledigt", "leise");
-      h += tidyKnopf("data-tidy", "loeschen", "Löschen", "leise warnend");
       h += "</div>";
 
       h += "</div></div>";
@@ -2006,7 +2068,6 @@
            "<b>" + n + "</b> in " + escapeHtml(lists[i].name) + "</div>";
     }
     if (t.erledigt) h += '<div class="tidy-ende-zeile"><b>' + t.erledigt + "</b> gleich erledigt</div>";
-    if (t.geloescht) h += '<div class="tidy-ende-zeile"><b>' + t.geloescht + "</b> gelöscht</div>";
     if (t.spaeter) h += '<div class="tidy-ende-zeile"><b>' + t.spaeter + "</b> bleiben im Eingang</div>";
     if (!t.queue.length) h += '<div class="tidy-ende-zeile">Hier lag nichts an.</div>';
     h += "</div></div>";
@@ -3107,6 +3168,7 @@
     html += '<button class="icon-action-btn" id="newGroupBtn" type="button" title="Neue Gruppe" aria-label="Neue Gruppe">' + svgFolderPlus() + "</button>";
     html += "</div>";
     el.innerHTML = html;
+    zaehlerRollen();
   }
 
   // Nur noch zwei Werte. Der Rueckfall auf "light" greift nur in dem
@@ -3174,6 +3236,26 @@
     var attrs = 'data-nav="today"';
     var iconOrDot = '<svg class="nav-icon" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.2l1.7 3.7 4 .5-3 2.8.8 4-3.5-2-3.5 2 .8-4-3-2.8 4-.5z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>';
     return '<button class="nav-item' + (opts.active ? " active" : "") + '" ' + attrs + ' type="button">' + iconOrDot + '<span class="nav-name">' + escapeHtml(opts.label) + '</span><span class="nav-count">' + opts.count + "</span></button>";
+  }
+
+  // Vergleicht die Zaehler der Sidebar mit dem Stand vor dem letzten Aufbau
+  // und laesst geaenderte hereinrollen. Nach dem Aufbau statt im Auszeichnen,
+  // weil renderSidebar() die Elemente jedes Mal neu erzeugt - der alte Wert
+  // steht dann nirgends mehr im Dokument und muss hier gemerkt werden.
+  var zaehlerAlt = {};
+  function zaehlerRollen() {
+    var els = document.querySelectorAll("#sidebar .nav-count");
+    for (var i = 0; i < els.length; i++) {
+      var e = els[i], p = e.parentElement;
+      var schluessel = p.getAttribute("data-list") || p.getAttribute("data-drag-id") ||
+                       p.getAttribute("data-nav") || ("pos" + i);
+      var wert = e.textContent;
+      var vorher = zaehlerAlt[schluessel];
+      if (vorher !== undefined && vorher !== wert && !prefersReducedMotion()) {
+        e.classList.add(Number(wert) < Number(vorher) ? "rollt-runter" : "rollt-hoch");
+      }
+      zaehlerAlt[schluessel] = wert;
+    }
   }
 
   function renderAll() {
@@ -3247,8 +3329,13 @@
       else if (was === "zurueck") tidyZurueck();
       else if (was === "spaeter") tidySpaeter();
       else if (was === "erledigt") tidyErledigt();
-      else if (was === "loeschen") tidyLoeschen();
-      else if (was === "kalender" && state.tidy) {
+      else if (was === "neue-liste" && state.tidy) {
+        state.tidy.neueListe = true;
+        state.tidy.kalender = false;
+        renderColumns();
+        var feld = document.querySelector("[data-tidy-neu-feld]");
+        if (feld) feld.focus();
+      } else if (was === "kalender" && state.tidy) {
         var offenerKnoten = tidyAktuell();
         state.tidy.kalender = !state.tidy.kalender;
         state.calMonth = ((offenerKnoten && offenerKnoten.due) || TODAY_ISO).slice(0, 7);
@@ -3689,6 +3776,18 @@
       if (again) again.focus();
       return;
     }
+    // Feld fuer eine neue Liste: Eingabe legt sie an und sortiert die
+    // Aufgabe gleich hinein, Escape nimmt das Feld zurueck.
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-tidy-neu-feld")) {
+      if (e.key === "Enter") { e.preventDefault(); tidyNeueListe(e.target.value); return; }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (state.tidy) { state.tidy.neueListe = false; renderColumns(); }
+        return;
+      }
+      return;
+    }
+
     // Escape verlaesst den Aufraeum-Modus (spec.md 2.8). Ohne Rueckfrage:
     // Entschiedenes bleibt entschieden, der Rest bleibt im Eingang - es gibt
     // nichts zu verlieren. Steht vor der Spaltenregel, weil im Durchgang

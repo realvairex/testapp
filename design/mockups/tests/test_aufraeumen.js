@@ -23,22 +23,38 @@ const meta = (page) => page.locator('.tidy-meta').innerText();
 
 // Breite des Fortschrittsbalkens: er läuft über transform: scaleX, nicht
 // über width - deshalb wird die Matrix ausgelesen, nicht der Kasten.
+//
+// ÜBER DOMMatrix, nicht über einen regulären Ausdruck. Vorher stand hier
+// `s.match(/matrix\(([-\d.]+)/)`, und das hat am 2026-08-11 einen Fehler
+// gemeldet, den es nicht gab: Bei kleinen Werten schreibt der Browser
+// `matrix(7.30435e-05, ...)`, der Ausdruck schnitt das `e-05` ab und machte
+// aus 0,00007 die Zahl 7,3 - der Balken schien weit über sein Ziel
+// hinauszuschießen. Erst die Rohwerte zeigten die Messung als Ursache.
 const balken = (page) =>
   page.evaluate(() => {
     const s = getComputedStyle(document.querySelector('.tidy-bar > span')).transform;
     if (!s || s === 'none') return 1;
-    return +Number(s.match(/matrix\(([-\d.]+)/)[1]).toFixed(3);
+    return +new DOMMatrixReadOnly(s).a.toFixed(3);
   });
 
 // Fasst die Karte MITTEN im Flug ab: die Bewegung dauert 260 ms, danach
 // baut sich die Seite neu auf und die Klasse ist weg.
+// Nicht mit einer festen Wartezeit abgreifen, sondern nachsehen, bis die
+// Klasse da ist: Unter Last (der Läufer startet 52 Skripte hintereinander)
+// verschiebt sich der Takt, und ein fester Abstand von 60 ms traf mal davor
+// und mal danach. Ein rot blinkendes Prüfskript ist schlimmer als keines -
+// man gewöhnt sich an, den Punkt wegzudrücken.
 async function flugKlasse(page, klicken) {
   await klicken();
-  await page.waitForTimeout(60);
-  return page.evaluate(() => {
-    const k = document.querySelector('.tidy-card');
-    return k ? k.className : '';
-  });
+  for (let i = 0; i < 20; i++) {
+    const k = await page.evaluate(() => {
+      const e = document.querySelector('.tidy-card');
+      return e ? e.className : '';
+    });
+    if (/tidy-karte-weg/.test(k)) return k;
+    await page.waitForTimeout(15);
+  }
+  return '';
 }
 
 // Wartet, bis der Balken steht. Er laeuft 600 ms und schwingt dabei ueber
@@ -73,7 +89,10 @@ const balkenVerlauf = (page, auswahl) =>
       const s = document.querySelector('.tidy-bar > span');
       if (s) {
         const m = getComputedStyle(s).transform;
-        proben.push(m === 'none' ? 1 : +Number(m.match(/matrix\(([-\d.]+)/)[1]).toFixed(3));
+        // Mit Zeitstempel: Die Bilder kommen unter Last nicht gleichmäßig,
+        // und "Halbzeit" muss die Hälfte der ZEIT sein, nicht die Hälfte der
+        // Messpunkte.
+        proben.push([performance.now() - t0, m === 'none' ? 1 : +new DOMMatrixReadOnly(m).a.toFixed(5)]);
       }
       if (performance.now() - t0 < 1400) requestAnimationFrame(tick);
       else fertig(proben);
@@ -146,6 +165,13 @@ const balkenVerlauf = (page, auswahl) =>
   console.log('Abstand Balken → Titel:', luecke, 'px');
   console.log('>>> Balken und Aufgabe stehen beieinander:', luecke > 0 && luecke <= 32);
 
+  // Was die Aufgabe schon mitbringt, gehört auf die Karte: Ein gesetztes -
+  // erst recht ein überfälliges - Datum ist genau die Angabe, die "Wann?"
+  // beeinflusst. Sie hinter den Knöpfen zu verstecken wäre eine
+  // verschwiegene Entscheidungsgrundlage.
+  console.log('>>> ein gesetztes Datum steht auf der Karte:',
+    /Fällig|Überfällig/.test(await page.locator('.tidy-card-meta .due-pill').innerText()));
+
   // --- In eine Liste: fliegt nach links, Zielzeile blitzt auf ------------
   const ersteAufgabe = await titel(page);
   const personalVorher = await zaehler(page, 'personal');
@@ -198,58 +224,60 @@ const balkenVerlauf = (page, auswahl) =>
     (await page.locator('.due-cal.tidy-cal').count()) === 0 &&
     (await page.locator('.tidy-btn.gewaehlt').count()) === 1);
 
-  // --- Später: nach rechts, ohne etwas zu ändern -------------------------
+  // --- Später: dieselbe Bewegung wie das Einsortieren --------------------
+  // Ausdrückliche Entscheidung des Nutzers (2026-08-11). Sie hatte vorher
+  // eine eigene Richtung (nach rechts) und war damit "ähnlich, aber nicht
+  // gleich" - genau das störte.
   const eingangVorSpaeter = await zaehler(page, 'inbox');
   const kl2 = await flugKlasse(page, () => page.locator('[data-tidy="spaeter"]').click());
-  console.log('>>> Später schiebt die Karte nach RECHTS:',
-    /tidy-karte-weg/.test(kl2) && /nach-rechts/.test(kl2));
+  console.log('>>> Später bewegt sich GENAU WIE das Einsortieren:',
+    kl2.replace('tidy-card ', '') === kl1.replace('tidy-card ', ''));
   await page.waitForTimeout(400);
   console.log('>>> Später ändert nichts am Bestand:',
     (await zaehler(page, 'inbox')) === eingangVorSpaeter);
   console.log('>>> und die Aufgabe kommt im selben Durchgang nicht wieder:',
     (await titel(page)) !== beiDatum);
 
-  // --- Erledigt: sinkt in sich zusammen ----------------------------------
+  // --- Erledigt: Strich über den Titel, dann sinkt die Karte -------------
   const beiErledigt = await titel(page);
   const kl3 = await flugKlasse(page, () => page.locator('[data-tidy="erledigt"]').click());
   console.log('>>> Erledigt lässt die Karte ZUSAMMENSINKEN:',
     /tidy-karte-weg/.test(kl3) && /zusammen/.test(kl3));
-  // Der Strich über dem Titel: Ohne ihn war Erledigen die schwächste der
-  // vier Bewegungen - bloßes Kleinerwerden liest sich wie "nichts passiert".
-  console.log('>>> und zieht dabei den Strich über den Titel:',
-    await page.evaluate(() => {
+  console.log('>>> und unterscheidet sich damit vom Einsortieren:',
+    kl3.replace('tidy-card ', '') !== kl1.replace('tidy-card ', ''));
+  // Der Strich über dem Titel: Ohne ihn war Erledigen die schwächste
+  // Bewegung - bloßes Kleinerwerden liest sich wie "nichts passiert".
+  // Nachsehen statt einmal messen: flugKlasse() kehrt zurück, sobald die
+  // Klasse gesetzt ist - da hat der Strich noch keine Breite.
+  let strich = 0;
+  for (let i = 0; i < 15 && strich <= 0.05; i++) {
+    strich = await page.evaluate(() => {
       const t = document.querySelector('.tidy-karte-weg.zusammen .tidy-card-title');
-      if (!t) return false;
+      if (!t) return -1;
       const m = getComputedStyle(t, '::after').transform;
-      return m !== 'none' && Number(m.match(/matrix\(([-\d.]+)/)[1]) > 0.05;
-    }));
+      return m === 'none' ? -1 : new DOMMatrixReadOnly(m).a;
+    });
+    if (strich <= 0.05) await page.waitForTimeout(20);
+  }
+  console.log('>>> und zieht dabei den Strich über den Titel:', strich > 0.05);
   await page.waitForTimeout(600);
-  console.log('>>> die Aufgabe zählt nicht mehr als offen:',
-    (await zaehler(page, 'inbox')) === eingangVorSpaeter - 1);
 
-  // --- Löschen: fällt nach unten ----------------------------------------
-  const beiLoeschen = await titel(page);
-  const kl4 = await flugKlasse(page, () => page.locator('[data-tidy="loeschen"]').click());
-  console.log('>>> Löschen lässt die Karte nach UNTEN fallen:',
-    /tidy-karte-weg/.test(kl4) && /nach-unten/.test(kl4));
-  await page.waitForTimeout(400);
-
-  console.log('>>> vier Entscheidungen, vier verschiedene Bewegungen:',
-    new Set([kl1, kl2, kl3, kl4].map((k) => k.replace('tidy-card tidy-karte-weg ', ''))).size === 4);
+  // "Erledigt" räumt AUCH AUS DEM EINGANG - der Unterschied zu "Löschen"
+  // trug dort nicht, beides war dasselbe mit zwei Namen (spec.md §2.8).
+  console.log('>>> es gibt nur noch einen Knopf, kein "Löschen" daneben:',
+    (await page.locator('.tidy [data-tidy="loeschen"]').count()) === 0);
+  console.log('>>> Erledigt räumt die Aufgabe auch aus dem Eingang:',
+    await page.evaluate((t) => !Array.from(document.querySelectorAll('.nav-name'))
+      .some((n) => n.textContent === t), beiErledigt));
 
   // --- Zurück nimmt jeden Schritt zurück ---------------------------------
   await page.locator('[data-tidy="zurueck"]').click();
-  await page.waitForTimeout(400);
-  console.log('>>> Zurück holt das Gelöschte wieder:',
-    (await titel(page)) === beiLoeschen);
-  console.log('>>> und die Karte kommt aus der Richtung zurück, in die sie ging:',
-    (await page.locator('.tidy-card.tidy-karte-rein.von-unten').count()) === 1);
-
-  await page.locator('[data-tidy="zurueck"]').click();
-  await page.waitForTimeout(400);
-  console.log('>>> Zurück hebt auch das Abhaken auf:',
+  await page.waitForTimeout(500);
+  console.log('>>> Zurück holt das Erledigte zurück, offen und im Eingang:',
     (await titel(page)) === beiErledigt &&
     (await zaehler(page, 'inbox')) === eingangVorSpaeter);
+  console.log('>>> und die Karte kommt aus der Richtung zurück, in die sie ging:',
+    (await page.locator('.tidy-card.tidy-karte-rein.von-unten').count()) === 1);
 
   // Bis zum ersten Schritt zurück: das Verschieben muss die Aufgabe an ihre
   // ALTE STELLE zurückbringen, nicht ans Ende.
@@ -279,20 +307,70 @@ const balkenVerlauf = (page, auswahl) =>
   // keinen Vorzustand, von dem aus ein transition laufen könnte - es stand
   // sofort auf dem Endwert. Der Balken wird deshalb mit dem ALTEN Wert
   // aufgebaut und erst im nächsten Bild auf den neuen gesetzt.
-  const hoch = await balkenVerlauf(page, '[data-tidy-liste="personal"]');
+  const spurHoch = await balkenVerlauf(page, '[data-tidy-liste="personal"]');
+  const hoch = spurHoch.map((x) => x[1]);
   const zwischenHoch = hoch.filter((v) => v > 0.001 && v < hoch[hoch.length - 1] - 0.001);
   console.log('Verlauf hoch:', hoch[0], '->', hoch[hoch.length - 1],
     '| Zwischenwerte:', zwischenHoch.length);
   console.log('>>> der Balken läuft hoch, statt zu springen:', zwischenHoch.length >= 8);
-  console.log('>>> und schwingt dabei über sein Ziel hinaus:',
-    Math.max.apply(null, hoch) > hoch[hoch.length - 1] + 0.002);
+  // KEIN Überschwingen - anders als bei den Karten. Ein Balken, der über
+  // seine Kerbe hinausschießt, zeigt für einen Moment einen Fortschritt an,
+  // den es nicht gibt. Der Überschwinger gehört dorthin, wo etwas ANKOMMT,
+  // nicht dorthin, wo etwas gemessen wird (spec.md §3, `ease-lauf`).
+  console.log('>>> und schießt dabei nie über seine Kerbe hinaus:',
+    Math.max.apply(null, hoch) <= hoch[hoch.length - 1] + 0.0005);
+  // Langsam anfangen, immer schneller werden: Zur Halbzeit der Bewegung ist
+  // deutlich weniger als die halbe Strecke geschafft.
+  const ziel = hoch[hoch.length - 1];
+  const losZeit = (spurHoch.find((x) => x[1] > 0.0005) || [0])[0];
+  const anZeit = (spurHoch.find((x) => x[1] >= ziel - 0.0005) || [0])[0];
+  const mitteZeit = losZeit + (anZeit - losZeit) / 2;
+  const halbzeit = (spurHoch.find((x) => x[0] >= mitteZeit) || [0, ziel])[1];
+  console.log('Bewegung von', Math.round(losZeit), 'bis', Math.round(anZeit),
+    'ms | zur Halbzeit geschafft:', Math.round((halbzeit / ziel) * 100), '%');
+  console.log('>>> und läuft an, statt sofort loszuschießen:',
+    anZeit > losZeit && halbzeit < ziel * 0.5);
 
-  const runter = await balkenVerlauf(page, '[data-tidy="zurueck"]');
+  const runter = (await balkenVerlauf(page, '[data-tidy="zurueck"]')).map((x) => x[1]);
   const zwischenRunter = runter.filter((v) => v < runter[0] - 0.001 && v > runter[runter.length - 1] + 0.001);
   console.log('Verlauf zurück:', runter[0], '->', runter[runter.length - 1],
     '| Zwischenwerte:', zwischenRunter.length);
   console.log('>>> beim Zurückgehen läuft er genauso zurück:',
     runter[runter.length - 1] < runter[0] && zwischenRunter.length >= 8);
+
+  // --- Neue Liste, ohne den Durchgang zu verlassen -----------------------
+  // Passt keine der Listen, musste man vorher raus aus dem Modus.
+  const listenVorher = await page.locator('#sidebar .nav-item[data-drag-type="list"]').count();
+  const fuerNeueListe = await titel(page);
+  await page.locator('[data-tidy="neue-liste"]').click();
+  await page.waitForTimeout(250);
+  console.log('>>> "Neue Liste" klappt ein Feld an Ort und Stelle auf:',
+    (await page.locator('.tidy-btn.neu-feld [data-tidy-neu-feld]').count()) === 1 &&
+    (await page.locator('.tidy-btn.neu-feld').evaluate((e) => getComputedStyle(e).position)) === 'static');
+  await page.locator('[data-tidy-neu-feld]').fill('Wohnung');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+  console.log('>>> Escape nimmt das Feld zurück, ohne etwas anzulegen:',
+    (await page.locator('[data-tidy-neu-feld]').count()) === 0 &&
+    (await page.locator('#sidebar .nav-item[data-drag-type="list"]').count()) === listenVorher);
+
+  await page.locator('[data-tidy="neue-liste"]').click();
+  await page.waitForTimeout(200);
+  await page.locator('[data-tidy-neu-feld]').fill('Wohnung');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(700);
+  const inWohnung = await page.evaluate(() => {
+    const n = Array.from(document.querySelectorAll('#sidebar .nav-name')).find((x) => x.textContent === 'Wohnung');
+    return n ? +n.parentElement.querySelector('.nav-count').textContent : -1;
+  });
+  console.log('>>> Eingabe legt die Liste an und sortiert die Aufgabe gleich hinein:',
+    (await page.locator('#sidebar .nav-item[data-drag-type="list"]').count()) === listenVorher + 1 &&
+    inWohnung === 1 && (await titel(page)) !== fuerNeueListe);
+
+  // Zähler springen nicht, sie rollen - und zwar in die Richtung, in die
+  // sich der Wert bewegt. Gilt in der ganzen Sidebar, nicht nur hier.
+  console.log('>>> der Zähler des Eingangs rollt herunter, statt zu springen:',
+    (await page.locator('#sidebar .nav-item[data-list="inbox"] .nav-count.rollt-runter').count()) === 1);
 
   // --- Bis zum Abschlussbild durch ---------------------------------------
   for (let i = 0; i < 12; i++) {

@@ -2726,3 +2726,116 @@ Pseudo-Element, weil `text-decoration` sich nicht animieren lässt.
 
 **Nicht gemacht:** die Bewegungen angleichen. Falls der Nutzer das gemeint
 hat, ist es ein Handgriff — aber dann geht der Kern verloren.
+
+## 2026-08-11 (abends) — Erledigt und Löschen sind im Eingang dasselbe
+
+**Die Frage des Nutzers:** *„Was ist der Unterschied zwischen Erledigt und
+Löschen? Also der Sinn? Wenn eine Aufgabe erledigt ist, wofür muss man sie
+noch sehen? In meinem Kopf sollten Erledigt und Löschen das gleiche sein."*
+
+**Er hat recht — für den Eingang.** Innerhalb einer **Liste** trägt der
+Unterschied: Erledigtes bleibt durchgestrichen stehen, zählt in „3 von 7
+erledigt", füllt den Fortschritt der übergeordneten Aufgabe. Es ist ein
+Beleg, und ein Todo-Programm ohne Belege ist keins.
+
+Im **Eingang** bricht das zusammen. Eine abgehakte Eingangs-Aufgabe hat
+keinen Ort. Sie blieb als durchgestrichene Zeile liegen, obwohl der Eingang
+per Definition für *Unsortiertes* da ist und etwas Erledigtes nicht mehr
+unsortiert ist. Der Unterschied war **benannt, aber nicht gebaut** — zwei
+Knöpfe, die dasselbe tun, mit unterschiedlichen Wörtern.
+
+**Das ist mein Fehler beim Entwurf gewesen.** Ich habe die beiden Aktionen
+aus der Listenansicht übernommen, ohne zu prüfen, ob ihr Unterschied im
+Eingang noch trägt. Der Nutzer hat ihn beim ersten Ansehen bemerkt.
+
+**Gewählt (Nutzer, aus drei vorgelegten Wegen):** ein Knopf statt zwei.
+„Erledigt" hakt ab **und** räumt aus dem Eingang; wiederherstellbar über
+„Zurück", danach über den Papierkorb. „Löschen" bleibt in den Listen
+erhalten und fällt nur im Aufräum-Modus weg.
+
+Verworfen: (a) beides behalten und „Erledigt" ein Archiv geben — richtig,
+aber es verschiebt die Frage auf die Datenschicht, ohne heute etwas zu
+lösen; (b) alles lassen wie es war — sammelt Leichen im Eingang an.
+
+## 2026-08-11 (abends) — Drei Bewegungskurven statt zwei
+
+**Anlass:** *„Der Fortschrittsbalken ist nicht ganz da. Er schießt über die
+jeweilige Kerbe hinaus, und die Animation soll smoother sein, wie eine
+Kurve, also langsam anfangen und immer schneller werden."*
+
+Der Balken lief auf `ease-spring`, der Überschwing-Kurve. Am Balken ist das
+nicht nur unruhig, sondern **falsch**: Ein Fortschrittsbalken, der über
+seine Kerbe hinausschießt, zeigt für einen Moment einen Fortschritt an, den
+es nicht gibt. Das ist ein Messwert, keine Geste.
+
+Neu: `--ease-lauf: cubic-bezier(0.85, 0, 0.35, 1)` — langsam an, immer
+schneller, rastet ein, kein Überschwingen. Sie trägt den
+Fortschrittsbalken **und** alle Zähler.
+
+**Damit sind es drei Kurven, und in `spec.md` §3 stand „zweite Kurve, keine
+dritte".** Diese Zeile ist korrigiert — aber die Regel dahinter ist dabei
+*schärfer* geworden, nicht weicher: **Überschwingen dort, wo etwas ankommt
+(Karte, Knopf, Abschlussbild); nie dort, wo etwas gemessen wird (Balken,
+Zähler).** Das ist ein Kriterium, an dem sich eine vierte Kurve messen
+lassen müsste — und keine hätte bisher bestanden.
+
+Die Zähler rollen jetzt **in der ganzen Sidebar**, nicht nur im
+Aufräum-Modus, und in der Richtung, in die sich der Wert bewegt (wird
+weniger → neue Zahl kommt von oben). Es ist dieselbe Aussage („eins
+weniger"), egal wo man etwas abgehakt hat; sie an einer Stelle zu animieren
+und an der anderen nicht wäre die Art von Willkür, die eine Oberfläche
+unruhig macht, ohne dass man das einzelne Element benennen könnte.
+
+## 2026-08-11 (abends) — „Später" bewegt sich wie das Einsortieren
+
+**Der Nutzer:** *„Die Animation, wenn man Später drückt, sollte so sein wie
+wenn man die Aufgabe einer Liste zuordnet und eine neue kommt."* — und
+danach präzisiert: *„Die sind ähnlich, aber nicht gleich."*
+
+Genau das war der Entwurf: „Später" schob nach rechts, in Richtung seines
+eigenen Knopfes, während das Einsortieren nach links zur Sidebar fliegt.
+Der Gedanke war, dass jede Entscheidung ihre eigene Bewegung bekommt.
+**Die Ausführung hat den Gedanken aber nicht getragen:** Zwei Bewegungen,
+die sich nur in der Richtung unterscheiden, lesen sich nicht als „zwei
+Bedeutungen", sondern als Wackeln.
+
+Umgesetzt wie gewünscht. Der Preis ist benannt und steht in `spec.md`
+§2.8: Die Bewegung sagt nicht mehr, **was** geschehen ist. Das trägt jetzt
+allein der Zähler — er zählt beim Überspringen nicht weiter. Übrig bleiben
+zwei unterscheidbare Gesten: wegfliegen (Liste/Später) und
+durchstreichen-und-sinken (Erledigt).
+
+## 2026-08-11 (abends) — Drei kleinere Ergänzungen, vom Nutzer bestätigt
+
+- **Überfällig steht auf der Karte.** Ein gesetztes Datum — erst recht ein
+  überfälliges — ist genau die Angabe, die „Wann?" beeinflusst. Sie hinter
+  den Knöpfen erraten zu lassen wäre eine verschwiegene
+  Entscheidungsgrundlage gewesen.
+- **`+ Neue Liste` als letzte Pille.** Passte keine Liste, musste man den
+  Durchgang vorher verlassen. Das Feld klappt an Ort und Stelle auf (im
+  Fluss, kein Overlay), Enter legt an und sortiert gleich ein, Escape nimmt
+  es zurück.
+- **Zähler rollen**, siehe oben.
+
+## 2026-08-11 (abends) — Zwei Fehler, die in der MESSUNG lagen
+
+Beide sind es wert, festgehalten zu werden, weil sie dieselbe Familie sind
+wie „alle Prüfskripte grün" (2026-08-07):
+
+**1. Der Balken schien über sein Ziel hinauszuschießen.** Das Prüfskript las
+`transform` mit `s.match(/matrix\(([-\d.]+)/)`. Bei kleinen Werten schreibt
+der Browser aber `matrix(7.30435e-05, ...)` — der Ausdruck schnitt das
+`e-05` ab und machte aus 0,00007 die Zahl **7,3**. Gemeldet wurde ein
+Ausreißer, den es nie gab. Behoben mit `DOMMatrixReadOnly`. Aufgefallen ist
+es nur, weil ich die Rohwerte ausgegeben habe, statt der Zahl zu glauben.
+
+**2. Drei Bewegungsprüfungen blinkten unter Last rot.** Sie griffen die
+Karte nach einer festen Wartezeit von 60 ms ab; im vollständigen Lauf (52
+Skripte hintereinander) verschiebt sich der Takt, und die Messung traf mal
+davor, mal danach. Jetzt wird nachgesehen, bis der Zustand da ist. **Ein
+rot blinkendes Prüfskript ist schlimmer als keines** — man gewöhnt sich an,
+den Punkt wegzudrücken, und übersieht dann den echten Fehler daneben.
+
+**Die Regel, die aus beidem folgt:** Bei einem roten Punkt zuerst fragen,
+ob die Messung stimmt — aber die Messung dann auch *reparieren* und nicht
+die Zusicherung entschärfen.

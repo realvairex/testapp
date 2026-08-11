@@ -195,7 +195,7 @@ dauerhaften Zustand; „Zurück" nimmt jeden Schritt zurück). Vollständig in
 > Der Modus kann nichts, was das Ziehen nicht auch könnte — sein einziger
 > Vorteil ist, dass man ihn gern öffnet. Beim Flutter-Bau darf das nicht
 > als „Feinschliff später" herausfallen. Geprüft von `test_aufraeumen.js`
-> (42 Zusicherungen, davon die Hälfte auf die Bewegungen).
+> (56 Zusicherungen, davon die Hälfte auf die Bewegungen).
 
 **Erledigt — die Löschregeln sind gebaut (2026-08-08).** Rückgängig-Zeile
 an der Stelle des Gelöschten (fünf Sekunden, dann endgültig), Rückfrage
@@ -252,6 +252,9 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Triage im Eingang | **Keine Tastenkürzel** (vom Nutzer abgelehnt) und **kein Stern für „wichtig"** — nicht erneut vorschlagen. |
 | Unteraufgaben im Eingang | **Erlaubt.** Ich hatte das Gegenteil vorgeschlagen; der Nutzer hat widersprochen (2026-08-11) und behält recht: Wer gleich anhängt, was dazugehört, sortiert nicht ein, sondern denkt einen Gedanken zu Ende. Nicht neu aufrollen. |
 | Aufräum-Modus | **Die Spalte übernimmt** (kein Overlay, keine Karte). Drei Rubriken: In welche Liste? · Wann? · Oder. „Später" ohne dauerhaften Zustand, „Zurück" nimmt jeden Schritt zurück. Die **Belohnungsschicht ist verbindlich**, nicht Feinschliff — `spec.md` §2.8. Die drei stärker gestalteten Varianten A/B/C aus dem zweiten Entwurfsanlauf wurden **abgelehnt**; gewählt ist die schlichte Seite. |
+| „Erledigt" statt „Erledigt + Löschen" | Im Aufräum-Modus gibt es **einen** Knopf: „Erledigt" hakt ab und räumt aus dem Eingang. Der Unterschied trägt nur *innerhalb* einer Liste; im Eingang waren es zwei Wörter für dieselbe Tat. Entschieden 2026-08-11 auf Nachfrage des Nutzers. **Nicht neu aufrollen.** |
+| „Später" bewegt sich wie das Einsortieren | Ausdrücklich so gewollt (2026-08-11): *„die sind ähnlich, aber nicht gleich"*. Zwei Bewegungen, die sich nur in der Richtung unterscheiden, lesen sich als Wackeln, nicht als zwei Bedeutungen. Nicht wieder auseinanderziehen. |
+| Fortschrittsbalken und Zähler | **Kein Überschwingen** — eigene Kurve `ease-lauf` (langsam an, immer schneller, rastet ein). Ein Balken, der über seine Kerbe hinausschießt, zeigt einen Fortschritt an, den es nicht gibt. Der Überschwinger bleibt dort, wo etwas *ankommt*. |
 | Konfetti, Klänge, Zeitmesser im Aufräum-Modus | **Bewusst nicht.** Die Palette ist ruhig, die Belohnung liegt in der Bewegung. Ein Zeitmesser macht aus Aufräumen einen Wettkampf gegen sich selbst. Nicht vorschlagen. |
 | Kopf einer Listenspalte | **Kein Aufklappmenü.** Umbenennen = in den Titel klicken und tippen; Farbe = Punkt davor, klappt die fünf Farben **im Fluss** unter dem Titel auf. Verschieben und Löschen bleiben in der Sidebar — kein zweiter Weg. Grundsatz in `spec.md` §2.5. |
 | Fälligkeit | **Dauerhafte Zeile** im Kopf der Aufgabenseite: `Heute · Morgen` + Datums-Chip. **„Nächste Woche" ist entfernt** (Entscheidung des Nutzers, 2026-08-07) — mit drei Feldern passt die Zeile nicht in die schmalste Spalte. Kein Menü mehr. Der Chip öffnet einen **eigenen** Kalender, der im Fluss aufklappt — kein natives Datumsfeld. Der Kalender schwebt **an der Spalte verankert** (nicht am Fenster): schiebt keinen Inhalt und wird nicht am Rand abgeschnitten. |
