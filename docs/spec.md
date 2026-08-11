@@ -155,6 +155,18 @@ ohnehin **samt ihrem Unterbau**, siehe 2.8.
   dem **alten** Wert entstehen und erst im nächsten Bild auf den neuen
   gesetzt werden.
 
+> ⚠️ **Eine Änderung darf nur ihre Zeile betreffen.** Im Mockup baut jede
+> Änderung — ein Kästchen abhaken, eine Seite öffnen — **alle sichtbaren
+> Spalten samt Editoren** neu auf; das blitzt sichtbar auf und war dem
+> Nutzer beim Ausprobieren sofort unangenehm aufgefallen (2026-08-11).
+> Das ist ein Notbehelf der HTML-Erprobung, **kein Entwurfsmuster**. In
+> Flutter wird nur neu gebaut, was sich geändert hat: Der Fortschritt einer
+> übergeordneten Aufgabe, ihr Erledigt-Zustand und der Zähler in der
+> Sidebar sind **abgeleitete Werte**, die ihre eigenen Widgets neu zeichnen
+> — nicht die Spalte, in der sie stehen. Wer beim Bau eine
+> „alles neu zeichnen"-Abkürzung nimmt, holt sich genau dieses Flackern
+> zurück.
+>
 > ⚠️ Umsetzungshinweis: Diese Neuberechnung ist eine **abgeleitete
 > Reaktion**, keine Handarbeit. Im Mockup wird sie an mehreren Stellen von
 > Hand aufgerufen; eine vergessene Stelle ist dort eine Fehlerquelle. In

@@ -2911,3 +2911,33 @@ die richtige Bewegung damit geschenkt.
 Geprüft von `test_fortschritt.js` (9 Zusicherungen). Es verlangt
 **Zwischenwerte** — Anfangs- und Endwert allein hätten den Fehler nicht
 gezeigt, so wie er zwei Wochen lang nicht aufgefallen ist.
+
+## 2026-08-11 (abends) — Das „Aufblitzen" der Listen: gemessen, nicht repariert
+
+**Gemeldet:** *„Wieso refreshen die Aufgaben in den Listen so oft? Wenn ich
+z. B. eine Unteraufgabe als erledigt mache oder in eine Unteraufgabe
+reingehe, bei vielen Aktionen refresht die Liste."*
+
+**Nachgemessen** (MutationObserver auf dem Inhaltsbereich): Ein Klick auf
+ein Kästchen verwirft **alle sichtbaren Spalten** und baut sie neu auf —
+`renderColumns()` setzt `innerHTML` in einem Stück, `mountEditors()` erzeugt
+die contenteditable-Editoren neu. Der Nutzer sieht also nicht ein
+Kästchen umspringen, sondern die ganze Ansicht neu entstehen.
+
+**Bewusst nicht im Mockup repariert.** Die Reparatur hieße, eine zweite,
+gezielte Renderlogik neben der bestehenden zu bauen — für ein Artefakt, das
+eingefroren wird (`spec.md` §4.5). In Flutter gibt es das Problem gar nicht:
+Dort wird neu gebaut, was sich geändert hat, und der Fortschritt einer
+übergeordneten Aufgabe ist ein abgeleiteter Wert mit eigenem Widget.
+Dieselbe Begründung wie bei `test_4bugs` und der Füllzeilen-Konstruktion.
+
+**Aber als Anforderung festgeschrieben**, in `spec.md` §2.2 direkt neben der
+Erledigt-Kaskade: *Eine Änderung darf nur ihre Zeile betreffen.* Genau dort
+wird beim Bau die Versuchung entstehen, mit einem pauschalen Neuzeichnen
+abzukürzen — und genau dort steht jetzt, warum das dieses Flackern
+zurückholt.
+
+**Das ist die eigentliche Ausbeute des Abends:** Ein Mockup-Fehler, der
+nicht behoben wird, ist trotzdem wertvoll — wenn er als Anforderung dort
+landet, wo er beim echten Bau gelesen wird. Sonst wird er einfach
+nachgebaut.

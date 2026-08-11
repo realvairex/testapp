@@ -8,8 +8,9 @@
 // ein `transition` auf `width` - gelaufen ist es nie. renderColumns() baut
 // die Zeile bei jeder Änderung neu auf, und ein frisch eingesetztes Element
 // hat keinen Vorzustand, von dem aus ein Übergang laufen könnte; es stand
-// sofort auf dem Endwert. Deshalb prüft dieses Skript ZWISCHENWERTE.
-// Anfangs- und Endwert allein hätten den Fehler nicht gezeigt.
+// sofort auf dem Endwert. Deshalb misst dieses Skript, wie lange der Balken
+// UNTERWEGS ist. Anfangs- und Endwert allein hätten den Fehler nicht
+// gezeigt - sie stimmten ja immer.
 const { chromium } = require('playwright');
 
 const AUSWAHL = '.column[data-col-index="0"] .mini-progress > span';
@@ -30,7 +31,12 @@ const verlauf = (page, klickAuf) =>
         // Werten schreibt der Browser `matrix(7.3e-05, ...)`, und ein
         // Ausdruck, der das `e-05` abschneidet, meldet Ausreißer, die es
         // nicht gibt (siehe docs/decisions.md, 2026-08-11).
-        proben.push(m === 'none' ? 1 : +new DOMMatrixReadOnly(m).a.toFixed(4));
+        // Mit Zeitstempel: Unter Last zeichnet der Browser deutlich weniger
+        // Bilder, und "wie viele Zwischenwerte" waere dann eine Aussage ueber
+        // die Auslastung des Rechners statt ueber die Animation. Die Frage
+        // ist, ob der Balken ZEIT braucht - nicht, wie oft er gemessen wurde.
+        proben.push([Math.round(performance.now() - t0),
+                     m === 'none' ? 1 : +new DOMMatrixReadOnly(m).a.toFixed(4)]);
       }
       if (performance.now() - t0 < 1300) requestAnimationFrame(tick);
       else fertig(proben);
@@ -64,22 +70,34 @@ const verlauf = (page, klickAuf) =>
   // Eine Unteraufgabe abhaken und den Balken der Elternzeile beobachten.
   await page.locator('.column[data-col-index="0"] .task-title').first().click();
   await page.waitForTimeout(700);
-  const hoch = await verlauf(page, '.column[data-col-index="1"] .check-btn');
-  const zielH = hoch[hoch.length - 1];
-  const zwischenH = hoch.filter((v) => v > hoch[0] + 0.001 && v < zielH - 0.001);
-  console.log('Verlauf hoch:', hoch[0], '->', zielH, '| Zwischenwerte:', zwischenH.length);
-  console.log('>>> der Balken wächst, wenn eine Unteraufgabe abgehakt wird:', zielH > hoch[0]);
-  console.log('>>> und läuft dabei, statt zu springen:', zwischenH.length >= 8);
-  console.log('>>> ohne über sein Ziel hinauszuschießen:',
-    Math.max.apply(null, hoch) <= zielH + 0.0005);
+  // Wie lange der Balken unterwegs war: von der ersten Aenderung bis zum
+  // Erreichen des Ziels. Ein Sprung braucht 0 ms, eine Animation ueber
+  // 600 ms braucht ein Vielfaches davon - auch auf einem lahmen Rechner.
+  const laufzeit = (spur) => {
+    const ziel = spur[spur.length - 1][1];
+    const start = spur[0][1];
+    const los = spur.find((x) => Math.abs(x[1] - start) > 0.001);
+    const an = spur.find((x) => Math.abs(x[1] - ziel) <= 0.0005);
+    return los && an ? an[0] - los[0] : 0;
+  };
 
-  // Zurücknehmen: Der Balken muss genauso zurücklaufen.
-  const runter = await verlauf(page, '.column[data-col-index="1"] .check-btn');
-  const zielR = runter[runter.length - 1];
-  const zwischenR = runter.filter((v) => v < runter[0] - 0.001 && v > zielR + 0.001);
-  console.log('Verlauf zurück:', runter[0], '->', zielR, '| Zwischenwerte:', zwischenR.length);
+  const hoch = await verlauf(page, '.column[data-col-index="1"] .check-btn');
+  const zielH = hoch[hoch.length - 1][1];
+  console.log('Verlauf hoch:', hoch[0][1], '->', zielH, '| unterwegs:', laufzeit(hoch), 'ms');
+  console.log('>>> der Balken wächst, wenn eine Unteraufgabe abgehakt wird:', zielH > hoch[0][1]);
+  console.log('>>> und läuft dabei, statt zu springen:', laufzeit(hoch) > 200);
+  console.log('>>> ohne über sein Ziel hinauszuschießen:',
+    Math.max.apply(null, hoch.map((x) => x[1])) <= zielH + 0.0005);
+
+  // Zurücknehmen: Der Balken muss genauso zurücklaufen. Vorher abwarten -
+  // die Spalte wird beim Abhaken komplett neu aufgebaut (siehe status.md,
+  // "Vollstaendiger Neuaufbau"), und ein Klick mitten hinein greift ins Leere.
+  await page.waitForTimeout(400);
+  const runter = await verlauf(page, '.column[data-col-index="1"] .check-btn.done');
+  const zielR = runter[runter.length - 1][1];
+  console.log('Verlauf zurück:', runter[0][1], '->', zielR, '| unterwegs:', laufzeit(runter), 'ms');
   console.log('>>> und läuft genauso zurück, wenn der Haken wieder weg ist:',
-    zielR < runter[0] && zwischenR.length >= 8);
+    zielR < runter[0][1] && laufzeit(runter) > 200);
 
   // Dieselbe Bewegung wie im Aufräum-Modus - es ist dieselbe Aussage.
   const gleich = await page.evaluate(() => {

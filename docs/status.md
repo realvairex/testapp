@@ -293,6 +293,20 @@ dieselbe Antwort noch einmal geben zu müssen.
   contenteditable-Notbehelf**, kein Entwurfsmuster. Sie darf **nicht**
   nach Flutter übernommen werden — dort übernimmt `super_editor` das
   Dokumentmodell. Steht auch so in `spec.md`.
+- **Vollständiger Neuaufbau bei jeder Änderung — im Mockup bewusst nicht
+  repariert.** Vom Nutzer am 2026-08-11 bemerkt: *„Wieso refreshen die
+  Aufgaben in den Listen so oft? Wenn ich z. B. eine Unteraufgabe als
+  erledigt mache oder in eine Unteraufgabe reingehe."* Nachgemessen: Ein
+  Klick auf ein Kästchen verwirft **alle sichtbaren Spalten samt ihren
+  contenteditable-Editoren** und baut sie neu auf (`renderColumns()` setzt
+  `innerHTML` in einem Stück). Sichtbar wird das als Aufblitzen.
+  **Nicht im Mockup beheben:** Eine gezielte Aktualisierung nachzurüsten
+  hieße, eine zweite Renderlogik neben der bestehenden zu bauen — Arbeit,
+  die beim Umstieg vollständig weggeworfen wird. In Flutter fällt das Problem
+  weg, weil dort nur die Widgets neu gebaut werden, deren Zustand sich
+  geändert hat. **Als Anforderung steht es in `spec.md` §2.2** — dort darf
+  es nicht durchrutschen.
+
 - **`test_4bugs` ist ein Wackelkandidat — bitte nicht reparieren.** Über
   10 Läufe 5× grün, 5× rot: Tippt man in die eingeklappte Füllzeile
   zwischen zwei Aufgaben, gehen die ersten Zeichen verloren

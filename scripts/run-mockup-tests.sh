@@ -40,7 +40,16 @@ echo
 green=0; red=0; crash=0
 red_names=""
 
-for f in design/mockups/tests/*.js; do
+# Nur Skripte, die etwas PRUEFEN oder MESSEN - erkennbar am Namen. Vorher
+# stand hier *.js, und damit lief jede Hilfsdatei im Verzeichnis mit: ein
+# Skript zum Erzeugen von Entwurfs-Screenshots etwa, dessen DOM-Annahmen
+# nach der naechsten Aenderung nicht mehr stimmen, meldete sich hier als
+# "Absturz" - obwohl am Mockup nichts kaputt war. Wer ein Werkzeug ins
+# Verzeichnis legt, das nicht mitlaufen soll, nennt es anders (z.B. shot_).
+for f in design/mockups/tests/test_*.js \
+         design/mockups/tests/measure_*.js \
+         design/mockups/tests/verify_*.js; do
+  [ -e "$f" ] || continue
   name="$(basename "$f" .js)"
   [ -n "$filter" ] && case "$name" in *"$filter"*) ;; *) continue;; esac
 

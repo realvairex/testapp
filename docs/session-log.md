@@ -9,6 +9,74 @@ Wird von `ende unfold` fortgeschrieben und von `scripts/session-check.sh`
 eingefordert. Neueste Sitzung oben.
 
 ---
+## 2026-08-11 — Aufräum-Modus gebaut und in sechs Runden nachgeschärft
+
+**Gemacht**
+
+- **Aufräum-Modus** (`spec.md` §2.8): geführter Durchgang durch den Eingang,
+  eine Aufgabe nach der anderen. Die Spalte übernimmt, kein Overlay — die
+  Sidebar muss stehen bleiben, weil sie das Ziel der Wegflug-Bewegung ist.
+- Belohnungsschicht: Wegfliegen nach links mit aufblitzender Zielzeile,
+  Durchstreichen beim Erledigen, laufender Balken mit Kerben, rollende
+  Zähler, nachgebende Knöpfe, Haptik auf Mobilgeräten.
+- Fälligkeit auf der Karte, `+ Neue Liste` im Fluss, Rückgängig für jeden
+  Schritt.
+- Der kleine Fortschrittsbalken an einer Aufgabenzeile bewegt sich jetzt
+  genauso wie der im Aufräum-Modus.
+- Zwei neue Prüfskripte: `test_aufraeumen.js` (59 Zusicherungen),
+  `test_fortschritt.js` (9). Der Läufer nimmt jetzt nur noch
+  `test_`/`measure_`/`verify_`, damit Hilfsskripte im Verzeichnis liegen
+  dürfen, ohne als „Absturz" gemeldet zu werden.
+- `shot_aufraeumen.js` aus dem Scratchpad gerettet.
+
+**Entschieden** (alles mit Begründung in `decisions.md`)
+
+- **Ein Knopf statt zwei:** „Erledigt" und „Löschen" waren im Eingang
+  dasselbe mit zwei Namen. Der Unterschied trägt nur *innerhalb* einer
+  Liste. Frage kam vom Nutzer, mein Entwurfsfehler.
+- **Drei Bewegungskurven statt zwei.** Neu: `ease-lauf` für alles, was eine
+  **Menge** anzeigt. Regel dahinter geschärft: Überschwingen dort, wo etwas
+  *ankommt*; nie dort, wo etwas *gemessen* wird.
+- **„Später" bewegt sich wie das Einsortieren** — auf Wunsch des Nutzers.
+  Zwei Bewegungen, die sich nur in der Richtung unterscheiden, lesen sich
+  als Wackeln, nicht als zwei Bedeutungen.
+- **Rangfolge der Schrift geradegerückt:** `fs-xl` trägt in der ganzen App
+  das, was man ansieht. Das stand beim Wort „Aufräumen" statt bei der
+  Aufgabe.
+- **„Erledigt" steht mittig unten**, mit Abstand zu den Rubriken, in
+  Akzentkontur. Eine Rubrik mit genau einem Knopf liest sich wie ein Rest.
+- **Unteraufgaben im Eingang bleiben erlaubt** — ich hatte das Gegenteil
+  vorgeschlagen, der Nutzer hat widersprochen und recht behalten.
+
+**Vier Fehler, drei davon in der Messung**
+
+1. **Der Balken lief nie** — das `transition` stand im Stylesheet, hatte
+   aber nie eine Strecke: Die Seite wird bei jedem Schritt neu aufgebaut,
+   und ein frisches Element hat keinen Vorzustand. Derselbe Fehler steckte
+   im Mini-Balken an der Aufgabenzeile, dort seit Wochen.
+2. **Der reguläre Ausdruck fürs Auslesen der Matrix** schnitt die
+   Exponentialschreibweise ab und machte aus 0,00007 die Zahl 7,3 — gemeldet
+   wurde ein Überschwinger, den es nicht gab.
+3. **Drei Bewegungsprüfungen blinkten unter Last rot**, weil sie nach fester
+   Wartezeit zugriffen. Jetzt wird nachgesehen, bis der Zustand da ist.
+4. **„Zwischenwerte zählen" war die falsche Frage**: Unter Last zeichnet der
+   Browser weniger Bilder, und die Zahl wurde zur Aussage über die
+   Auslastung. Jetzt wird die **Laufzeit** gemessen.
+
+**Offen**
+
+- **Aufgabe in Aufgabe verschieben** (→ Unteraufgabe) ist Punkt 1 der Todo,
+  vom Nutzer bestätigt. Zu klären: Schachtelungstiefe und was passiert, wenn
+  man eine Aufgabe auf ihre eigene Unteraufgabe zieht.
+- **Das Aufblitzen beim Abhaken** ist gemessen und bewusst **nicht**
+  repariert — es verschwindet beim Flutter-Umstieg. Als Anforderung steht es
+  in `spec.md` §2.2, damit es beim Bau nicht nachgebaut wird.
+- `verify_center` meldet weiterhin eine veraltete „MISALIGNED"-Erwartung.
+- Der Nutzer hat angemerkt, dass die Runden **zu lange dauern**. Ursache
+  überwiegend: der volle Prüfungslauf (8–10 Minuten wegen der Fuzz-Skripte),
+  heute fünfmal gestartet. **Ab jetzt:** bei einer Änderung nur die
+  betroffenen Skripte (`bash scripts/run-mockup-tests.sh <filter>`), der
+  volle Lauf nur bei Eingriffen ins Datenmodell und einmal zum Schluss.
 
 ## 2026-08-08 — Löschregeln: entschieden und gebaut
 
