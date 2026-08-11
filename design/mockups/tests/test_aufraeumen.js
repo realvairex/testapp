@@ -172,6 +172,43 @@ const balkenVerlauf = (page, auswahl) =>
   console.log('>>> ein gesetztes Datum steht auf der Karte:',
     /Fällig|Überfällig/.test(await page.locator('.tidy-card-meta .due-pill').innerText()));
 
+  // "Erledigt" steht unten am Rand des Bereichs, mittig - nicht als vierte
+  // Rubrik unter den Einordnungen. Eine Rubrik mit genau EINEM Knopf liest
+  // sich wie ein Rest; und "Erledigt" ordnet nicht ein, es beendet.
+  const erledigtLage = await page.evaluate(() => {
+    const b = document.querySelector('.tidy-body').getBoundingClientRect();
+    const k = document.querySelector('.tidy-erledigt').getBoundingClientRect();
+    const w = document.querySelectorAll('.tidy-wahl');
+    const letzteWahl = w[w.length - 1].getBoundingClientRect();
+    const fuss = document.querySelector('.tidy-fuss').getBoundingClientRect();
+    return {
+      mittig: Math.abs((k.left + k.right) / 2 - (b.left + b.right) / 2) < 2,
+      unten: Math.round(fuss.top - k.bottom),
+      abstandNachOben: Math.round(k.top - letzteWahl.bottom),
+      inDerKarte: !!document.querySelector('.tidy-card').contains(document.querySelector('.tidy-erledigt'))
+    };
+  });
+  console.log('Erledigt-Knopf:', JSON.stringify(erledigtLage));
+  console.log('>>> "Erledigt" steht mittig unten, mit Abstand zu den Rubriken:',
+    erledigtLage.mittig && erledigtLage.unten > 0 && erledigtLage.unten <= 32 &&
+    erledigtLage.abstandNachOben > 60);
+  // Er löst die Wegflug-Bewegung aus, er ist nicht Teil von ihr - deshalb
+  // liegt er außerhalb der Karte und fliegt nicht mit.
+  console.log('>>> und liegt außerhalb der Karte, fliegt also nicht mit:',
+    erledigtLage.inDerKarte === false);
+  console.log('>>> er trägt die Akzentfarbe:',
+    await page.locator('.tidy-erledigt').evaluate((e) => {
+      const s = getComputedStyle(e);
+      const akzent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      // Kontur statt gefüllter Fläche: Wäre er die einzige Akzentfläche auf
+      // dem Bild, wäre er der optische Schwerpunkt - die Seite lüde zum
+      // Abhaken ein, obwohl sie zum Einsortieren einladen soll.
+      const hex = (c) => '#' + c.match(/\d+/g).slice(0, 3)
+        .map((n) => (+n).toString(16).padStart(2, '0')).join('');
+      return hex(s.borderTopColor) === akzent.toLowerCase() &&
+             s.backgroundColor === 'rgba(0, 0, 0, 0)';
+    }));
+
   // --- In eine Liste: fliegt nach links, Zielzeile blitzt auf ------------
   const ersteAufgabe = await titel(page);
   const personalVorher = await zaehler(page, 'personal');
@@ -266,6 +303,8 @@ const balkenVerlauf = (page, auswahl) =>
   // trug dort nicht, beides war dasselbe mit zwei Namen (spec.md §2.8).
   console.log('>>> es gibt nur noch einen Knopf, kein "Löschen" daneben:',
     (await page.locator('.tidy [data-tidy="loeschen"]').count()) === 0);
+  console.log('>>> und keine Rubrik "Oder" mehr über ihm:',
+    (await page.locator('.tidy-rubrik').count()) === 2);
   console.log('>>> Erledigt räumt die Aufgabe auch aus dem Eingang:',
     await page.evaluate((t) => !Array.from(document.querySelectorAll('.nav-name'))
       .some((n) => n.textContent === t), beiErledigt));

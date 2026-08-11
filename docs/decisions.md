@@ -2839,3 +2839,45 @@ den Punkt wegzudrücken, und übersieht dann den echten Fehler daneben.
 **Die Regel, die aus beidem folgt:** Bei einem roten Punkt zuerst fragen,
 ob die Messung stimmt — aber die Messung dann auch *reparieren* und nicht
 die Zusicherung entschärfen.
+
+## 2026-08-11 (abends) — „Erledigt" steht unten am Rand, nicht als vierte Rubrik
+
+**Gemeldet:** *„Der Erledigt-Button muss woanders hin und sich von der Masse
+abheben, dort wo er ist, ist er bisschen random."* — mit der Vorgabe:
+mittig unten, aber **nicht** in der Leiste von „Zurück/Später", und in der
+Akzentfarbe.
+
+**Die Ursache war strukturell**, nicht nur Platzierung: Er stand unter einer
+Rubrik „ODER", und eine Rubrik mit genau **einem** Knopf darunter liest sich
+wie ein Rest, der übrig geblieben ist — Rubriken bündeln mehrere Dinge.
+Dazu kam ein inhaltlicher Bruch: „Erledigt" ordnet nicht ein, es **beendet**.
+In der Reihe der Einordnungen („in welche Liste?", „wann?") hatte es nichts
+zu suchen.
+
+**Umgesetzt:** Rubrik „ODER" ersatzlos weg, der Knopf sitzt mittig am
+unteren Rand des Inhaltsbereichs, 24 px über der Fußzeile, mit großem
+Abstand zu den Rubriken. Der Abstand sagt „das ist etwas anderes", ohne dass
+es ein Wort dafür braucht.
+
+**Er liegt außerhalb der Karte.** Das ist kein Umsetzungsdetail: Er *löst*
+die Wegflug-Bewegung aus, er ist nicht Teil von ihr. Flöge er mit, wäre er
+Teil der Aufgabe statt eine Handlung an ihr.
+
+**Zur Akzentfarbe — Kontur statt gefüllter Fläche.** Der Nutzer wollte
+Akzent; ich habe die Kontur gewählt und den Grund genannt: Wäre er die
+einzige **gefüllte** Akzentfläche auf dem Bildschirm, wäre er der optische
+Schwerpunkt — die Seite lüde zum **Abhaken** ein, obwohl sie zum
+**Einsortieren** einladen soll. Als Kontur hebt er sich klar von den grauen
+Pillen ab, ohne sie zu überstimmen; beim Überfahren füllt er sich. Falls der
+Nutzer die gefüllte Fläche will, ist es eine Zeile.
+
+**Vorgelegt und verworfen:** (B) ein Häkchen-Kreis links am Titel — meine
+Empfehlung, weil sie die Sprache der App nutzt (man hakt überall links ab)
+und nichts Neues erfindet; (C) eine Akzent-Pille rechts auf Höhe des Titels.
+Der Nutzer hat die Platzierung unten gewählt.
+
+Das Vergleichsskript (`shot_erledigt_varianten.js`) ist nach der Entscheidung
+**gelöscht** worden: `run-mockup-tests.sh` startet **alle** `.js` im
+Verzeichnis, und ein Skript mit veralteten DOM-Annahmen wäre dort abgestürzt.
+Entscheidungsmaterial gehört in dieses Protokoll, nicht als toter Code ins
+Prüfverzeichnis.

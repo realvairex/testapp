@@ -970,9 +970,35 @@
      einem Loch zwischen Balken und Titel aus, weil der Kopfbereich oben
      klebt und die Karte in die Mitte rutschte. Der Zusammenhang zwischen
      Fortschritt und Aufgabe ist wichtiger als eine optische Mitte. */
-  .tidy-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px; }
+  .tidy-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px; display: flex; flex-direction: column; }
 
-  .tidy-card { padding: var(--sp-6) 0 var(--sp-4); }
+  .tidy-card { flex: 0 0 auto; padding: var(--sp-6) 0 var(--sp-4); }
+
+  /* "Erledigt" steht UNTEN am Rand des Bereichs, mittig, mit Abstand zu den
+     Rubriken - nicht als vierte Rubrik darunter. Zwei Gruende:
+     Eine Rubrik ("ODER") mit genau EINEM Knopf darunter liest sich wie ein
+     Rest, der uebrig geblieben ist - Rubriken buendeln mehrere Dinge. Und
+     "Erledigt" gehoert nicht in die Reihe der Einordnungen: Es ordnet nicht
+     ein, es beendet. Der Abstand sagt das, ohne ein Wort dafuer zu brauchen.
+     margin-top: auto schiebt ihn ans untere Ende, solange Platz da ist, und
+     laesst ihn bei langem Inhalt (offener Kalender) einfach nachruecken. */
+  .tidy-abschluss { margin-top: auto; padding: var(--sp-7) 0; display: flex; justify-content: center; flex-shrink: 0; }
+  .tidy-erledigt {
+    display: inline-flex; align-items: center; gap: var(--sp-3);
+    background: transparent; color: var(--accent-strong);
+    border: 1.5px solid var(--accent); border-radius: var(--r-pill);
+    font: inherit; font-size: var(--fs-md); font-weight: var(--fw-strong);
+    padding: 8px 20px; cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease,
+                transform var(--dur-fast) var(--ease);
+  }
+  /* Kontur statt gefuellter Flaeche - beim Ueberfahren fuellt sie sich.
+     Waere er dauerhaft gefuellt, waere er die einzige Akzentflaeche auf dem
+     Bild und damit der optische Schwerpunkt: Die Seite luede zum Abhaken
+     ein, obwohl sie zum EINSORTIEREN einladen soll. Er hebt sich so klar
+     von den grauen Pillen ab, ohne sie zu ueberstimmen. */
+  .tidy-erledigt:hover { background: var(--accent); color: var(--accent-ink); }
+  .tidy-erledigt:active { transform: scale(0.96); }
   /* fs-xl: Der Aufgabentitel ist der Gegenstand dieses Bildschirms. In der
      ganzen App traegt fs-xl genau das - eine Spalte zeigt ihren Titel so.
      Vorher stand er auf fs-lg und war damit kleiner als das Wort
@@ -1922,6 +1948,10 @@
   function svgBesen() {
     return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 1.9L6.2 5.3"/><path d="M4.6 5.1h4.2l1 3.1H3.6l1-3.1z"/><path d="M4 8.2l-.7 4.9M6.2 8.2v4.9M8.4 8.2l.7 4.9"/></svg>';
   }
+  function svgHakenGross() {
+    return '<svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.2 3.2L12 4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
   function svgUnterbau() {
     return '<svg width="12" height="12" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.34" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v6.5c0 1.1.9 2 2 2h5"/><path d="M9 8.5l2 2-2 2"/></svg>';
   }
@@ -2042,13 +2072,16 @@
       h += "</div>";
       if (t.kalender) h += kalender(node).replace('class="due-cal"', 'class="due-cal tidy-cal"');
 
-      // Nur noch EIN Knopf. "Erledigt" und "Löschen" waren im Eingang
-      // dasselbe mit zwei Namen - Begründung in spec.md 2.8.
-      h += '<div class="tidy-rubrik">Oder</div><div class="tidy-wahl">';
-      h += tidyKnopf("data-tidy", "erledigt", "Erledigt", "leise");
-      h += "</div>";
+      h += "</div>";   // .tidy-card
 
-      h += "</div></div>";
+      // "Erledigt" steht AUSSERHALB der Karte, aber INNERHALB des Bereichs:
+      // unten am Rand statt als vierte Rubrik unter den Einordnungen. Es
+      // fliegt deshalb auch nicht mit der Karte weg - es loest die Bewegung
+      // aus, es ist nicht Teil von ihr.
+      h += '<div class="tidy-abschluss">' +
+           '<button class="tidy-erledigt" type="button" data-tidy="erledigt">' +
+           svgHakenGross() + "Erledigt</button></div>";
+      h += "</div>";   // .tidy-body
 
       h += '<div class="tidy-fuss">';
       h += '<button class="tidy-fuss-btn" type="button" data-tidy="zurueck"' +

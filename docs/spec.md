@@ -333,8 +333,26 @@ nur, wenn dort etwas Offenes liegt.
      zuletzt `+ Neue Liste`: klappt ein Namensfeld **an Ort und Stelle**
      auf, legt die Liste an und sortiert die Aufgabe gleich hinein
    - **WANN?** — `Heute` · `Morgen` · `Datum wählen`
-   - **ODER** — `Erledigt` (**ein** Knopf, siehe unten)
-5. **Fußzeile** — `‹ Zurück` links, `Später ›` rechts
+   (kein dritter Rubrikblock — „Erledigt" steht separat, siehe 5.)
+5. **„Erledigt"** — **mittig am unteren Rand** des Inhaltsbereichs,
+   24 px über der Fußzeile, mit großem Abstand zu den Rubriken. In der
+   **Akzentfarbe als Kontur**, beim Überfahren gefüllt.
+
+   > Er stand zuerst unter einer Rubrik „ODER". Das war doppelt falsch:
+   > Eine Rubrik mit genau **einem** Knopf liest sich wie ein Rest —
+   > Rubriken bündeln mehrere Dinge. Und „Erledigt" **ordnet nicht ein,
+   > es beendet**; in der Reihe der Einordnungen hatte es nichts zu
+   > suchen. Der Abstand sagt das, ohne ein Wort dafür zu brauchen.
+   >
+   > **Kontur statt gefüllter Fläche:** Wäre er die einzige gefüllte
+   > Akzentfläche auf dem Bildschirm, wäre er der optische Schwerpunkt —
+   > die Seite lüde zum Abhaken ein, obwohl sie zum **Einsortieren**
+   > einladen soll.
+   >
+   > Er liegt **außerhalb der Karte** und fliegt deshalb nicht mit: Er
+   > löst die Bewegung aus, er ist nicht Teil von ihr.
+
+6. **Fußzeile** — `‹ Zurück` links, `Später ›` rechts
 
 #### Erledigt und Löschen sind hier dasselbe — also gibt es einen Knopf
 
