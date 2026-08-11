@@ -1327,6 +1327,9 @@
     kids.splice(ki, 1);
     var bi = owner.blocks.findIndex(function (b) { return b.id === taskId; });
     if (bi >= 0) owner.blocks.splice(bi, 1);
+    // Sonst bleiben zwei Fuellzeilen nebeneinander stehen und werden zu
+    // echten Leerzeilen - dieselbe Ursache wie beim Aufraeum-Modus.
+    leereAbsaetzeVerschmelzen(owner);
 
     childrenOf(target).push(node);
     target.blocks.push({ type: "task", id: node.id });
@@ -1357,6 +1360,31 @@
   // an, was zum Einsortieren richtig ist - fuer "Zurueck" braucht es aber die
   // urspruengliche Position, sonst kommt die Aufgabe an einem anderen Platz
   // zurueck als sie weg war. Knoten UND Blockverweis wandern immer gemeinsam.
+  function istLeererText(blk) {
+    return !!blk && blk.type === "text" &&
+           !String(blk.text || "").replace(/<[^>]*>/g, "").replace(/ /g, " ").trim();
+  }
+
+  // Zwischen zwei Bloecken braucht der Editor GENAU EINE Fuellzeile. Nimmt
+  // man einen Block heraus, koennen zwei Leerabsaetze nebeneinander geraten
+  // - und zwei nebeneinander kann er nicht mehr einklappen, er zeigt sie als
+  // echte Leerzeilen. Genau das war die Luecke, die nach dem Aufraeumen oben
+  // im Eingang stand: kein Rest der Aufgabe, sondern zwei Fuellzeilen, die
+  // ohne die Aufgabe dazwischen aneinandergerieten.
+  //
+  // Beim gewoehnlichen Loeschen faellt es nicht auf, weil der Block dort
+  // durch die Rueckgaengig-Zeile ERSETZT wird und der Platz belegt bleibt
+  // (spec.md 4.3). Ueberall sonst, wo ein Block wirklich verschwindet, muss
+  // aufgeraeumt werden.
+  function leereAbsaetzeVerschmelzen(owner) {
+    if (!owner || !owner.blocks) return;
+    for (var i = owner.blocks.length - 1; i > 0; i--) {
+      if (istLeererText(owner.blocks[i]) && istLeererText(owner.blocks[i - 1])) {
+        owner.blocks.splice(i, 1);
+      }
+    }
+  }
+
   function knotenAushaengen(ownerId, taskId) {
     var owner = findList(ownerId) || findTaskGlobal(ownerId);
     if (!owner) return null;
@@ -1367,6 +1395,7 @@
     var bi = owner.blocks.findIndex(function (b) { return b.id === taskId; });
     kids.splice(ki, 1);
     if (bi >= 0) owner.blocks.splice(bi, 1);
+    leereAbsaetzeVerschmelzen(owner);
     closePanelsFrom(taskId);
     return { node: node, kidIndex: ki, blockIndex: bi };
   }
