@@ -72,6 +72,25 @@ Apple Reminders/Notes-Niveau, mit eigenständigem Charakter.
 - **Bewegung:** durchgängig ruhige, gefederte Animationen für alles
   Interaktive (Öffnen/Schließen von Seiten, Löschen, Checkbox-Feedback,
   Theme-Wechsel) — nicht nur punktuelle Effekte, siehe `decisions.md`.
+- **Overlays werden so weit wie möglich vermieden.** Das ist eine
+  Grundhaltung der Oberfläche, kein Einzelfall — Festlegung des Nutzers
+  vom 2026-08-08.
+
+  Ein schwebendes Fenster verdeckt genau den Inhalt, über den man gerade
+  entscheidet, kostet einen Klick zum Öffnen und einen zum Schließen, und
+  verbirgt den aktuellen Zustand, bis man es aufmacht. Bei wenigen Werten
+  ist das reiner Verlust.
+
+  **Stattdessen:** Was eine Eigenschaft anzeigt, ändert sie auch. Was mehr
+  Platz braucht, klappt **im Fluss** auf oder **die Seite übernimmt** —
+  nicht ein Fenster darüber. Die Regel und ihre Anwendungen stehen in
+  `spec.md` §2.5.
+
+  Ist ein Overlay wirklich nicht zu vermeiden (ein Kalender lässt sich
+  schlecht dauerhaft aufgeklappt lassen), gehört es an den
+  **nächstgelegenen begrenzten Behälter** — die Spalte, nicht das Fenster.
+  Dann schiebt es keinen Inhalt weg und kann nicht am Rand abgeschnitten
+  werden.
 
 ## Out of scope für v1 (bewusst zurückgestellt)
 

@@ -223,6 +223,10 @@ Farbpunkt, dann Titel. Kein Menü.
 > den Gegenstand der Entscheidung und kosten zwei Klicks für einen Wert.
 > Angewandt auch auf die Fälligkeit (§4.2) und den Darstellungs-Schalter.
 >
+> **Die Grundhaltung steht in `concept.md`, Design-Richtung:** Overlays
+> werden so weit wie möglich vermieden. Was mehr Platz braucht, klappt im
+> Fluss auf oder die Seite übernimmt.
+>
 > **Und wenn doch eines nötig ist** — wie beim Kalender, den man schlecht
 > dauerhaft aufgeklappt lässt —, dann verankert am **nächstgelegenen
 > begrenzten Behälter** (der Spalte), nicht am Fenster. Nur so schiebt es

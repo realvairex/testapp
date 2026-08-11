@@ -2505,3 +2505,38 @@ Liste fiel die App auf `lists[0]` zurück — und auf `today`, falls gar
 keine Liste mehr da war. Seit es den Eingang gibt (§2.0), ist der
 richtige Rückfallort **immer** der Eingang: Es gibt ihn per Definition
 immer, und er ist die Startansicht.
+
+## 2026-08-08 — „Overlays vermeiden" ist ab jetzt Design-Richtung
+
+**Kontext:** Beim Entwurf des Aufräum-Modus legte ich eine Karte vor, die
+mittig in der Spalte schwebt. Der Nutzer: *„finde ich gut, aber ich würde
+kein Pop-up-Fenster dafür benutzen, sondern einfach die leere Seite"* —
+und anschließend allgemein: *„Overlays versuchen so gut es geht zu
+vermeiden."*
+
+**Damit wird aus einer wiederkehrenden Einzelentscheidung eine Haltung.**
+Sie war innerhalb weniger Tage fünfmal dieselbe:
+
+| Fall | was es geworden ist |
+|---|---|
+| Darstellungs-Schalter | steht in der Sidebar, statt hinter „Optionen" |
+| Titel umbenennen / Farbe | im Fluss, kein Menü am Titel |
+| Fälligkeit | dauerhafte Zeile, kein Aufklappmenü |
+| Rückgängig | an der Stelle des Gelöschten, keine schwebende Meldung |
+| Aufräum-Modus | die Seite übernimmt, keine Karte |
+
+Fünfmal derselbe Gedanke ist keine Vorliebe mehr, sondern eine Regel —
+und sie gehört dorthin, wo die Gestaltung beschrieben wird, nicht in fünf
+verstreute Protokolleinträge.
+
+**Eingetragen in `concept.md`, Abschnitt Design-Richtung**, mit der
+Begründung (ein Overlay verdeckt den Gegenstand der Entscheidung, kostet
+zwei Klicks für einen Wert, verbirgt den Zustand) und der Ausnahme: Wo
+eines unvermeidbar ist — ein Kalender lässt sich schlecht dauerhaft
+aufgeklappt lassen —, gehört es an den **nächstgelegenen begrenzten
+Behälter**, die Spalte statt das Fenster. `spec.md` §2.5 verweist darauf.
+
+**Warum in `concept.md` und nicht nur in `spec.md`:** Die Spec beschreibt,
+**was** gebaut wird; die Design-Richtung, **wie** entschieden wird, wenn
+etwas Neues dazukommt. Diese Regel ist die zweite Sorte — sie soll auch
+für Bildschirme gelten, die es noch nicht gibt.
