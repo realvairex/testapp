@@ -82,7 +82,7 @@
        hinaus und sagt damit "geschafft". Das ist an einer Quittung richtig
        und ueberall sonst Unruhe - deshalb ausschliesslich in der
        Belohnungsschicht des Aufraeum-Modus (docs/spec.md 2.8). */
-    --ease-spring: cubic-bezier(0.22, 1.4, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.28, 0.52, 1);
 
     /* Hoehen-Sprache: drei Ebenen statt beliebiger Schatten */
     --el-1: 0 1px 2px rgba(41, 50, 65, 0.06);
@@ -890,9 +890,14 @@
   .tidy-start svg { color: var(--accent); }
 
   .tidy { display: flex; flex-direction: column; flex: 1 1 auto; height: 100%; min-height: 0; }
-  .tidy-head { padding: 24px 24px 0; }
+  .tidy-head { padding: 16px 24px 0; }
   .tidy-head-top { display: flex; align-items: baseline; gap: var(--sp-5); }
-  .tidy-title { font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--ink); letter-spacing: -0.01em; }
+  /* "Aufraeumen" ist der NAME DES MODUS, nicht der Gegenstand des
+     Bildschirms. Es stand vorher auf fs-xl und damit groesser als die
+     Aufgabe, um die es geht - in der ganzen App gilt aber: fs-xl traegt
+     das, was man gerade ansieht. Deshalb hier zurueckgenommen auf die
+     Rubrikenschrift dieser Seite; das fs-xl bekommt der Aufgabentitel. */
+  .tidy-title { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); }
   .tidy-quit {
     margin-left: auto; border: none; background: transparent; color: var(--ink-faint);
     font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-medium);
@@ -914,11 +919,27 @@
   /* Fortschritt ueber transform: scaleX, nicht ueber width - dieselbe Regel
      wie ueberall (docs/spec.md, "Bewegung"). Nur hier darf die Bewegung
      ueberschwingen. */
-  .tidy-bar { margin-top: var(--sp-5); height: 3px; border-radius: var(--r-pill); background: var(--line); overflow: hidden; }
+  .tidy-bar { position: relative; margin-top: var(--sp-5); height: 3px; border-radius: var(--r-pill); background: var(--line); overflow: hidden; }
   .tidy-bar > span {
     display: block; height: 100%; width: 100%; border-radius: var(--r-pill);
     background: var(--accent); transform-origin: left center;
-    transition: transform var(--dur-slow) var(--ease-spring);
+    /* Bewusst laenger als jede andere Bewegung der App - aber KEIN neuer
+       Skalenwert, sondern zwei vorhandene Stufen addiert (400 + 200 = 600).
+       Der Balken ist das Einzige, das man beim Laufen ZUSEHEN soll; bei
+       400 ms war er am Ziel, bevor der Blick von der weggeflogenen Karte
+       zurueck war. */
+    transition: transform calc(var(--dur-slow) + var(--dur-base)) var(--ease-spring);
+  }
+  /* Kerben: eine je Aufgabe. Der Balken laeuft damit sichtbar auf den
+     NAECHSTEN PUNKT zu, statt nur laenger zu werden - jeder Schritt ist ein
+     abgeschlossenes Stueck, kein Fortschritt ins Unbestimmte. Ab einer
+     bestimmten Menge werden die Stuecke zu schmal, um noch etwas zu sagen;
+     dann traegt der Balken keine Kerben (siehe --tidy-n in renderTidy). */
+  .tidy-bar[data-kerben]::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(to right,
+      transparent 0, transparent calc(100% / var(--tidy-n) - 2px),
+      var(--surface) calc(100% / var(--tidy-n) - 2px), var(--surface) calc(100% / var(--tidy-n)));
   }
 
   /* Senkrecht mittig: Die eine Aufgabe soll der Gegenstand des Bildschirms
@@ -926,10 +947,28 @@
      Wegfliegen die Mitte, was die Bewegung deutlicher macht. "safe center"
      ist wichtig: Bei einer langen Aufgabe waere zentrierter Inhalt sonst
      oben abgeschnitten und nicht mehr erreichbar. */
-  .tidy-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px; display: flex; flex-direction: column; justify-content: safe center; }
+  /* Oben angesetzt, nicht mittig. Zwischenzeitlich stand hier
+     "justify-content: safe center" - das sah bei einer kurzen Aufgabe nach
+     einem Loch zwischen Balken und Titel aus, weil der Kopfbereich oben
+     klebt und die Karte in die Mitte rutschte. Der Zusammenhang zwischen
+     Fortschritt und Aufgabe ist wichtiger als eine optische Mitte. */
+  .tidy-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 24px; }
 
-  .tidy-card { flex: 0 0 auto; padding: 24px 0; }
-  .tidy-card-title { font-size: var(--fs-lg); font-weight: var(--fw-strong); color: var(--ink); line-height: 1.35; }
+  .tidy-card { padding: var(--sp-6) 0 var(--sp-4); }
+  /* fs-xl: Der Aufgabentitel ist der Gegenstand dieses Bildschirms. In der
+     ganzen App traegt fs-xl genau das - eine Spalte zeigt ihren Titel so.
+     Vorher stand er auf fs-lg und war damit kleiner als das Wort
+     "Aufräumen" darueber, was die Rangfolge der App auf den Kopf stellte. */
+  .tidy-card-title { position: relative; display: inline; font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--ink); line-height: 1.25; letter-spacing: -0.01em; }
+  .tidy-card-titelzeile { margin-bottom: var(--sp-2); }
+  /* Der Strich fuers Abhaken: Er wird beim Erledigen ueber den Titel
+     gezogen, bevor die Karte zusammensinkt. Als Pseudo-Element, weil
+     text-decoration sich nicht animieren laesst. */
+  .tidy-card-title::after {
+    content: ""; position: absolute; left: 0; right: -1px; top: 55%; height: 2px;
+    background: currentColor; border-radius: var(--r-pill);
+    transform: scaleX(0); transform-origin: left center;
+  }
   .tidy-card-note {
     margin-top: var(--sp-3); font-size: var(--fs-sm); color: var(--ink-faint); line-height: 1.5;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -991,11 +1030,17 @@
   .tidy-karte-weg.nach-links   { animation: tidy-weg-links   260ms var(--ease) forwards; }
   .tidy-karte-weg.nach-rechts  { animation: tidy-weg-rechts  260ms var(--ease) forwards; }
   .tidy-karte-weg.nach-unten   { animation: tidy-weg-unten   260ms var(--ease) forwards; }
-  .tidy-karte-weg.zusammen     { animation: tidy-weg-zusammen 260ms var(--ease) forwards; }
+  /* Erledigen dauert laenger als die anderen drei: Erst wird der Strich
+     gezogen, DANN sinkt die Karte. Ohne den Strich war es die schwaechste
+     der vier Bewegungen - ein blosses Kleinerwerden liest sich wie "nichts
+     passiert", waehrend das Einsortieren sichtbar irgendwohin geht. */
+  .tidy-karte-weg.zusammen     { animation: tidy-weg-zusammen 260ms var(--ease) 140ms forwards; }
+  .tidy-karte-weg.zusammen .tidy-card-title::after { animation: tidy-strich 180ms var(--ease) forwards; }
   @keyframes tidy-weg-links   { to { transform: translateX(-52px) scale(0.96); opacity: 0; } }
   @keyframes tidy-weg-rechts  { to { transform: translateX(52px)  scale(0.96); opacity: 0; } }
   @keyframes tidy-weg-unten   { to { transform: translateY(34px); opacity: 0; } }
-  @keyframes tidy-weg-zusammen{ to { transform: scale(0.9); opacity: 0; } }
+  @keyframes tidy-weg-zusammen{ to { transform: scale(0.88); opacity: 0; } }
+  @keyframes tidy-strich      { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
   /* Die naechste Karte kommt aus der Richtung, die zur Bewegung davor
      passt. Beim "Zurueck" ist das dieselbe, in die sie gegangen war -
@@ -1320,6 +1365,23 @@
     if (navigator.vibrate) { try { navigator.vibrate(muster); } catch (e) {} }
   }
 
+  // Setzt den Balken im naechsten Bild auf sein Ziel, damit das transition
+  // eine Strecke zu laufen hat. Gilt in BEIDE Richtungen: Beim "Zurueck"
+  // ist der neue Wert kleiner als der alte, und der Balken laeuft genauso
+  // gefedert zurueck - er springt nicht.
+  function tidyBalkenLauf() {
+    var s = document.querySelector(".tidy-bar > span[data-balken-ziel]");
+    if (!s) return;
+    var ziel = s.getAttribute("data-balken-ziel");
+    if (prefersReducedMotion()) { s.style.transform = "scaleX(" + ziel + ")"; return; }
+    // Zwei Bilder warten: Nach einem einzigen requestAnimationFrame hat der
+    // Browser das Element noch nicht zwingend mit seinem Startwert gemalt,
+    // und die Aenderung wuerde wieder zusammenfallen.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { s.style.transform = "scaleX(" + ziel + ")"; });
+    });
+  }
+
   function tidyStart() {
     var l = findList(INBOX_ID);
     // Nur Offenes. Erledigtes ist kein Triage-Material.
@@ -1332,6 +1394,7 @@
       busy: false,
       kalender: false,
       verlauf: [],
+      balkenAlt: 0,
       proListe: {},
       erledigt: 0, geloescht: 0, spaeter: 0
     };
@@ -1386,7 +1449,8 @@
     t.busy = true;
     karte.classList.remove("tidy-karte-rein", "von-unten", "von-links", "von-rechts");
     karte.classList.add("tidy-karte-weg", wegKlasse);
-    setTimeout(fertig, TIDY_FLUG_MS);
+    // Erledigen zieht erst den Strich und sinkt dann - es braucht laenger.
+    setTimeout(fertig, wegKlasse === "zusammen" ? TIDY_FLUG_MS + 140 : TIDY_FLUG_MS);
   }
 
   function tidyInListe(listId) {
@@ -1830,13 +1894,27 @@
          (node ? " · noch " + (gesamt - t.i) + " übrig" : " · fertig") + "</div>";
     // scaleX statt width: Layout-Eigenschaften werden nicht animiert. Die
     // Kurve darf hier als EINZIGER Stelle der App ueberschwingen.
-    h += '<div class="tidy-bar"><span style="transform: scaleX(' + anteil.toFixed(4) + ')"></span></div>';
+    //
+    // Der Balken wird mit dem ALTEN Wert aufgebaut und erst im naechsten
+    // Bild auf den neuen gesetzt (tidyBalkenLauf). Ohne das lief die
+    // Animation nie: renderTidy() baut die Seite bei jedem Schritt neu auf,
+    // und ein frisch eingesetztes Element hat keinen Vorzustand, von dem aus
+    // ein transition laufen koennte - es stand sofort auf dem Endwert.
+    var vorher = typeof t.balkenAlt === "number" ? t.balkenAlt : anteil;
+    var kerben = gesamt > 1 && gesamt <= 12;
+    h += '<div class="tidy-bar"' + (kerben ? ' data-kerben style="--tidy-n:' + gesamt + '"' : "") + '>' +
+         '<span data-balken-ziel="' + anteil.toFixed(4) + '" style="transform: scaleX(' + vorher.toFixed(4) + ')"></span></div>';
     h += "</div>";
+    t.balkenAlt = anteil;
 
     if (node) {
       var einflug = t.einflug ? " tidy-karte-rein " + t.einflug : "";
       h += '<div class="tidy-body"><div class="tidy-card' + einflug + '">';
-      h += '<div class="tidy-card-title">' + escapeHtml(node.title) + "</div>";
+      // Der Titel steht als inline-Element in einer eigenen Zeile: Nur so
+      // ist der Durchstreich-Strich so breit wie der Text und nicht so breit
+      // wie die Spalte.
+      h += '<div class="tidy-card-titelzeile"><span class="tidy-card-title">' +
+           escapeHtml(node.title) + "</span></div>";
       var notiz = ersterText(node);
       if (notiz) h += '<div class="tidy-card-note">' + escapeHtml(notiz) + "</div>";
       // Unteraufgaben sind im Eingang erlaubt (spec.md 2.0) und wandern beim
@@ -2753,6 +2831,7 @@
       if (state.tidy && list.id === INBOX_ID) {
         html += renderTidy() + "</div></div>";
         el.innerHTML = html;
+        tidyBalkenLauf();
         sizeColumns();
         el.scrollLeft = 0;
         prevPanelStack = state.panelStack.slice();

@@ -2642,3 +2642,87 @@ die eine Einordnung *vorwegnehmen*).
 Praktisch fällt dabei nichts an: Der Aufräum-Modus verschiebt eine
 Aufgabe ohnehin samt ihrem Unterbau, weil `moveTaskToList()` den Knoten
 als Ganzes umhängt. Eingetragen in `spec.md` §2.0.
+
+## 2026-08-11 (nachmittags) — Aufräum-Modus: vier Korrekturen nach der ersten Sicht
+
+Der Nutzer hat den gebauten Stand angesehen und vier Punkte gemeldet. Drei
+waren Gestaltung, einer war ein **stiller Fehler**.
+
+### 1. Der Fortschrittsbalken sprang, statt zu laufen — ein echter Fehler
+
+Gemeldet als *„der Fortschrittsbalken sollte langsam auf den nächsten
+Punkt hochlaufen und nicht direkt sein"*, nachgereicht: *„das sollte auch
+passieren, wenn man zurückgeht, dass er zurückläuft"*.
+
+Im CSS stand eine Übergangsanimation über 400 ms — sie ist **nie gelaufen**.
+Grund: `renderTidy()` baut die Seite bei jedem Schritt komplett neu auf. Ein
+frisch eingesetztes Element hat keinen Vorzustand, von dem aus ein
+`transition` laufen könnte; es steht sofort auf seinem Endwert. Die
+Animation war da, hatte aber nie eine Strecke.
+
+Behoben, indem der Balken mit dem **alten** Wert aufgebaut und erst im
+übernächsten Bild auf den neuen gesetzt wird (zwei `requestAnimationFrame`
+— nach einem einzigen hat der Browser den Startwert nicht zwingend gemalt).
+Das trägt beide Richtungen ohne Zusatzaufwand: Beim „Zurück" ist der neue
+Wert kleiner, und der Balken läuft gefedert zurück.
+
+**Die Lehre ist die wichtigere Hälfte:** Eine Animation, die im Stylesheet
+steht, ist keine Animation, die läuft. Das ist dieselbe Familie wie „alle
+Prüfskripte grün" (2026-08-07) und „Selektor matcht wieder" (2026-08-07) —
+die Zusicherung existiert, geprüft wurde sie nie. `test_aufraeumen.js`
+zeichnet den Verlauf jetzt im Browser auf und verlangt **Zwischenwerte**;
+Anfangs- und Endwert allein hätten den Fehler nicht gezeigt.
+
+Dauer dabei von 400 auf 600 ms gesetzt — **kein neuer Skalenwert**, sondern
+`dur-slow + dur-base`. Der Balken ist das Einzige, dem man beim Laufen
+zusehen soll; bei 400 ms war er am Ziel, bevor der Blick von der
+weggeflogenen Karte zurück war. Die Kurve wurde von
+`cubic-bezier(0.22, 1.4, 0.36, 1)` auf `cubic-bezier(0.34, 1.28, 0.52, 1)`
+geändert: Die erste war so stark vorgezogen, dass sie 90 % der Strecke in
+den ersten 150 ms zurücklegte — technisch eine Animation, für das Auge ein
+Sprung mit Nachwippen.
+
+### 2. „Aufräumen" war größer als die Aufgabe
+
+Gemeldet als *„wieso Titel so klein, das bringt Unstimmigkeiten über die
+gesamte App-Stimmigkeit"* — und das trifft genau.
+
+In der ganzen App trägt `fs-xl` **das, was man gerade ansieht**: Eine Spalte
+zeigt so ihren Titel. Auf dieser Seite stand `fs-xl` beim Wort „Aufräumen"
+und die Aufgabe auf `fs-lg`. Damit war der *Name des Werkzeugs* wichtiger
+gesetzt als der *Gegenstand*, um den es geht. Das ist keine Geschmacksfrage,
+sondern ein Bruch der Rangfolge, die überall sonst gilt.
+
+Getauscht: Aufgabentitel auf `fs-xl`, „AUFRÄUMEN" auf die Rubrikenschrift
+dieser Seite (`fs-xs`, Großbuchstaben, `ink-faint`) — dieselbe, die schon
+„IN WELCHE LISTE?" trägt. Es entsteht also keine neue Schriftrolle.
+
+### 3. Das Loch zwischen Balken und Aufgabe
+
+Es kam von `justify-content: safe center`, das ich eingebaut hatte, damit
+die eine Aufgabe der Gegenstand des Bildschirms ist statt eines Formulars,
+das oben klebt. Der Gedanke war richtig, die Ausführung nicht: Der
+Kopfbereich bleibt oben, die Karte rutschte in die Mitte — und dazwischen
+stand ein Loch, das den Zusammenhang zwischen Fortschritt und Aufgabe
+zerriss. **Der Zusammenhang wiegt schwerer als die optische Mitte.** Wieder
+oben angesetzt; die Aufgabe wirkt jetzt über ihre Größe, nicht über ihre
+Lage.
+
+### 4. Erledigen war die schwächste der vier Bewegungen
+
+Gemeldet als *„wenn man Erledigt drückt, ist nicht die gleiche Animation wie
+wenn man eine Aufgabe einer Liste zuordnet"*.
+
+Die vier Bewegungen sollen sich **unterscheiden** — das ist der Kern der
+Sache, man soll an der Bewegung merken, was man getan hat. Das Problem war
+nicht die Verschiedenheit, sondern die **Stärke**: Einsortieren geht sichtbar
+irgendwohin (nach links zur Sidebar, die Zielzeile blitzt auf), Erledigen
+wurde nur kleiner. Bloßes Kleinerwerden liest sich wie „nichts passiert".
+
+Erledigen bekommt deshalb eine eigene, gleich starke Geste: Erst zieht sich
+ein **Strich über den Titel**, dann sinkt die Karte zusammen. Die Bewegung
+dauert entsprechend länger (400 statt 260 ms). Umgesetzt als
+Pseudo-Element, weil `text-decoration` sich nicht animieren lässt.
+
+**Nicht gemacht:** die Bewegungen angleichen. Falls der Nutzer das gemeint
+hat, ist es ein Handgriff — aber dann geht der Kern verloren.

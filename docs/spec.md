@@ -304,10 +304,25 @@ nur, wenn dort etwas Offenes liegt.
 
 #### Aufbau der Seite
 
-1. **Kopfzeile** — „Aufräumen" + Knopf „Fertig" rechts
-2. **Fortschritt** — `n von m` und ein 3 px hoher Balken in `--accent`
-3. **Die Aufgabe** — Titel groß (`fs-lg`), darunter der erste Textblock
+1. **Kopfzeile** — „AUFRÄUMEN" als leise Rubrik (`fs-xs`, Großbuchstaben)
+   + Knopf „Fertig" rechts
+2. **Fortschritt** — `n von m` und ein 3 px hoher Balken in `--accent`,
+   **mit einer Kerbe je Aufgabe** (bis zwölf; darüber wären die Stücke zu
+   schmal). Der Balken läuft damit sichtbar auf den *nächsten Punkt* zu,
+   statt nur länger zu werden.
+3. **Die Aufgabe** — Titel in `fs-xl`, darunter der erste Textblock
    ihrer Seite als leise Zeile (`ink-faint`), falls vorhanden
+
+> **Rangfolge der Schrift:** In der ganzen App trägt `fs-xl` das, was man
+> gerade ansieht — eine Spalte zeigt so ihren Titel. Der Gegenstand
+> dieses Bildschirms ist **die Aufgabe**, nicht der Name des Modus.
+> Deshalb steht sie auf `fs-xl` und „Aufräumen" auf der Rubrikenschrift.
+> Andersherum (Stand 2026-08-11 vormittags) stellte es die Rangfolge der
+> App auf den Kopf und fiel sofort als Unstimmigkeit auf.
+>
+> Aus demselben Grund sitzt die Aufgabe **oben**, direkt unter dem
+> Balken, und nicht senkrecht mittig: Der Zusammenhang zwischen
+> Fortschritt und Aufgabe ist wichtiger als eine optische Mitte.
 4. **Drei Rubriken** (`fs-xs`, Großbuchstaben, `ink-faint`):
    - **IN WELCHE LISTE?** — je eine Pille pro Liste, mit Farbpunkt
    - **WANN?** — `Heute` · `Morgen` · `Datum wählen`
@@ -349,16 +364,32 @@ nicht nur inhaltlich:
 | Entscheidung | Bewegung |
 |---|---|
 | In eine Liste | Karte fliegt **nach links zur Sidebar**, die Zielzeile blitzt kurz auf |
-| Erledigt | Karte **sinkt in sich zusammen** (Skalierung), Haken zeichnet sich |
+| Erledigt | Ein **Strich zieht sich über den Titel**, *danach* sinkt die Karte in sich zusammen |
 | Löschen | Karte **fällt nach unten** aus dem Bild |
 | Später | Karte **schiebt nach rechts** weg |
 | Zurück | Die vorherige Karte kommt **aus derselben Richtung zurück**, in die sie gegangen ist |
 
 Dazu:
 
-- **Der Balken federt.** Er ist die einzige Stelle der App, an der eine
-  Bewegung über ihr Ziel hinausschwingen darf — dafür gibt es die Kurve
-  `ease-spring` (siehe §3, Bewegung). Überall sonst gilt weiter `ease`.
+- **Der Balken läuft und federt.** Er ist die einzige Stelle der App, an
+  der eine Bewegung über ihr Ziel hinausschwingen darf — dafür gibt es
+  die Kurve `ease-spring` (siehe §3, Bewegung). Überall sonst gilt weiter
+  `ease`. Er ist außerdem das Einzige, dem man beim Laufen **zusehen**
+  soll: Dauer `dur-slow + dur-base` (600 ms, zwei vorhandene Stufen
+  addiert, kein neuer Skalenwert). Bei 400 ms war er am Ziel, bevor der
+  Blick von der weggeflogenen Karte zurück war.
+- **Er läuft in beide Richtungen.** „Zurück" lässt ihn genauso gefedert
+  zurücklaufen; er springt nie.
+
+  > **Fallstrick, der das lange still kaputt gemacht hat:** Die Seite wird
+  > bei jedem Schritt neu aufgebaut. Ein frisch eingesetztes Element hat
+  > keinen Vorzustand, von dem aus eine Übergangsanimation laufen könnte —
+  > es steht sofort auf dem Endwert, und der Balken sprang. Er wird
+  > deshalb mit dem **alten** Wert aufgebaut und erst im nächsten Bild auf
+  > den neuen gesetzt. In Flutter stellt sich das nicht: Dort behält ein
+  > `AnimatedContainer`/`TweenAnimationBuilder` seinen Zustand über den
+  > Neuaufbau hinweg. **Die Regel bleibt trotzdem:** Fortschritt läuft,
+  > vorwärts wie rückwärts.
 - **Der Zähler rollt**, statt umzuspringen: die alte Zahl nach oben
   hinaus, die neue von unten herein.
 - **Jeder Knopf gibt beim Drücken nach** (`scale(0.96)` auf

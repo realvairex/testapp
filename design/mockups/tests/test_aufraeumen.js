@@ -41,6 +41,45 @@ async function flugKlasse(page, klicken) {
   });
 }
 
+// Wartet, bis der Balken steht. Er laeuft 600 ms und schwingt dabei ueber
+// sein Ziel hinaus - wer zu frueh misst, misst den Ueberschwinger.
+// Der Wert muss DREIMAL hintereinander gleich sein, und vorher wird die
+// Wegflug-Bewegung abgewartet. Zwei gleiche Messungen genügen nicht: Vor dem
+// Neuaufbau der Seite steht noch der alte Balken da und ist selbstverständlich
+// stabil - danach hätte das Skript zu früh weitergemessen.
+async function balkenSteht(page) {
+  await page.waitForTimeout(450);
+  let letzter = null;
+  let gleich = 0;
+  for (let i = 0; i < 40; i++) {
+    const jetzt = await balken(page);
+    gleich = jetzt === letzter ? gleich + 1 : 0;
+    if (gleich >= 2) return jetzt;
+    letzter = jetzt;
+    await page.waitForTimeout(70);
+  }
+  return letzter;
+}
+
+// Zeichnet den Verlauf des Balkens im Browser auf, waehrend geklickt wird.
+// Nur so laesst sich die Frage "laeuft er, oder springt er?" beantworten -
+// von aussen gemessen sieht beides gleich aus, wenn man Pech mit dem Takt hat.
+const balkenVerlauf = (page, auswahl) =>
+  page.evaluate((sel) => new Promise((fertig) => {
+    const proben = [];
+    const t0 = performance.now();
+    document.querySelector(sel).click();
+    (function tick() {
+      const s = document.querySelector('.tidy-bar > span');
+      if (s) {
+        const m = getComputedStyle(s).transform;
+        proben.push(m === 'none' ? 1 : +Number(m.match(/matrix\(([-\d.]+)/)[1]).toFixed(3));
+      }
+      if (performance.now() - t0 < 1400) requestAnimationFrame(tick);
+      else fertig(proben);
+    })();
+  }), auswahl);
+
 (async () => {
   const b = await chromium.launch();
   const page = await b.newPage({ viewport: { width: 1240, height: 780 } });
@@ -79,6 +118,33 @@ async function flugKlasse(page, klicken) {
   console.log('>>> nur Offenes kommt in die Warteschlange:',
     zeilen.erledigt > 0 && gesamt === zeilen.alle - zeilen.erledigt);
   console.log('>>> der Balken startet bei null:', (await balken(page)) === 0);
+  console.log('>>> er trägt eine Kerbe je Aufgabe:',
+    (await page.locator('.tidy-bar[data-kerben]').count()) === 1 &&
+    (await page.locator('.tidy-bar').evaluate((e) => getComputedStyle(e).getPropertyValue('--tidy-n'))).trim() === String(gesamt));
+
+  // Rangfolge der Schrift: Gegenstand des Bildschirms ist die AUFGABE, nicht
+  // der Name des Modus. Stand einmal andersherum und stellte damit die
+  // Rangfolge der ganzen App auf den Kopf.
+  const groessen = await page.evaluate(() => ({
+    aufgabe: parseFloat(getComputedStyle(document.querySelector('.tidy-card-title')).fontSize),
+    modus: parseFloat(getComputedStyle(document.querySelector('.tidy-title')).fontSize),
+    xl: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs-xl'))
+  }));
+  console.log('Schriftgrößen:', JSON.stringify(groessen));
+  console.log('>>> der Aufgabentitel trägt die Spaltenschrift fs-xl:',
+    groessen.aufgabe === groessen.xl);
+  console.log('>>> und ist größer als der Name des Modus:',
+    groessen.aufgabe > groessen.modus);
+
+  // Der Zusammenhang zwischen Fortschritt und Aufgabe darf nicht durch ein
+  // Loch zerrissen werden - das passierte, als die Karte senkrecht mittig saß.
+  const luecke = await page.evaluate(() => {
+    const b = document.querySelector('.tidy-bar').getBoundingClientRect();
+    const t = document.querySelector('.tidy-card-title').getBoundingClientRect();
+    return Math.round(t.top - b.bottom);
+  });
+  console.log('Abstand Balken → Titel:', luecke, 'px');
+  console.log('>>> Balken und Aufgabe stehen beieinander:', luecke > 0 && luecke <= 32);
 
   // --- In eine Liste: fliegt nach links, Zielzeile blitzt auf ------------
   const ersteAufgabe = await titel(page);
@@ -87,7 +153,7 @@ async function flugKlasse(page, klicken) {
   const kl1 = await flugKlasse(page, () => page.locator('[data-tidy-liste="personal"]').click());
   console.log('>>> Einsortieren lässt die Karte nach LINKS zur Sidebar fliegen:',
     /tidy-karte-weg/.test(kl1) && /nach-links/.test(kl1));
-  await page.waitForTimeout(400);
+  await balkenSteht(page);
 
   console.log('>>> die Aufgabe liegt jetzt in der Zielliste:',
     (await zaehler(page, 'personal')) === personalVorher + 1);
@@ -148,7 +214,16 @@ async function flugKlasse(page, klicken) {
   const kl3 = await flugKlasse(page, () => page.locator('[data-tidy="erledigt"]').click());
   console.log('>>> Erledigt lässt die Karte ZUSAMMENSINKEN:',
     /tidy-karte-weg/.test(kl3) && /zusammen/.test(kl3));
-  await page.waitForTimeout(400);
+  // Der Strich über dem Titel: Ohne ihn war Erledigen die schwächste der
+  // vier Bewegungen - bloßes Kleinerwerden liest sich wie "nichts passiert".
+  console.log('>>> und zieht dabei den Strich über den Titel:',
+    await page.evaluate(() => {
+      const t = document.querySelector('.tidy-karte-weg.zusammen .tidy-card-title');
+      if (!t) return false;
+      const m = getComputedStyle(t, '::after').transform;
+      return m !== 'none' && Number(m.match(/matrix\(([-\d.]+)/)[1]) > 0.05;
+    }));
+  await page.waitForTimeout(600);
   console.log('>>> die Aufgabe zählt nicht mehr als offen:',
     (await zaehler(page, 'inbox')) === eingangVorSpaeter - 1);
 
@@ -196,7 +271,28 @@ async function flugKlasse(page, klicken) {
     }, ersteAufgabe));
   console.log('>>> am Anfang lässt sich nicht weiter zurückgehen:',
     await page.locator('[data-tidy="zurueck"]').isDisabled());
-  console.log('>>> und der Balken steht wieder auf null:', (await balken(page)) === 0);
+  console.log('>>> und der Balken steht wieder auf null:', (await balkenSteht(page)) === 0);
+
+  // --- Der Balken LÄUFT, er springt nicht --------------------------------
+  // Das war lange kaputt, ohne dass es auffiel: renderTidy() baut die Seite
+  // bei jedem Schritt neu auf, und ein frisch eingesetztes Element hat
+  // keinen Vorzustand, von dem aus ein transition laufen könnte - es stand
+  // sofort auf dem Endwert. Der Balken wird deshalb mit dem ALTEN Wert
+  // aufgebaut und erst im nächsten Bild auf den neuen gesetzt.
+  const hoch = await balkenVerlauf(page, '[data-tidy-liste="personal"]');
+  const zwischenHoch = hoch.filter((v) => v > 0.001 && v < hoch[hoch.length - 1] - 0.001);
+  console.log('Verlauf hoch:', hoch[0], '->', hoch[hoch.length - 1],
+    '| Zwischenwerte:', zwischenHoch.length);
+  console.log('>>> der Balken läuft hoch, statt zu springen:', zwischenHoch.length >= 8);
+  console.log('>>> und schwingt dabei über sein Ziel hinaus:',
+    Math.max.apply(null, hoch) > hoch[hoch.length - 1] + 0.002);
+
+  const runter = await balkenVerlauf(page, '[data-tidy="zurueck"]');
+  const zwischenRunter = runter.filter((v) => v < runter[0] - 0.001 && v > runter[runter.length - 1] + 0.001);
+  console.log('Verlauf zurück:', runter[0], '->', runter[runter.length - 1],
+    '| Zwischenwerte:', zwischenRunter.length);
+  console.log('>>> beim Zurückgehen läuft er genauso zurück:',
+    runter[runter.length - 1] < runter[0] && zwischenRunter.length >= 8);
 
   // --- Bis zum Abschlussbild durch ---------------------------------------
   for (let i = 0; i < 12; i++) {
@@ -210,7 +306,7 @@ async function flugKlasse(page, klicken) {
     (await page.locator('.tidy-ende-titel').innerText()) === 'Eingang leer');
   console.log('>>> und zeigt die Bilanz nach Zielliste:',
     /Einkaufen/.test(await page.locator('.tidy-ende-bilanz').innerText()));
-  console.log('>>> der Balken ist voll:', (await balken(page)) === 1);
+  console.log('>>> der Balken ist voll:', (await balkenSteht(page)) === 1);
   console.log('>>> "Fertig" steht nur noch einmal auf dem Bild:',
     (await page.locator('.tidy [data-tidy="quit"]').count()) === 1);
 
