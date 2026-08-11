@@ -118,12 +118,12 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 52 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 53 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
   nachgemessen. **Letzter vollständiger Lauf (2026-08-11, nach dem
-  Aufräum-Modus): 52 grün, 0 rot.** Dass `test_4bugs` dabei grün war, ist
+  Aufräum-Modus): 53 grün, 0 rot.** Dass `test_4bugs` dabei grün war, ist
   **Glück, keine Reparatur** — der Wackelkandidat trifft etwa jeden
   zweiten Lauf (siehe Abschnitt 4).
 
@@ -133,7 +133,7 @@ Was fertig ist:
   Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
   Anfassen des Skripts die Erwartung nachziehen.
 
-  ⚠️ **Wichtige Einschränkung:** Nur **vierzehn** der 52 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **fünfzehn** der 53 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -200,7 +200,7 @@ dauerhaften Zustand; „Zurück" nimmt jeden Schritt zurück). Vollständig in
 > Der Modus kann nichts, was das Ziehen nicht auch könnte — sein einziger
 > Vorteil ist, dass man ihn gern öffnet. Beim Flutter-Bau darf das nicht
 > als „Feinschliff später" herausfallen. Geprüft von `test_aufraeumen.js`
-> (56 Zusicherungen, davon die Hälfte auf die Bewegungen).
+> (59 Zusicherungen, davon die Hälfte auf die Bewegungen).
 
 **Erledigt — die Löschregeln sind gebaut (2026-08-08).** Rückgängig-Zeile
 an der Stelle des Gelöschten (fünf Sekunden, dann endgültig), Rückfrage

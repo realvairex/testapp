@@ -19,6 +19,10 @@ bash scripts/run-mockup-tests.sh          # alle
 bash scripts/run-mockup-tests.sh fmt      # nur Skripte, deren Name "fmt" enthält
 ```
 
+Er startet nur `test_*`, `measure_*` und `verify_*` — Hilfsskripte wie
+`shot_aufraeumen.js` (macht Screenshots, prüft nichts) dürfen deshalb im
+selben Verzeichnis liegen, ohne sich als „Absturz" zu melden.
+
 Der Läufer entscheidet pro Skript selbst: Rückgabewert ≠ 0 → `[FEHLER]`,
 eine `>>>`-Zeile endet auf `false` → `[ROT]`, sonst `[ok]`. Vollständige
 Ausgaben landen in `out/` (nicht im Git). Zeitgrenze pro Skript: 600 s,
@@ -45,9 +49,9 @@ NODE_PATH="$(npm root -g)" node design/mockups/tests/test_align.js
 
 ## Was die Skripte aussagen — und was nicht
 
-Nur **vierzehn** der 52 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
+Nur **fünfzehn** der 53 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
 `true` = in Ordnung): `test_4bugs`, `test_accum`, `test_aufraeumen`,
-`test_due_row`, `test_eingang`, `test_gaps`, `test_group_add_hover`,
+`test_due_row`, `test_eingang`, `test_fortschritt`, `test_gaps`, `test_group_add_hover`,
 `test_list_header`, `test_loeschen`, `test_theme_switch`, `test_typing`,
 `test_typing2`, `test_typing3`, `test_window_min`. Alle übrigen sind
 **Messskripte**: Sie
@@ -82,6 +86,7 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Eingang als Ort, Einsortieren per Ziehen | `test_eingang` |
 | Löschregeln: Rückgängig, Rückfrage, Spalten | `test_loeschen` |
 | Aufräum-Modus: Entscheidungen **und** Belohnungsschicht | `test_aufraeumen` |
+| Fortschrittsbalken an der Aufgabenzeile | `test_fortschritt` |
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
 
