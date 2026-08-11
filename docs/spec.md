@@ -147,6 +147,13 @@ ohnehin **samt ihrem Unterbau**, siehe 2.8.
 - Eine Aufgabe **ohne** Unteraufgaben behält ihren Zustand unverändert.
 - Sobald eine Aufgabe Unteraufgaben hat, zeigt sie einen Fortschrittsbalken
   (erledigte ÷ gesamte direkte Kinder).
+- **Der Balken läuft**, vorwärts wie rückwärts, mit derselben Bewegung wie
+  der im Aufräum-Modus: über `transform: scaleX`, Kurve `ease-lauf`, Dauer
+  `dur-slow + dur-base`. Es ist dieselbe Aussage — „es ist mehr geworden" —,
+  also muss sie sich gleich anfühlen. Derselbe Fallstrick wie dort: Die
+  Zeile wird bei jeder Änderung neu aufgebaut, deshalb muss der Balken mit
+  dem **alten** Wert entstehen und erst im nächsten Bild auf den neuen
+  gesetzt werden.
 
 > ⚠️ Umsetzungshinweis: Diese Neuberechnung ist eine **abgeleitete
 > Reaktion**, keine Handarbeit. Im Mockup wird sie an mehreren Stellen von

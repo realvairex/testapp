@@ -695,7 +695,19 @@
   .list-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
   .mini-progress { width: 34px; height: 5px; border-radius: var(--r-pill); background: var(--line); flex-shrink: 0; overflow: hidden; }
-  .mini-progress > span { display: block; height: 100%; background: var(--accent); border-radius: var(--r-pill); transition: width var(--dur-slow) var(--ease); }
+  /* Fortschritt an einer Aufgabenzeile - dieselbe Bewegung wie der Balken
+     im Aufraeum-Modus: transform statt width (Layout-Eigenschaften werden
+     nie animiert), Kurve --ease-lauf (langsam an, immer schneller, rastet
+     ein, kein Ueberschwingen) und dieselbe Dauer. Es ist dieselbe Aussage -
+     "es ist mehr geworden" -, also muss sie sich auch gleich anfuehlen.
+     Vorher lief hier gar keine Animation: Sie stand auf width und das
+     Element wird bei jeder Aenderung neu erzeugt. */
+  .mini-progress > span {
+    display: block; height: 100%; width: 100%; background: var(--accent);
+    border-radius: var(--r-pill); transform-origin: left center;
+    transition: transform calc(var(--dur-slow) + var(--dur-base)) var(--ease-lauf);
+  }
+  @media (prefers-reduced-motion: reduce) { .mini-progress > span { transition: none; } }
 
   .due-pill { font-size: var(--fs-xs); font-weight: var(--fw-strong); padding: 4px 7px; border-radius: var(--r-pill); background: var(--line-soft); color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .due-pill.today { background: var(--urgent-soft); color: var(--urgent); }
@@ -1443,21 +1455,36 @@
     if (navigator.vibrate) { try { navigator.vibrate(muster); } catch (e) {} }
   }
 
-  // Setzt den Balken im naechsten Bild auf sein Ziel, damit das transition
-  // eine Strecke zu laufen hat. Gilt in BEIDE Richtungen: Beim "Zurueck"
-  // ist der neue Wert kleiner als der alte, und der Balken laeuft genauso
-  // gefedert zurueck - er springt nicht.
-  function tidyBalkenLauf() {
-    var s = document.querySelector(".tidy-bar > span[data-balken-ziel]");
-    if (!s) return;
-    var ziel = s.getAttribute("data-balken-ziel");
-    if (prefersReducedMotion()) { s.style.transform = "scaleX(" + ziel + ")"; return; }
-    // Zwei Bilder warten: Nach einem einzigen requestAnimationFrame hat der
-    // Browser das Element noch nicht zwingend mit seinem Startwert gemalt,
-    // und die Aenderung wuerde wieder zusammenfallen.
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { s.style.transform = "scaleX(" + ziel + ")"; });
-    });
+  // Setzt JEDEN frisch aufgebauten Fortschrittsbalken im naechsten Bild auf
+  // sein Ziel, damit das transition eine Strecke zu laufen hat. Betrifft den
+  // Balken des Aufraeum-Modus und die kleinen Balken an den Aufgabenzeilen -
+  // beide werden bei jeder Aenderung neu erzeugt, und ein frisches Element
+  // hat keinen Vorzustand, von dem aus eine Animation laufen koennte.
+  //
+  // Gilt in BEIDE Richtungen: Wird der neue Wert kleiner (Zurueck im
+  // Aufraeum-Modus, ein Haken wieder entfernt), laeuft der Balken genauso
+  // zurueck - er springt nicht.
+  //
+  // Der Merkspeicher der alten Werte liegt bei den Aufrufern
+  // (state.tidy.balkenAlt bzw. fortschrittAlt), weil nur die wissen,
+  // welcher Balken zu welchem Gegenstand gehoert.
+  var fortschrittAlt = {};
+
+  function balkenLaufen() {
+    var els = document.querySelectorAll("[data-balken-ziel]");
+    var ohneBewegung = prefersReducedMotion();
+    for (var i = 0; i < els.length; i++) {
+      (function (s) {
+        var ziel = s.getAttribute("data-balken-ziel");
+        if (ohneBewegung) { s.style.transform = "scaleX(" + ziel + ")"; return; }
+        // Zwei Bilder warten: Nach einem einzigen requestAnimationFrame hat
+        // der Browser das Element noch nicht zwingend mit seinem Startwert
+        // gemalt, und die Aenderung wuerde wieder zusammenfallen.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { s.style.transform = "scaleX(" + ziel + ")"; });
+        });
+      })(els[i]);
+    }
   }
 
   function tidyStart() {
@@ -2188,8 +2215,17 @@
     if (listBadge) html += '<span class="list-dot" style="background:' + listBadge.color + '" title="' + escapeHtml(listBadge.name) + '"></span>';
     html += '<span class="task-title">' + escapeHtml(node.title) + "</span>";
     if (prog) {
-      var pct = Math.round((prog.done / prog.total) * 100);
-      html += '<span class="mini-progress" title="' + prog.done + " von " + prog.total + ' erledigt"><span style="width:' + pct + '%"></span></span>';
+      // Derselbe Mechanismus wie beim Balken des Aufraeum-Modus: Der Balken
+      // wird mit dem ALTEN Anteil aufgebaut und erst im naechsten Bild auf
+      // den neuen gesetzt (miniBalkenLauf). Sonst laeuft nie eine Animation -
+      // renderColumns() erzeugt die Zeile bei jeder Aenderung neu, und ein
+      // frisches Element hat keinen Vorzustand, von dem aus ein transition
+      // laufen koennte.
+      var anteil = prog.done / prog.total;
+      var vorher = typeof fortschrittAlt[node.id] === "number" ? fortschrittAlt[node.id] : anteil;
+      fortschrittAlt[node.id] = anteil;
+      html += '<span class="mini-progress" title="' + prog.done + " von " + prog.total + ' erledigt">' +
+              '<span data-balken-ziel="' + anteil.toFixed(4) + '" style="transform: scaleX(' + vorher.toFixed(4) + ')"></span></span>';
     }
     if (node.due) {
       html += deleteCtx
@@ -2954,7 +2990,7 @@
       if (state.tidy && list.id === INBOX_ID) {
         html += renderTidy() + "</div></div>";
         el.innerHTML = html;
-        tidyBalkenLauf();
+        balkenLaufen();
         sizeColumns();
         el.scrollLeft = 0;
         prevPanelStack = state.panelStack.slice();
@@ -3026,6 +3062,7 @@
 
     el.innerHTML = html;
     mountEditors();
+    balkenLaufen();
     sizeColumns();
     // Erst nach mountEditors: Vorher gibt es die Zeile noch nicht, an der
     // der Kalender ausgerichtet wird.

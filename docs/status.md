@@ -159,6 +159,11 @@ Der abgestimmte Plan, in dieser Reihenfolge:
    `drop-before/after`); es fehlt die Verdrahtung für Aufgabenzeilen.
    Vorher entscheiden lassen, dann bauen.
 
+   **Vom Nutzer am 2026-08-11 ausdrücklich als Todo bestätigt.** Zu klären
+   vor dem Bau: Wie tief darf geschachtelt werden (heute unbegrenzt, siehe
+   §1)? Und was passiert, wenn man eine Aufgabe auf ihre eigene
+   Unteraufgabe zieht — die Prüfung auf diesen Fall gibt es noch nicht.
+
 2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
    „welches Kürzel?"; das Ziel ist seit 2026-08-07 der Eingang. Lässt sich
    im Browser nicht bauen, muss also rein spezifiziert werden.
@@ -254,6 +259,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Aufräum-Modus | **Die Spalte übernimmt** (kein Overlay, keine Karte). Drei Rubriken: In welche Liste? · Wann? · Oder. „Später" ohne dauerhaften Zustand, „Zurück" nimmt jeden Schritt zurück. Die **Belohnungsschicht ist verbindlich**, nicht Feinschliff — `spec.md` §2.8. Die drei stärker gestalteten Varianten A/B/C aus dem zweiten Entwurfsanlauf wurden **abgelehnt**; gewählt ist die schlichte Seite. |
 | „Erledigt" statt „Erledigt + Löschen" | Im Aufräum-Modus gibt es **einen** Knopf: „Erledigt" hakt ab und räumt aus dem Eingang. Der Unterschied trägt nur *innerhalb* einer Liste; im Eingang waren es zwei Wörter für dieselbe Tat. Entschieden 2026-08-11 auf Nachfrage des Nutzers. **Nicht neu aufrollen.** |
 | „Später" bewegt sich wie das Einsortieren | Ausdrücklich so gewollt (2026-08-11): *„die sind ähnlich, aber nicht gleich"*. Zwei Bewegungen, die sich nur in der Richtung unterscheiden, lesen sich als Wackeln, nicht als zwei Bedeutungen. Nicht wieder auseinanderziehen. |
+| Fortschritt sieht überall gleich aus | Der kleine Balken an einer Aufgabenzeile bewegt sich **genau wie** der im Aufräum-Modus: `transform`, `ease-lauf`, 600 ms. Es ist dieselbe Aussage („es ist mehr geworden"), also fühlt sie sich gleich an. Geprüft von `test_fortschritt.js`. |
 | Fortschrittsbalken und Zähler | **Kein Überschwingen** — eigene Kurve `ease-lauf` (langsam an, immer schneller, rastet ein). Ein Balken, der über seine Kerbe hinausschießt, zeigt einen Fortschritt an, den es nicht gibt. Der Überschwinger bleibt dort, wo etwas *ankommt*. |
 | Konfetti, Klänge, Zeitmesser im Aufräum-Modus | **Bewusst nicht.** Die Palette ist ruhig, die Belohnung liegt in der Bewegung. Ein Zeitmesser macht aus Aufräumen einen Wettkampf gegen sich selbst. Nicht vorschlagen. |
 | Kopf einer Listenspalte | **Kein Aufklappmenü.** Umbenennen = in den Titel klicken und tippen; Farbe = Punkt davor, klappt die fünf Farben **im Fluss** unter dem Titel auf. Verschieben und Löschen bleiben in der Sidebar — kein zweiter Weg. Grundsatz in `spec.md` §2.5. |

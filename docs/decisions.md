@@ -2881,3 +2881,33 @@ Das Vergleichsskript (`shot_erledigt_varianten.js`) ist nach der Entscheidung
 Verzeichnis, und ein Skript mit veralteten DOM-Annahmen wäre dort abgestürzt.
 Entscheidungsmaterial gehört in dieses Protokoll, nicht als toter Code ins
 Prüfverzeichnis.
+
+## 2026-08-11 (abends) — Fortschritt sieht überall gleich aus
+
+**Gemeldet:** *„Der Fortschrittsbalken neben einer Aufgabe sollte ebenfalls
+die Animation wie der Fortschrittsbalken im Aufräum-Modus haben."*
+
+Richtig, und zwar aus einem Grund, der über den Einzelfall hinausgeht:
+**Es ist dieselbe Aussage.** Beide sagen „es ist mehr geworden". Zwei
+Bewegungen für eine Aussage sind genau die Art von Willkür, die eine
+Oberfläche unruhig macht, ohne dass man das einzelne Element benennen
+könnte — dieselbe Diagnose wie bei der Normalisierung der Skalen
+(2026-08-07).
+
+Beim Umbauen kam derselbe stille Fehler zum Vorschein wie beim Balken des
+Aufräum-Modus: Im Stylesheet stand ein `transition` auf `width` — **es ist
+nie gelaufen.** `renderColumns()` baut die Zeile bei jeder Änderung neu auf,
+und ein frisch eingesetztes Element hat keinen Vorzustand. Der Balken stand
+sofort auf dem Endwert. Zusätzlich verstieß er gegen die eigene Regel aus
+`spec.md` §3: Layout-Eigenschaften werden nie animiert.
+
+Behoben in einem Zug: `transform: scaleX` statt `width`, Kurve `ease-lauf`,
+Dauer `dur-slow + dur-base`, und der Merkspeicher der alten Werte
+(`fortschrittAlt`). Die Vorher-Nachher-Mechanik ist dabei aus dem
+Aufräum-Modus **herausgelöst** worden: `balkenLaufen()` behandelt jetzt jeden
+Balken mit `data-balken-ziel`, egal wo er steht. Ein dritter Balken bekäme
+die richtige Bewegung damit geschenkt.
+
+Geprüft von `test_fortschritt.js` (9 Zusicherungen). Es verlangt
+**Zwischenwerte** — Anfangs- und Endwert allein hätten den Fehler nicht
+gezeigt, so wie er zwei Wochen lang nicht aufgefallen ist.
