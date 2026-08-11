@@ -458,10 +458,11 @@
      unruhiger als eine zusätzliche Zeile. Kein schwebendes Fenster. */
   .color-strip {
     display: flex; gap: var(--sp-3); align-items: center;
-    margin: 8px 0 2px; animation: strip-in var(--dur-base) var(--ease);
+    margin: 8px 0 2px;
   }
   @keyframes strip-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
-  @media (prefers-reduced-motion: reduce) { .color-strip { animation: none; } }
+  .color-strip.ist-neu { animation: strip-in var(--dur-base) var(--ease); }
+  @media (prefers-reduced-motion: reduce) { .color-strip.ist-neu { animation: none; } }
   .color-swatch {
     width: 17px; height: 17px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
     transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
@@ -538,7 +539,17 @@
   .pe-line.pe-gap { min-height: 0; height: 0; overflow: hidden; }
   .pe-line.pe-gap.pe-open { height: auto; min-height: 1.65em; overflow: visible; }
 
-  .inline-embed { position: relative; margin: 0; padding-left: 16px; animation: block-in var(--dur-base) ease; overflow: hidden; }
+  /* Die Einblend-Animation gehoert NUR an wirklich neue Bloecke - deshalb
+     haengt sie an .ist-neu und nicht unbedingt an .inline-embed.
+     Vorher stand sie hier ohne Bedingung, und weil jede Aenderung alle
+     Zeilen neu erzeugt, blendeten sich bei JEDER Aktion saemtliche Zeilen
+     neu ein: Kalender oeffnen, ein Datum waehlen, ein Kaestchen abhaken,
+     eine Seite oeffnen. Nachgemessen mit document.getAnimations():
+     sechs laufende block-in pro Klick. Der Nutzer sah das als staendiges
+     "Refreshen" der Liste (2026-08-12). Die Klasse setzt
+     einblendenNurNeu() nach jedem Aufbau. */
+  .inline-embed { position: relative; margin: 0; padding-left: 16px; overflow: hidden; }
+  .inline-embed.ist-neu { animation: block-in var(--dur-base) ease; }
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -595,7 +606,7 @@
   }
   @keyframes block-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
   .inline-embed.removing { animation: none; transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; margin: 0 !important; }
-  @media (prefers-reduced-motion: reduce) { .inline-embed { animation: none; } .inline-embed.removing { transition: opacity var(--dur-fast) ease; } }
+  @media (prefers-reduced-motion: reduce) { .inline-embed.ist-neu { animation: none; } .inline-embed.removing { transition: opacity var(--dur-fast) ease; } }
   .removing { transition: height var(--dur-base) var(--ease), opacity var(--dur-base) ease, margin var(--dur-base) ease; opacity: 0 !important; overflow: hidden; }
   @media (prefers-reduced-motion: reduce) { .removing { transition: opacity var(--dur-fast) ease; } }
 
@@ -775,9 +786,11 @@
     padding: 8px; width: max-content;
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--r-md); box-shadow: var(--el-2);
-    animation: strip-in var(--dur-base) var(--ease);
+    /* Nur beim Oeffnen einblenden, nicht bei jedem Neuaufbau der Spalte -
+       dieselbe Ursache wie bei .inline-embed. */
   }
-  @media (prefers-reduced-motion: reduce) { .due-cal { animation: none; } }
+  .due-cal.ist-neu { animation: strip-in var(--dur-base) var(--ease); }
+  @media (prefers-reduced-motion: reduce) { .due-cal.ist-neu { animation: none; } }
   .due-cal-top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-bottom: var(--sp-3); }
   .due-cal-month { font-size: var(--fs-sm); font-weight: var(--fw-strong); color: var(--ink); }
   .due-cal-nav {
@@ -1470,6 +1483,29 @@
   // welcher Balken zu welchem Gegenstand gehoert.
   var fortschrittAlt = {};
 
+  // Einblenden ist fuer NEUE Dinge da. Weil jede Aenderung die ganze Spalte
+  // neu erzeugt, hat vorher alles bei jeder Aktion neu eingeblendet - fuer
+  // das Auge ein staendiges Aufblitzen der Liste. Hier wird gemerkt, was
+  // beim letzten Aufbau schon dastand; nur was neu dazukommt, bekommt die
+  // Klasse .ist-neu und damit die Animation.
+  //
+  // Der Schluessel ist der vorhandene data-embed-marker bzw. ein eigener
+  // data-neu-schluessel. Verschwindet etwas und kommt spaeter wieder,
+  // blendet es zu Recht erneut ein - es ist dann ja wirklich neu da.
+  var bekannteEinblender = {};
+
+  function einblendenNurNeu() {
+    var els = document.querySelectorAll("[data-embed-marker], [data-neu-schluessel]");
+    var jetzt = {};
+    for (var i = 0; i < els.length; i++) {
+      var k = els[i].getAttribute("data-embed-marker") || els[i].getAttribute("data-neu-schluessel");
+      if (!k) continue;
+      jetzt[k] = true;
+      if (!bekannteEinblender[k]) els[i].classList.add("ist-neu");
+    }
+    bekannteEinblender = jetzt;
+  }
+
   function balkenLaufen() {
     var els = document.querySelectorAll("[data-balken-ziel]");
     var ohneBewegung = prefersReducedMotion();
@@ -1943,7 +1979,7 @@
     var d = new Date(monat + "-01T00:00:00");
     var tage = monatsGitter(monat);
 
-    var h = '<div class="due-cal" role="group" aria-label="Datum wählen">';
+    var h = '<div class="due-cal" data-neu-schluessel="cal:' + node.id + '" role="group" aria-label="Datum wählen">';
     h += '<div class="due-cal-top">';
     h += '<button class="due-cal-nav" data-cal-step="-1" aria-label="Vorheriger Monat">' + svgChevronLeft() + "</button>";
     h += '<span class="due-cal-month">' + MONATE[d.getMonth()] + " " + d.getFullYear() + "</span>";
@@ -2990,6 +3026,7 @@
       if (state.tidy && list.id === INBOX_ID) {
         html += renderTidy() + "</div></div>";
         el.innerHTML = html;
+        einblendenNurNeu();
         balkenLaufen();
         sizeColumns();
         el.scrollLeft = 0;
@@ -3022,7 +3059,7 @@
       }
       html += "</div>";
       if (!istEingang && state.colorPickFor === list.id) {
-        html += '<div class="color-strip" role="group" aria-label="Listenfarbe">';
+        html += '<div class="color-strip" data-neu-schluessel="farbe:' + list.id + '" role="group" aria-label="Listenfarbe">';
         for (var ci = 0; ci < LIST_COLORS.length; ci++) {
           var lc = LIST_COLORS[ci];
           html += '<button class="color-swatch' + (list.color === lc.token ? " active" : "") + '"' +
@@ -3062,6 +3099,7 @@
 
     el.innerHTML = html;
     mountEditors();
+    einblendenNurNeu();
     balkenLaufen();
     sizeColumns();
     // Erst nach mountEditors: Vorher gibt es die Zeile noch nicht, an der

@@ -2941,3 +2941,61 @@ zurückholt.
 nicht behoben wird, ist trotzdem wertvoll — wenn er als Anforderung dort
 landet, wo er beim echten Bau gelesen wird. Sonst wird er einfach
 nachgebaut.
+
+## 2026-08-12 — Das „Refreshen" war eine Animation, nicht der Neuaufbau
+
+**Gemeldet:** *„Kalender drücken, auf die Aufgabe drücken, Heute auswählen
+usw. lösen aus, dass die Aufgabe so eine kleine Animation macht — wirklich
+sehr kleine —, die aussieht, als würde sich die Seite refreshen. Ich weiß
+nicht, ob sie sich refresht oder jedes Mal eine Animation ausgelöst wird,
+wir müssen den Bug finden."*
+
+**Die Frage des Nutzers war die richtige, und die Antwort war: beides — aber
+nur eines davon war das Übel.**
+
+Am Vortag hatte ich den vollständigen Neuaufbau gemessen und als
+„verschwindet beim Flutter-Umstieg" abgelegt. Das war richtig, aber
+unvollständig: Der Neuaufbau allein ist **unsichtbar** — er tauscht Knoten
+gegen identisch aussehende Knoten. Was man sah, war die
+Einblend-Animation, die er dabei **auslöste**.
+
+**Nachgemessen mit `document.getAnimations()`** — nicht mit Screenshots. Die
+Bewegung ist 3 Pixel groß und 200 ms kurz; auf einem Standbild ist sie
+unsichtbar, und zwei Aufnahmen im Abstand von 200 ms treffen sie nur mit
+Glück. Die Frage „läuft gerade eine Animation?" beantwortet der Browser
+dagegen exakt:
+
+| Aktion | vorher | nachher |
+|---|---|---|
+| Aufgabe öffnen | `block-in` ×6 | ×4 (nur die **neue** Spalte) |
+| Kalender drücken | `block-in` ×6 + `strip-in` | nur `strip-in` |
+| „Heute" wählen | `block-in` ×6 + `strip-in` | — |
+| Kästchen abhaken | `block-in` ×6 + `strip-in` | — |
+
+**Die Ursache:** `animation: block-in` hing **unbedingt** an
+`.inline-embed`. Die Animation ist für neu hinzugefügte Blöcke gedacht —
+aber weil jede Änderung alle Zeilen neu erzeugt, blendeten sich bei jedem
+Klick sämtliche Zeilen neu ein.
+
+**Behoben** (und das ließ sich im Mockup sinnvoll beheben, anders als der
+Neuaufbau selbst): Die Animation hängt jetzt an `.ist-neu`, und die Klasse
+bekommt nur, was beim letzten Aufbau noch nicht da war. `einblendenNurNeu()`
+merkt sich dazu die vorhandenen `data-embed-marker`. Dasselbe für Kalender
+und Farbreihe, die bei jedem Klick neu einblendeten, obwohl sie schon offen
+waren.
+
+**Die Gegenprobe steht mit im Prüfskript:** Eine wirklich neu hinzugefügte
+Zeile muss weiterhin einblenden. Ohne sie wäre „keine Animation mehr" auch
+dadurch zu erreichen, dass man die Animation ganz entfernt — und dann fehlte
+sie dort, wo sie hingehört.
+
+**Die Lehre, und sie ist die wertvollste des Tages:** *„Sieht aus wie ein
+Refresh"* hieß nicht, dass man den Neuaufbau sieht. Ich hatte den teuren,
+nicht behebbaren Verursacher gefunden und war dabei stehen geblieben —
+und hätte damit das billige, tatsächlich sichtbare Übel stehen lassen.
+**Der erste plausible Verursacher ist nicht automatisch der richtige.**
+
+In `spec.md` §2.2 steht die Regel jetzt für den Flutter-Bau: *Einblenden ist
+für Neues.* Dort ist die Falle dieselbe — eine Einblend-Animation an einem
+Listeneintrag, der bei jedem Zustandswechsel neu gebaut wird, läuft jedes
+Mal.

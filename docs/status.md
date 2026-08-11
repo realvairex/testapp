@@ -118,12 +118,12 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 53 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 54 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
   nachgemessen. **Letzter vollständiger Lauf (2026-08-11, nach dem
-  Aufräum-Modus): 53 grün, 0 rot.** Dass `test_4bugs` dabei grün war, ist
+  Aufräum-Modus): 54 grün, 0 rot.** Dass `test_4bugs` dabei grün war, ist
   **Glück, keine Reparatur** — der Wackelkandidat trifft etwa jeden
   zweiten Lauf (siehe Abschnitt 4).
 
@@ -133,7 +133,7 @@ Was fertig ist:
   Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
   Anfassen des Skripts die Erwartung nachziehen.
 
-  ⚠️ **Wichtige Einschränkung:** Nur **fünfzehn** der 53 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **sechzehn** der 54 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -293,6 +293,20 @@ dieselbe Antwort noch einmal geben zu müssen.
   contenteditable-Notbehelf**, kein Entwurfsmuster. Sie darf **nicht**
   nach Flutter übernommen werden — dort übernimmt `super_editor` das
   Dokumentmodell. Steht auch so in `spec.md`.
+- **Das sichtbare Aufblitzen ist behoben (2026-08-12), der Neuaufbau
+  darunter bleibt.** Es waren **zwei** Dinge, und nur eines davon ließ sich
+  sinnvoll im Mockup beheben: Die Einblend-Animation `block-in` hing
+  **unbedingt** an `.inline-embed`, lief also bei jedem Neuaufbau für jede
+  Zeile — sechs Animationen pro Klick, nachgemessen mit
+  `document.getAnimations()`. Sie hängt jetzt an `.ist-neu`, und die Klasse
+  bekommt nur, was beim letzten Aufbau noch nicht da war
+  (`einblendenNurNeu()`). Geprüft von `test_kein_flackern.js`.
+
+  > **Die Lehre:** „Sieht aus wie ein Refresh" hieß hier nicht, dass man den
+  > Neuaufbau *sieht* — man sah die **Animation**, die er auslöste. Ohne
+  > `getAnimations()` hätte ich am falschen Ende repariert (dem teuren) und
+  > das billige, sichtbare Übel stehen lassen.
+
 - **Vollständiger Neuaufbau bei jeder Änderung — im Mockup bewusst nicht
   repariert.** Vom Nutzer am 2026-08-11 bemerkt: *„Wieso refreshen die
   Aufgaben in den Listen so oft? Wenn ich z. B. eine Unteraufgabe als

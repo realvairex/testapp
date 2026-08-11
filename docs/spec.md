@@ -155,6 +155,15 @@ ohnehin **samt ihrem Unterbau**, siehe 2.8.
   dem **alten** Wert entstehen und erst im nächsten Bild auf den neuen
   gesetzt werden.
 
+> ⚠️ **Einblenden ist für Neues.** Eine Aufgabenzeile blendet **nur** ein,
+> wenn sie wirklich neu dazugekommen ist — nie, weil die Ansicht neu
+> gezeichnet wurde. Im Mockup hing die Animation unbedingt an jeder Zeile
+> und lief damit bei jedem Klick; für das Auge war das ein ständiges
+> Aufblitzen der Liste. In Flutter ist die Falle dieselbe: Eine
+> Einblend-Animation an einem Listeneintrag, der bei jedem Zustandswechsel
+> neu gebaut wird, läuft jedes Mal. Sie gehört an den **Eintritt in die
+> Liste**, nicht an den Aufbau des Widgets.
+>
 > ⚠️ **Eine Änderung darf nur ihre Zeile betreffen.** Im Mockup baut jede
 > Änderung — ein Kästchen abhaken, eine Seite öffnen — **alle sichtbaren
 > Spalten samt Editoren** neu auf; das blitzt sichtbar auf und war dem
