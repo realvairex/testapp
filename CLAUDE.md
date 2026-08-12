@@ -28,8 +28,9 @@ Projekt. Konkret heißt das:
 
 ## Behaupten ist nicht prüfen
 
-Der teuerste wiederkehrende Fehler dieses Projekts — sechsmal vorgekommen.
-Die Muster mit Belegen: `docs/lernkurve.md`.
+Der teuerste wiederkehrende Fehler dieses Projekts — in zwei Spielarten
+zusammen **zehnmal** vorgekommen. Die Muster mit Belegen und die Kennzahl
+„wer findet die Fehler": `docs/lernkurve.md`.
 
 1. **Jede Behauptung über ein Verhalten braucht ihre Messung** — im selben
    Arbeitsschritt. „Läuft grün" ohne Lauf und „ist eingebaut" für Code, der

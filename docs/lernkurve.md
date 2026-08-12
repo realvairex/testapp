@@ -19,6 +19,8 @@ neue Regel dazukommt: vielleicht gibt es sie schon.
 
 **Wann schreiben:** Bei `ende unfold`, wenn ein Fehler **zum zweiten Mal**
 aufgetreten ist. Einmal ist ein Vorfall, zweimal ist ein Muster.
+Vorher **`bash scripts/lernkurve-abgleich.sh`** laufen lassen — es zeigt,
+was im Bestand steht und hier fehlt.
 
 **Woran man sieht, ob diese Datei etwas nützt:** Jedes Muster trägt ein
 **„zuletzt"**-Datum. Bleibt es stehen, während die Sitzungen weiterlaufen,
@@ -37,36 +39,46 @@ unbeobachtet zurück.
 
 ## Die wiederkehrenden Fehlermuster
 
-### 1. Behaupten statt prüfen — 6 Vorfälle · zuletzt 2026-08-12
+### 1. Behaupten statt prüfen — 4 Vorfälle · zuletzt 2026-08-12
 
-Mit Abstand der teuerste. Er tarnt sich jedes Mal anders:
-
-| Datum | Gestalt | Wie er auffiel |
+| Datum | Gestalt | Wer fand es |
 |---|---|---|
-| 2026-08-07 | „Alle 40 Prüfskripte grün" — es gab keinen Läufer | Beim Bauen des Läufers |
-| 2026-08-11 | Fortschrittsbalken: `transition` im Stylesheet, nie gelaufen | Der Nutzer sah, dass er springt |
-| 2026-08-11 | Mini-Balken an der Aufgabenzeile: derselbe Fehler, Wochen alt | Erst beim Angleichen bemerkt |
-| 2026-08-11 | Regex schnitt `e-05` ab → meldete Überschwinger, den es nicht gab | Rohwerte ausgegeben |
-| 2026-08-12 | `locator.click()` scrollt selbst → meldete Fix als wirkungslos | Gegenprobe per `git stash` |
-| 2026-08-12 | Aus einer Werkzeug-Zusammenfassung geschlossen statt die Quelle zu lesen | Nachfrage des Nutzers |
+| 2026-08-07 | „Alle 40 Prüfskripte grün" — es gab keinen Läufer | ich (beim Bauen des Läufers) |
+| 2026-08-11 | Fortschrittsbalken: `transition` im Stylesheet, nie gelaufen | **Nutzer** |
+| 2026-08-11 | Mini-Balken an der Aufgabenzeile: derselbe Fehler, Wochen alt | ich (beim Angleichen) |
+| 2026-08-12 | Aus einer Werkzeug-Zusammenfassung geschlossen statt die Quelle zu lesen | **Nutzer** |
 
 **Der gemeinsame Kern:** Eine Aussage über ein Verhalten wurde gemacht,
 ohne das Verhalten zu beobachten. Ob es um Testläufe, Animationen oder
 fremde Dokumente geht, ist zweitrangig.
 
+> **Korrigiert am 2026-08-12 beim Nachzählen:** Hier standen erst 6
+> Vorfälle. Zwei davon (`e-05`-Regex, `locator.click()`) waren **falsch
+> einsortiert** — bei beiden lag der Fehler in der Messung, sie gehören
+> zu Muster 2. Die Gesamtzahl stimmte, das Muster nicht. Das ist nicht
+> kosmetisch: Es verschiebt, welche Gegenmaßnahme als die wichtigste
+> erscheint.
+
 **Daraus wurde:** `CLAUDE.md`, Abschnitt „Behaupten ist nicht prüfen"
 (6 Regeln). Der wirksamste Einzelpunkt ist die **Gegenprobe**: den Fix
 entfernen, gleich messen, Unterschied ansehen.
 
-### 2. Der Fehler liegt in der Messung, nicht im Erzeugnis — 4 Vorfälle · zuletzt 2026-08-12
+### 2. Der Fehler liegt in der Messung, nicht im Erzeugnis — 6 Vorfälle · zuletzt 2026-08-12
+
+**Das häufigste Muster** — und das war beim ersten Anlegen dieser Datei
+nicht zu sehen, weil zwei Fälle unter Muster 1 einsortiert waren.
 
 Ein Prüfskript wird rot, und der erste Reflex ist, das Erzeugnis zu
 reparieren.
 
-- Zeitgrenze 120 s bei 119 s Laufzeit → „Absturz" gemeldet
-- Suche nach „false" traf Mess-JSON statt Zusicherungen
-- Erwartung „Zähler +1" bei einem Zähler, der verschachtelt summiert
-- Linker Rand gemessen, während die Ansicht nach rechts gescrollt war
+| Datum | Gestalt | Wer fand es |
+|---|---|---|
+| 2026-08-07 | Zeitgrenze 120 s bei 119 s Laufzeit → „Absturz" gemeldet | ich |
+| 2026-08-07 | Suche nach „false" traf Mess-JSON statt Zusicherungen | ich |
+| 2026-08-07 | Erwartung „Zähler +1" bei verschachtelt summierendem Zähler | ich |
+| 2026-08-08 | Linker Rand gemessen, während die Ansicht gescrollt war | ich |
+| 2026-08-11 | Regex schnitt `e-05` ab → meldete Überschwinger, den es nicht gab | ich (Rohwerte ausgegeben) |
+| 2026-08-12 | `locator.click()` scrollt selbst → meldete Fix als wirkungslos | ich (Gegenprobe per `git stash`) |
 
 **Daraus wurde:** Regel 2 in „Behaupten ist nicht prüfen" — *erst die
 Messung anzweifeln, dann das Erzeugnis; die Messung dann aber auch
@@ -119,6 +131,53 @@ und die sieht man nur, wenn man gezielt danach sucht. Deshalb prüft
 Dateien unter `docs/`**, nicht pro Datei: Die ersten beiden Prüfungen waren
 handgeschriebene Zwillinge, beim dritten Dokument wäre ein Drilling
 entstanden.
+
+### 7. Der Nutzer sieht einen anderen Stand als das Repo — 2 Vorfälle · zuletzt 2026-08-08
+
+| Datum | Gestalt | Wer fand es |
+|---|---|---|
+| 2026-08-07 | Mockup unter einer **zweiten, leeren** Artifact-Adresse veröffentlicht | **Nutzer** |
+| 2026-08-08 | Mockup geändert, aber **nicht neu** veröffentlicht — „hast du Variante 2 überhaupt gebaut?" | **Nutzer** |
+
+**Warum dieses Muster besonders tückisch ist:** Im Repo stimmt alles, jede
+Prüfung meldet grün — nur das, was der Nutzer *ansieht*, ist veraltet. Der
+Fehler ist geräuschlos und kann beliebig lange unbemerkt bleiben. **Beide
+Male hat ihn der Nutzer gefunden, nicht ich.**
+
+**Daraus wurde:** `ende unfold`, Schritt 12 — die ausdrückliche Frage, ob
+das veröffentlichte Mockup zum Repo-Stand passt. Mechanisch prüfbar ist es
+nicht (das Skript läuft ohne Netz), deshalb eine bewusste Frage.
+
+> **Nachgetragen am 2026-08-12 beim Double-Check.** Dieses Muster fehlte,
+> obwohl es nach eigener Definition (zweimal = Muster) hineingehörte und in
+> `status.md` §6 seit Tagen als Fallstrick stand. Beim ersten Anlegen habe
+> ich nur die Fehler aus dem *laufenden* Chat gesammelt, statt die
+> vorhandene Doku systematisch durchzugehen.
+
+---
+
+## Wer die Fehler findet — die eigentliche Kennzahl
+
+Ob ich besser werde, zeigt sich nicht an der Zahl der Fehler, sondern
+daran, **wer sie entdeckt**. Ein Fehler, den ich selbst finde, kostet
+Minuten; einer, den der Nutzer melden muss, kostet ihn Vertrauen und eine
+Runde.
+
+Stand 2026-08-12, über alle Muster:
+
+| | Anzahl |
+|---|---|
+| von mir selbst gefunden | 10 |
+| **vom Nutzer gemeldet** | **6** |
+
+**Diese Zahl ist der Maßstab dieser Datei.** Sinkt der rechte Wert über die
+nächsten Sitzungen, wirken die Regeln. Bleibt er, wirken sie nicht — egal
+wie gut sie klingen.
+
+Auffällig dabei: Bei Muster 2 (Messfehler) habe ich **alle sechs** selbst
+gefunden. Bei den sichtbaren Dingen — Animation, veröffentlichter Stand —
+war es umgekehrt. Ich prüfe offenbar gut, was ich *messen* kann, und
+schlecht, was man *sehen* muss.
 
 ---
 
@@ -178,6 +237,14 @@ Ehrlich benannt, damit sie nicht unbemerkt bleiben:
 - **Verhaltensregeln lassen sich nicht mechanisch prüfen.**
   `session-check.sh` kann nur feststellen, ob Regeln *vorhanden und
   erreichbar* sind — nicht, ob sie befolgt wurden.
+- **Ich sammle aus dem Gespräch statt aus dem Bestand.** Muster 7 fehlte,
+  obwohl es seit Tagen in `status.md` §6 stand — ich hatte die Fehler des
+  laufenden Chats zusammengetragen und die vorhandene Doku nicht
+  durchgesehen. Das ist derselbe Fehler wie „eine Zusammenfassung ist keine
+  Quelle", nur **nach innen** gerichtet: Das Arbeitsgedächtnis ist auch
+  eine Zusammenfassung. Teilweise abgefangen durch
+  `scripts/lernkurve-abgleich.sh`, aber nur teilweise — das Skript findet
+  Kandidaten, es erkennt keine Muster.
 - **Ich melde nicht von selbst, wenn ein Dokument fehlt.** Diese Datei
   entstand, weil der Nutzer danach fragte — nicht, weil mir auffiel, dass
   die Lehren unauffindbar in 3289 Zeilen `decisions.md` lagen. Die

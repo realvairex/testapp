@@ -30,6 +30,12 @@ Arbeite dann das Folgende der Reihe nach ab:
    Entscheidung mit Kontext, abgewogenen Optionen und Begründung — nicht
    nur dem Ergebnis.
 5. **`docs/lernkurve.md` fortschreiben — aber nur beim zweiten Mal.**
+   **Führe zuerst `bash scripts/lernkurve-abgleich.sh` aus.** Es listet,
+   was im Bestand steht und in der Lernkurve fehlt. Der Grund für dieses
+   Skript: Beim Anlegen der Lernkurve habe ich aus dem *Gespräch* gesammelt
+   statt aus dem *Repo* und dabei ein Muster übersehen, das seit Tagen in
+   `status.md` dokumentiert war. Gegen so etwas hilft kein Vorsatz, sondern
+   eine Liste zum Abarbeiten.
    Ist in dieser Sitzung ein Fehler aufgetreten, den es **schon einmal
    gab**, gehört er dort ins Muster (Zeile in der Tabelle, Zähler hoch).
    Einmal ist ein Vorfall und gehört nur nach `decisions.md`; **zweimal
