@@ -29,23 +29,31 @@ Arbeite dann das Folgende der Reihe nach ab:
 4. **`docs/decisions.md` nachziehen.** Jede in dieser Session getroffene
    Entscheidung mit Kontext, abgewogenen Optionen und Begründung — nicht
    nur dem Ergebnis.
-5. **`docs/milestones.md` prüfen.** Wurde ein nennenswerter
+5. **`docs/lernkurve.md` fortschreiben — aber nur beim zweiten Mal.**
+   Ist in dieser Sitzung ein Fehler aufgetreten, den es **schon einmal
+   gab**, gehört er dort ins Muster (Zeile in der Tabelle, Zähler hoch).
+   Einmal ist ein Vorfall und gehört nur nach `decisions.md`; **zweimal
+   ist ein Muster**. Ebenso: Hat etwas messbar geholfen oder nachweislich
+   nicht funktioniert, kommt es in die entsprechenden Abschnitte. Eine
+   Schwäche, für die es noch kein Gegenmittel gibt, wird unter „Offene
+   Schwächen" benannt statt verschwiegen.
+6. **`docs/milestones.md` prüfen.** Wurde ein nennenswerter
    Zwischenstand erreicht, trag ihn mit Commit-Hash ein.
-6. **`docs/session-log.md` fortschreiben.** Ein neuer Abschnitt ganz
+7. **`docs/session-log.md` fortschreiben.** Ein neuer Abschnitt ganz
    oben, überschrieben mit `## <Datum> — <kurzer Titel>`, mit den drei
    Blöcken **Gemacht**, **Entschieden**, **Offen**. Hier gehört auch
    hinein, was ein Commit nicht zeigt: verworfene Wege, Begründungen im
    Vorbeigehen, Vermutungen.
-7. **`CLAUDE.md` prüfen.** Stimmen Status und Doku-Struktur noch? Die
+8. **`CLAUDE.md` prüfen.** Stimmen Status und Doku-Struktur noch? Die
    Datei bleibt schlank — Details gehören nach `docs/`.
-8. **Offene Fäden benennen.** Alles, was in der Luft hängt — eine
+9. **Offene Fäden benennen.** Alles, was in der Luft hängt — eine
    Frage, auf die du keine Antwort bekommen hast, ein Verdacht, dem du
    nicht nachgegangen bist, ein Fehler, den du bewusst stehen gelassen
    hast — gehört sichtbar nach `docs/status.md`. Nicht in deinen Kopf.
-9. **Alles pushen**, dann **`bash scripts/session-check.sh` erneut
+10. **Alles pushen**, dann **`bash scripts/session-check.sh` erneut
    ausführen**. Läuft es noch nicht sauber durch, ist die Session nicht
    fertig — dann die verbleibenden Punkte abarbeiten und erneut prüfen.
-10. **Den Arbeitsstand nach `main` überführen.** Gepusht heißt nicht
+11. **Den Arbeitsstand nach `main` überführen.** Gepusht heißt nicht
     angekommen: Arbeitest du auf einem Nebenbranch (jede Web-Sitzung tut
     das, `claude/…`), liegt der Stand danach zwar auf GitHub, aber
     **nicht** dort, wo die nächste Sitzung ihn sucht. Genau so hing das
@@ -78,7 +86,7 @@ Arbeite dann das Folgende der Reihe nach ab:
     Melde anschließend in einer Zeile, was passiert ist: „`main` per
     Fast-Forward auf `<hash>` gezogen" oder „`main` war schon aktuell"
     oder „nicht möglich, weil …".
-11. **Passt das veröffentlichte Mockup zum Repo-Stand?** Wurde
+12. **Passt das veröffentlichte Mockup zum Repo-Stand?** Wurde
     `design/mockups/v1-desktop.html` in dieser Sitzung geändert, muss es
     unter der **gespeicherten Artifact-URL** (`docs/status.md` §6) neu
     veröffentlicht sein — mit dem Parameter `url`, sonst entsteht eine

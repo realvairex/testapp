@@ -3287,3 +3287,69 @@ niemand weiß, ob sie prüft.
   ist nicht prüfen" und „eine Zusammenfassung ist keine Quelle" kann kein
   Skript kontrollieren. Prüfbar ist nur, ob die Regeln **vorhanden und
   erreichbar** sind — das tut Abschnitt 7 jetzt.
+
+## 2026-08-12 — `docs/lernkurve.md`: aus Einzelfällen Muster machen
+
+**Die Frage des Nutzers:** Gibt es eine Datei, die dokumentiert, wie ich
+mich weiterbilde — woraus ich gelernt habe, was mir geholfen hat, welche
+Fehler ich gemacht habe, damit ich künftig besser werde?
+
+**Nachgesehen statt geraten: nein, gab es nicht.** Und die Lücke ist
+größer, als es klingt. Die Lehren *existieren* — sie stehen in
+`decisions.md`. Nur ist die Datei inzwischen **3289 Zeilen** lang und
+chronologisch geordnet. Beispiel: „Der Fehler lag in der Messung" ist
+viermal vorgekommen, verteilt über Wochen. Beim Lesen erscheint jeder Fall
+als Einzelfall. **Das Muster ist unsichtbar, obwohl alle Belege da sind.**
+
+### Warum eine eigene Datei und nicht ein Abschnitt in `decisions.md`
+
+Weil beide etwas anderes leisten:
+
+| Datei | Ordnung | Antwortet auf |
+|---|---|---|
+| `decisions.md` | chronologisch | „Warum haben wir das damals so entschieden?" |
+| `lernkurve.md` | nach Muster | „Welcher Fehler kommt wieder — und was hilft?" |
+| `CLAUDE.md` | nach Verbindlichkeit | „Was gilt?" |
+
+Ein Abschnitt in `decisions.md` würde chronologisch weiterwachsen und
+wäre in vier Wochen genauso unauffindbar wie die Einzelfälle jetzt.
+
+### Was drinsteht
+
+Fünf Fehlermuster mit Häufigkeit und Beleg (Behaupten statt prüfen: 6×;
+Fehler in der Messung: 4×; zu grob geändert: 2×; erster Verursacher ist
+nicht der einzige; zu lange gebraucht), dazu **was messbar geholfen hat**
+(Läufer mit Urteil, `session-check.sh`, Zwischenwerte statt Endwerte,
+Rohwerte bei seltsamen Zahlen, `getAnimations()` statt Screenshots,
+Gegenprobe per `git stash`), **was nicht funktioniert hat**, die
+**Impulse von außen** mit Datum und Quelle — und ein Abschnitt **„Offene
+Schwächen"** für das, wogegen es noch kein Mittel gibt.
+
+Der letzte Abschnitt ist der unangenehme und deshalb der wichtigste. Dort
+steht z. B., dass ich „alles geprüft" melde, ohne zu zählen — am selben Tag
+zweimal passiert.
+
+### Verdrahtet, weil eine ungelesene Datei nichts nützt
+
+Die Lehre von vor einer halben Stunde (`conventions.md` war nirgends
+eingebunden) wurde sofort angewandt:
+
+- **`ende.md` Schritt 5:** fortschreiben — **aber nur beim zweiten Mal.**
+  Einmal ist ein Vorfall und gehört nach `decisions.md`; **zweimal ist ein
+  Muster.** Ohne diese Schwelle würde die Datei zur zweiten Kopie des
+  Protokolls und verlöre genau die Eigenschaft, die sie nützlich macht.
+- **`start.md`:** lesen, *bevor* eine Regel in `CLAUDE.md` in Frage gestellt
+  oder eine neue hinzugefügt wird.
+- **`session-check.sh`, Abschnitt 7:** meldet, wenn die Datei fehlt, nicht
+  verwiesen wird, oder `ende.md` sie nicht mehr fortschreibt — der Fall,
+  in dem sie still veraltet.
+
+Alle drei Fehlerfälle einzeln herbeigeführt und geprüft, dass die Meldung
+kommt; danach wiederhergestellt und wieder grün.
+
+### Der Gedanke dahinter
+
+Eine Regel ohne ihren Preis wird irgendwann gestrichen, weil niemand mehr
+weiß, wofür sie da war. `CLAUDE.md` sagt *was* — knapp, damit es gelesen
+wird. `lernkurve.md` sagt *was es gekostet hat*. Erst zusammen überleben
+Regeln einen Sitzungswechsel.

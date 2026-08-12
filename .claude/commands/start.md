@@ -42,6 +42,9 @@ Arbeite folgende Schritte ab, bevor du antwortest:
 4. Lies gezielt nach, was für die anstehende Aufgabe relevant ist:
    `docs/decisions.md` für das Warum hinter einer Festlegung,
    `docs/concept.md` für die Produktvision,
+   **`docs/lernkurve.md`, bevor du eine Regel aus `CLAUDE.md` in Frage
+   stellst oder eine neue hinzufügst** — dort steht, was sie gekostet hat
+   und welche Fehler wiederkehren,
    **`docs/conventions.md`, sobald einer ihrer Auslöser eintritt** — eine
    Bibliothek hinzufügen oder aktualisieren, die Datenschicht bauen, ein
    Feature beginnen oder abschließen, den Flutter-Bau starten. Die

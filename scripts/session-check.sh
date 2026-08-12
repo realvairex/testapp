@@ -177,7 +177,7 @@ else
   ok "kein Scratchpad-Verzeichnis gefunden"
 fi
 
-sec "7. Verweise auf docs/conventions.md"
+sec "7. Ausgelagerte Dokumente erreichbar"
 # CLAUDE.md nennt Ausloeser ("bevor du X tust -> dort nachlesen") und laesst
 # die Regeln selbst in docs/conventions.md. Das funktioniert nur, solange
 # beide Seiten zusammenpassen. Wird dort ein Abschnitt geloescht oder
@@ -203,6 +203,20 @@ else
   else
     ok "Ausloeser in CLAUDE.md und Abschnitte in conventions.md passen zusammen"
   fi
+fi
+
+# Dieselbe Falle wie oben: Eine Datei, auf die niemand verweist, wird nie
+# gelesen - und eine Lehre, die niemand liest, ist keine.
+if [ ! -f docs/lernkurve.md ]; then
+  grep -q "docs/lernkurve.md" CLAUDE.md 2>/dev/null \
+    && bad "CLAUDE.md verweist auf docs/lernkurve.md - die Datei fehlt" \
+    || ok "keine Lernkurve vorhanden"
+elif ! grep -q "docs/lernkurve.md" CLAUDE.md; then
+  bad "docs/lernkurve.md wird von CLAUDE.md nicht verwiesen - wird nie gelesen"
+elif ! grep -q "lernkurve" .claude/commands/ende.md; then
+  bad "ende.md schreibt docs/lernkurve.md nicht fort - sie veraltet still"
+else
+  ok "docs/lernkurve.md ist verwiesen und wird beim Sitzungsende fortgeschrieben"
 fi
 
 sec "8. Sitzungsprotokoll"

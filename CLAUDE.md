@@ -28,8 +28,8 @@ Projekt. Konkret heißt das:
 
 ## Behaupten ist nicht prüfen
 
-Der teuerste wiederkehrende Fehler dieses Projekts — sechsmal vorgekommen,
-Belege in `docs/decisions.md` (2026-08-07 bis 2026-08-12).
+Der teuerste wiederkehrende Fehler dieses Projekts — sechsmal vorgekommen.
+Die Muster mit Belegen: `docs/lernkurve.md`.
 
 1. **Jede Behauptung über ein Verhalten braucht ihre Messung** — im selben
    Arbeitsschritt. „Läuft grün" ohne Lauf und „ist eingebaut" für Code, der
@@ -168,6 +168,9 @@ Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
   Doku-Pflicht, Sitzungswechsel)
 - `docs/status.md` — **zuerst lesen**: aktueller Stand, nächster Schritt,
   Festlegungen des Nutzers, bekannte Fallstricke
+- `docs/lernkurve.md` — **wiederkehrende Fehlermuster**, was dagegen
+  geholfen hat, Impulse von außen und offene Schwächen. Das Warum hinter
+  den Regeln in dieser Datei.
 - `docs/conventions.md` — Regeln für **bestimmte** Arbeiten
   (Abhängigkeiten, Datenschicht, Features, Flutter-Start)
 - `docs/session-log.md` — was in welcher Sitzung passiert ist

@@ -346,6 +346,8 @@ dieselbe Antwort noch einmal geben zu müssen.
 | `docs/concept.md` | Produktvision, Inspiration, Feature-Liste |
 | `docs/spec.md` | Umsetzungsvorlage: Datenmodell, Verhalten, Tokens |
 | `docs/decisions.md` | vollständiges Entscheidungsprotokoll mit Begründungen |
+| `docs/lernkurve.md` | wiederkehrende Fehlermuster, was geholfen hat, offene Schwächen |
+| `docs/conventions.md` | Regeln für bestimmte Arbeiten (Abhängigkeiten, Datenschicht, …) |
 | `docs/milestones.md` | Meilensteine mit Commit-Hash, inkl. Rückkehrpunkt |
 | `docs/research-superlist.md` | Recherche zu Superlists Open-Source-Fundament |
 | `design/mockups/v1-desktop.html` | das Mockup |
