@@ -26,6 +26,31 @@ Projekt. Konkret heißt das:
 - **Ehrlich berichten.** Was nicht geprüft wurde, wird nicht als geprüft
   dargestellt. Fehlgeschlagenes wird benannt, nicht weggelassen.
 
+## Behaupten ist nicht prüfen
+
+Der teuerste wiederkehrende Fehler dieses Projekts — sechsmal vorgekommen,
+Belege in `docs/decisions.md` (2026-08-07 bis 2026-08-12).
+
+1. **Jede Behauptung über ein Verhalten braucht ihre Messung** — im selben
+   Arbeitsschritt. „Läuft grün" ohne Lauf und „ist eingebaut" für Code, der
+   nie ausgeführt wird, sind hier beide schon passiert.
+2. **Bei einem roten Punkt zuerst die Messung anzweifeln, dann das
+   Erzeugnis** — dreimal lag der Fehler in der Messung. Die Messung dann
+   aber auch **reparieren**, nicht die Zusicherung entschärfen.
+3. **Wirkung gegenprüfen, wenn man sie nicht unmittelbar sieht:** Fix per
+   `git stash` entfernen, gleich messen, Unterschied ansehen. Sonst wird
+   eine Reparatur gemeldet, von der niemand weiß, ob sie repariert.
+4. **Der erste plausible Verursacher ist nicht automatisch der richtige.**
+
+## Chirurgisch ändern
+
+- **Wer etwas entfernt, prüft, was daran hing.**
+- **Kein Suchen-und-Ersetzen über Dateien, die je einen eigenen Zweck
+  haben.** *Ein Selektor, der wieder matcht, ist keine Prüfung, die wieder
+  prüft.*
+- **Umliegenden Code nicht nebenbei „verbessern"** — nennen, nicht
+  anfassen.
+
 ## Arbeitsweise / Doku-Pflicht
 
 Für dieses Projekt gilt durchgängig:
@@ -47,67 +72,37 @@ Für dieses Projekt gilt durchgängig:
 ## Entwicklungs-Konventionen
 
 - **Backup:** Regelmäßig committen und pushen (kleine, häufige Commits statt
-  eines großen am Ende). Gearbeitet wird auf einem lokalen Klon; GitHub ist
-  die einzige Kopie außerhalb dieses einen Rechners. Ungepushtes überlebt
-  keinen Plattendefekt und keinen verlorenen Rechner.
-- **Werkzeuge gehören ins Repo, nicht ins Scratchpad.** Ein Skript, das
-  **mehr als einmal** ausgeführt wird oder eine **Messung, Regel oder
-  Erkenntnis** festhält, wird von vornherein im Repo angelegt und
-  committet — nicht im temporären Verzeichnis. Das Scratchpad ist
-  ausschließlich für echten Wegwerf: ein einmaliger Bildschirmschuss,
-  eine Zwischenablage, ein Einzeiler zum Nachsehen. Faustregel: *Würde
-  ich das in vier Wochen noch einmal brauchen? Dann sofort ins Repo.*
-  Im Zweifel ins Repo — eine überflüssige Datei kostet nichts, eine
-  verlorene kostet die Arbeit, die in ihr steckt.
-  (Anlass: 40 Prüfskripte lagen ausschließlich im Scratchpad und wären
-  bei einem Sitzungswechsel ersatzlos verloren gewesen. Siehe
-  `docs/decisions.md`, 2026-08-06.)
-- **CI:** GitHub-Actions-Pipeline (Lint, Type-Check, Tests bei jedem Push)
-  **ab dem ersten Flutter-Code**. Für das Mockup bewusst zurückgestellt —
-  sie müsste beim Umstieg neu geschrieben werden und würde ein
-  eingefrorenes Artefakt bewachen. Der Zweck ist bis dahin über
-  `bash scripts/run-mockup-tests.sh` erreichbar. Begründung:
-  `docs/decisions.md`, 2026-08-07.
-- **Tests:** Parallel zu Features schreiben, nicht nachträglich. Kernlogik
-  (z.B. Task-Verschachtelung, Fortschrittsberechnung, Datumsfilter) hat
-  Priorität.
+  eines großen am Ende). Ungepushtes ist in **jeder** Arbeitsumgebung
+  gefährdet — am lokalen Klon durch Plattendefekt oder verlorenen Rechner,
+  in einer Web-Sitzung durch den temporären Container. Wo gerade gearbeitet
+  wird, steht in `docs/status.md` §0.
+- **Werkzeuge gehören ins Repo, nicht ins Scratchpad.** Faustregel:
+  *Würde ich das in vier Wochen noch einmal brauchen? Dann sofort ins
+  Repo.* Das Scratchpad ist nur für echten Wegwerf. Im Zweifel ins Repo —
+  eine überflüssige Datei kostet nichts, eine verlorene die Arbeit darin.
+  (Anlass: `docs/decisions.md`, 2026-08-06.)
 - **Secrets:** Niemals ins Repo. `.gitignore` sauber halten (node_modules,
   Build-Artefakte, `.env`). Zukünftige API-Keys etc. nur über
   Umgebungsvariablen.
-- **Code-Reviews:** In sinnvollen Abständen selbstständig durchführen
-  (Code-Qualität, Sicherheit), bevor ein Feature als fertig gilt.
 - **Commit-Größe:** Kleine, thematisch klare Schritte statt Mega-Commits.
-- **Session-Start-Hook:** Einrichten, sobald das Projekt bau-/testbar ist,
-  damit jede Web-Session automatisch weiß, wie sie build/lint/test
-  ausführt.
-- **Diese Datei schlank halten:** Details gehören in `docs/`, nicht hier
-  rein.
-- **Abhängigkeiten:** Jede Fremdbibliothek auf eine **exakte Version**
-  festnageln (keine Versionsbereiche), Lockfile mitcommitten. Updates
-  passieren nie nebenbei: erst in einer abgesicherten Umgebung
-  (eigener Branch/Worktree) einspielen, Funktionsfähigkeit prüfen, und
-  **erst nach bestandener Prüfung** in den Hauptstand übernehmen. Gilt
-  besonders für Vorabversionen (z.B. `super_editor` vor 1.0), bei denen
-  es keine Stabilitätsgarantie gibt.
-- **Datensicherheit der Nutzerdaten:** Die App ist local-first, die Daten
-  liegen also nur auf dem Gerät. Deshalb ab der ersten lauffähigen
-  Version: offenes, dokumentiertes Speicherformat (JSON/SQLite, nichts
-  Undurchsichtiges), eine Export-Funktion, Schema-Version in den
-  gespeicherten Daten plus Migrationen, und atomares Schreiben
-  (erst in temporäre Datei, dann umbenennen), damit ein Absturz während
-  des Speicherns den Bestand nicht zerstört.
-- **Proaktive Hinweise:** Sicherheitsrelevante oder anderweitig sinnvolle
-  Verbesserungen ("schlaue Sachen"), die während der Arbeit auffallen,
-  werden dem Nutzer von sich aus mitgeteilt, ohne dass er danach fragen
-  muss.
-- **Meilensteine:** Bedeutsame Zwischenstände (abgeschlossene
-  Mockup-Iterationen, erste lauffähige Version, etc.) werden selbstständig
-  in `docs/milestones.md` mit Commit-Hash festgehalten — im Zweifel lieber
-  häufiger als zu selten, ohne dass der Nutzer danach fragen muss. Git-Tags
-  **lassen sich inzwischen pushen** (am 2026-08-06 nachgewiesen), werden
-  aber bewusst noch nicht vergeben — die Tabelle trägt Beschreibungen, die
-  ein Tag-Name nicht fassen kann. Begründung: `docs/decisions.md`. Volles
-  Semantic-Versioning-Schema erst ab echtem App-Code.
+- **Diese Datei schlank halten.** Sie wird bei **jeder** Sitzung
+  vollständig gelesen; jede Regel darin konkurriert mit allen anderen um
+  Aufmerksamkeit. Hier steht nur, was **durchgängig** gilt. Regeln für
+  bestimmte Arbeiten stehen in `docs/conventions.md` — mit ihrem Auslöser:
+  - **Bevor du eine Bibliothek hinzufügst oder aktualisierst** → dort
+    nachlesen (exakte Version, Prüfung vor Übernahme).
+  - **Bevor du die Datenschicht baust** → dort nachlesen (offenes Format,
+    Export, Schema-Version, atomares Schreiben). Die Daten liegen nur auf
+    dem Gerät; ein Fehler hier ist unwiederbringlich.
+  - **Bevor du ein Feature beginnst oder abschließt** → dort nachlesen
+    (Tests parallel, Selbst-Review).
+  - **Beim ersten Flutter-Code** → dort nachlesen (CI, Hook erweitern,
+    Semantic Versioning).
+- **Meilensteine:** Bedeutsame Zwischenstände selbstständig in
+  `docs/milestones.md` mit Commit-Hash festhalten — lieber häufiger als zu
+  selten, ohne Aufforderung. **Git-Tags bewusst noch nicht**, obwohl sie
+  sich pushen lassen; die Tabelle trägt Beschreibungen, die ein Tag-Name
+  nicht fasst. Begründung: `docs/decisions.md`.
 
 ## Status
 
@@ -159,9 +154,12 @@ Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
 
 ## Doku-Struktur
 
-- `CLAUDE.md` — diese Datei: Projektüberblick, Konventionen
+- `CLAUDE.md` — diese Datei: **nur was durchgängig gilt** (Haltung,
+  Doku-Pflicht, Sitzungswechsel)
 - `docs/status.md` — **zuerst lesen**: aktueller Stand, nächster Schritt,
   Festlegungen des Nutzers, bekannte Fallstricke
+- `docs/conventions.md` — Regeln für **bestimmte** Arbeiten
+  (Abhängigkeiten, Datenschicht, Features, Flutter-Start)
 - `docs/session-log.md` — was in welcher Sitzung passiert ist
 - `docs/concept.md` — Produktvision, Inspiration, Feature-Liste, Design-Richtung
 - `docs/spec.md` — **Umsetzungsvorlage**: Datenmodell, Verhaltensregeln,
