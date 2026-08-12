@@ -155,6 +155,16 @@ ohnehin **samt ihrem Unterbau**, siehe 2.8.
   dem **alten** Wert entstehen und erst im nächsten Bild auf den neuen
   gesetzt werden.
 
+> ⚠️ **Ein Neuaufbau darf nicht kosten, was der Nutzer eingestellt hat.**
+> Scrollstand und Cursorposition gehören ihm, nicht der Ansicht. Im Mockup
+> sprang eine lange Liste beim Abhaken einer Aufgabe nach ganz oben, und
+> der Cursor aus einem Eingabefeld verschwand — beides, weil der
+> Inhaltsbereich in einem Stück ersetzt wird. Das ist der zweite Teil
+> desselben Gefühls: nicht die Animation, sondern der **Verlust**. In
+> Flutter tragen `ScrollController` und `FocusNode` diesen Zustand über
+> einen Rebuild hinweg — aber nur, wenn sie außerhalb des neu gebauten
+> Teilbaums leben. Wer sie im Widget selbst anlegt, hat denselben Fehler.
+>
 > ⚠️ **Einblenden ist für Neues.** Eine Aufgabenzeile blendet **nur** ein,
 > wenn sie wirklich neu dazugekommen ist — nie, weil die Ansicht neu
 > gezeichnet wurde. Im Mockup hing die Animation unbedingt an jeder Zeile

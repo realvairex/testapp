@@ -2999,3 +2999,53 @@ In `spec.md` §2.2 steht die Regel jetzt für den Flutter-Bau: *Einblenden ist
 für Neues.* Dort ist die Falle dieselbe — eine Einblend-Animation an einem
 Listeneintrag, der bei jedem Zustandswechsel neu gebaut wird, läuft jedes
 Mal.
+
+## 2026-08-12 — „Besser, aber noch nicht ganz clean": Scrollstand und Cursor
+
+Nach dem Beheben der Einblend-Animation blieb ein Rest. Die Rückmeldung des
+Nutzers war vage — *„habe das Gefühl, dass es besser ist, aber noch nicht
+ganz clean"* — und deshalb habe ich nicht geraten, sondern die typischen
+Verluste eines Neuaufbaus **durchgemessen**: Scrollposition, Fokus,
+Cursorstelle.
+
+**Zwei davon waren echt:**
+
+| | vorher | nachher |
+|---|---|---|
+| Scrollstand einer langen Liste beim Abhaken | 109 → **0** | 109 → 109 |
+| Fokus + Cursorstelle im Listentitel | `col-title@3` → **`BODY`** | bleibt `col-title@3` |
+
+Eine Liste, die beim Abhaken nach ganz oben springt, ist genau das
+„Refresh"-Gefühl — nur diesmal nicht als Animation, sondern als **Verlust**.
+Behoben mit `zustandMerken()` / `zustandZurueck()` um den Aufbau herum. Der
+Schlüssel ist der `data-col-key` der Spalte bzw. das eindeutige
+`data`-Attribut des Eingabefelds; eine Positionsnummer würde beim Öffnen
+oder Schließen einer Spalte auf die falsche zeigen.
+
+**Die Cursorstelle wird mit wiederhergestellt, nicht nur der Fokus.** Ein
+Feld, das den Fokus behält, aber den Cursor ans Ende springen lässt, ist
+beim Tippen schlimmer als gar kein Fokus.
+
+### Zweimal in derselben Stunde die eigene Messung repariert
+
+**Erstens:** `locator.click()` scrollt das Element vor dem Klick in den
+sichtbaren Bereich. Die erste Messung meldete den Fehler deshalb als „nicht
+behoben", obwohl der Fix längst griff — Playwright hatte vor dem Klick
+selbst nach oben gescrollt. Der Klick wird jetzt **im Browser** ausgelöst,
+auf eine Zeile, die ohnehin sichtbar ist.
+
+**Zweitens:** Im Prüfskript stand `return bl.scrollTop` **nach** dem Klick.
+Da ist das Element bereits abgehängt und meldet 0 — ein Wert, der gemessen,
+aber wertlos ist.
+
+Beide Male hätte ich fast am Erzeugnis weitergesucht. **Die Gegenprobe hat
+es entschieden:** Ich habe den Fix per `git stash` entfernt, mit derselben
+Methode gemessen und den Unterschied gesehen. Ohne diesen Schritt hätte ich
+eine Reparatur dokumentiert, ohne zu wissen, ob sie etwas repariert. Das
+gehört ab jetzt zu jeder Fehlerbehebung, deren Wirkung man nicht
+unmittelbar sieht.
+
+In `spec.md` §2.2 steht die Regel für den Flutter-Bau: *Ein Neuaufbau darf
+nicht kosten, was der Nutzer eingestellt hat.* Dort ist die Falle dieselbe —
+`ScrollController` und `FocusNode` tragen den Zustand nur, wenn sie
+**außerhalb** des neu gebauten Teilbaums leben.

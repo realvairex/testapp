@@ -104,6 +104,60 @@ const einblender = (z) => (z['block-in'] || 0) + (z['strip-in'] || 0);
   console.log('>>> eine wirklich neue Zeile blendet weiterhin ein:',
     neueZeile.anzahl === 1 && /Frisch dazugekommen/.test(neueZeile.titel));
 
+  // --- Was ein Neuaufbau nicht kosten darf: Scrollstand und Fokus --------
+  //
+  // Beim Abhaken einer Aufgabe in einer langen Liste sprang die Ansicht nach
+  // ganz oben, und der Cursor aus einem Eingabefeld verschwand. Das ist der
+  // zweite Teil desselben Gefühls: nicht die Animation, sondern der Verlust
+  // dessen, was der Nutzer selbst eingestellt hat.
+  //
+  // **Der Klick wird im Browser ausgelöst, nicht über Playwright.**
+  // `locator.click()` scrollt das Element zuerst in den sichtbaren Bereich -
+  // damit misst man den eigenen Messvorgang statt das Erzeugnis. Genau
+  // dieser Irrtum meldete den Fehler zunächst als „nicht behoben".
+  await page.locator('.nav-item[data-list="work"]').click();
+  await page.waitForTimeout(400);
+  for (let i = 0; i < 14; i++) {
+    await page.locator('[data-quick-add="0"]').fill('Füllaufgabe ' + i);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(70);
+  }
+  await page.waitForTimeout(400);
+
+  const vorher = await page.evaluate(() => {
+    const bl = document.querySelector('.column[data-col-index="0"] .blocks');
+    bl.scrollTop = 200;
+    const t = document.querySelector('.column[data-col-index="0"] .col-title');
+    t.focus();
+    t.setSelectionRange(3, 3);
+    const sichtbar = Array.from(document.querySelectorAll('.column[data-col-index="0"] .check-btn'))
+      .find((x) => {
+        const c = x.getBoundingClientRect(), k = bl.getBoundingClientRect();
+        return c.top > k.top + 20 && c.bottom < k.bottom - 20;
+      });
+    if (!sichtbar) return null;
+    // Den Stand VOR dem Klick festhalten: Danach ist `bl` ein abgehängtes
+    // Element, dessen scrollTop immer 0 meldet - der Wert wäre gemessen,
+    // aber wertlos.
+    const stand = bl.scrollTop;
+    sichtbar.click();
+    return stand;
+  });
+  await page.waitForTimeout(500);
+  const danach = await page.evaluate(() => {
+    const a = document.activeElement;
+    return {
+      scroll: document.querySelector('.column[data-col-index="0"] .blocks').scrollTop,
+      fokus: a.className || a.tagName,
+      cursor: a.selectionStart
+    };
+  });
+  console.log('Scrollstand', vorher, '->', danach.scroll, '| Fokus:', danach.fokus, 'Cursor@' + danach.cursor);
+  console.log('>>> die Liste springt beim Abhaken nicht nach oben:',
+    vorher > 0 && danach.scroll === vorher);
+  console.log('>>> und der Cursor bleibt, wo er war:',
+    danach.fokus === 'col-title' && danach.cursor === 3);
+
   console.log('>>> keine Seitenfehler:', fehler.length === 0);
   if (fehler.length) console.log(fehler);
   await b.close();

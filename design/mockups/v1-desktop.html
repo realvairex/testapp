@@ -2960,12 +2960,66 @@
 
   var prevPanelStack = [];
 
+  // --- Was ein Neuaufbau NICHT kosten darf: Scrollstand und Fokus ---------
+  //
+  // renderColumns() ersetzt den Inhaltsbereich in einem Stueck. Damit gehen
+  // zwei Dinge verloren, die der Nutzer selbst eingestellt hat: wie weit er
+  // gescrollt hat und wo sein Cursor steht. Beim Abhaken einer Aufgabe in
+  // einer langen Liste sprang die Ansicht deshalb nach ganz oben - genau
+  // das, was sich wie ein "Refresh" anfuehlt (gemeldet 2026-08-12).
+  //
+  // Beides wird vor dem Aufbau gemerkt und danach zurueckgesetzt. Der
+  // Schluessel ist der data-col-key der Spalte bzw. das eindeutige
+  // data-Attribut des Eingabefelds - eine Positionsnummer wuerde beim
+  // Oeffnen oder Schliessen einer Spalte auf die falsche zeigen.
+  function zustandMerken(el) {
+    var stand = { scroll: {}, fokus: null };
+    var cols = el.querySelectorAll(".column[data-col-key]");
+    for (var i = 0; i < cols.length; i++) {
+      var b = cols[i].querySelector(".blocks");
+      if (b && b.scrollTop) stand.scroll[cols[i].getAttribute("data-col-key")] = b.scrollTop;
+    }
+    var a = document.activeElement;
+    if (a && a.tagName === "INPUT" && el.contains(a)) {
+      var attr = ["data-list-title-for", "data-title-for", "data-quick-add"];
+      for (var k = 0; k < attr.length; k++) {
+        if (a.hasAttribute(attr[k])) {
+          stand.fokus = {
+            wahl: "[" + attr[k] + '="' + a.getAttribute(attr[k]) + '"]',
+            von: a.selectionStart, bis: a.selectionEnd
+          };
+          break;
+        }
+      }
+    }
+    return stand;
+  }
+
+  function zustandZurueck(el, stand) {
+    for (var key in stand.scroll) {
+      var col = el.querySelector('.column[data-col-key="' + key + '"]');
+      var b = col && col.querySelector(".blocks");
+      if (b) b.scrollTop = stand.scroll[key];
+    }
+    if (stand.fokus) {
+      var feld = el.querySelector(stand.fokus.wahl);
+      if (feld) {
+        feld.focus();
+        // Die Einfuegemarke muss mit: Ein Feld, das den Fokus behaelt, aber
+        // den Cursor ans Ende springen laesst, ist beim Tippen schlimmer als
+        // gar kein Fokus.
+        try { feld.setSelectionRange(stand.fokus.von, stand.fokus.bis); } catch (e) {}
+      }
+    }
+  }
+
   function renderColumns() {
     var el = document.getElementById("contentArea");
     var html = "";
     var newlyOpened = state.panelStack.filter(function (id) { return prevPanelStack.indexOf(id) === -1; });
     var oldScrollLeft = el.scrollLeft;
 
+    var standVorher = zustandMerken(el);
     var beforeRects = {};
     var prevCols = el.querySelectorAll(".column[data-col-key]");
     for (var bi = 0; bi < prevCols.length; bi++) {
@@ -3026,6 +3080,7 @@
       if (state.tidy && list.id === INBOX_ID) {
         html += renderTidy() + "</div></div>";
         el.innerHTML = html;
+        zustandZurueck(el, standVorher);
         einblendenNurNeu();
         balkenLaufen();
         sizeColumns();
@@ -3099,6 +3154,7 @@
 
     el.innerHTML = html;
     mountEditors();
+    zustandZurueck(el, standVorher);
     einblendenNurNeu();
     balkenLaufen();
     sizeColumns();

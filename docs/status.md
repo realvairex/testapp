@@ -294,7 +294,12 @@ dieselbe Antwort noch einmal geben zu müssen.
   nach Flutter übernommen werden — dort übernimmt `super_editor` das
   Dokumentmodell. Steht auch so in `spec.md`.
 - **Das sichtbare Aufblitzen ist behoben (2026-08-12), der Neuaufbau
-  darunter bleibt.** Es waren **zwei** Dinge, und nur eines davon ließ sich
+  darunter bleibt.** Es waren **drei** Dinge — die ersten beiden am
+  2026-08-12 gefunden, das dritte auf die Rückmeldung „besser, aber noch
+  nicht ganz clean" hin: **Scrollstand und Cursorposition gingen bei jedem
+  Neuaufbau verloren.** Eine lange Liste sprang beim Abhaken nach ganz
+  oben. Behoben durch `zustandMerken()`/`zustandZurueck()` um den Aufbau
+  herum. Die ersten beiden waren, und nur eines davon ließ sich
   sinnvoll im Mockup beheben: Die Einblend-Animation `block-in` hing
   **unbedingt** an `.inline-embed`, lief also bei jedem Neuaufbau für jede
   Zeile — sechs Animationen pro Klick, nachgemessen mit
