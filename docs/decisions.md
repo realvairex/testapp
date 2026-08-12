@@ -3049,3 +3049,100 @@ In `spec.md` §2.2 steht die Regel für den Flutter-Bau: *Ein Neuaufbau darf
 nicht kosten, was der Nutzer eingestellt hat.* Dort ist die Falle dieselbe —
 `ScrollController` und `FocusNode` tragen den Zustand nur, wenn sie
 **außerhalb** des neu gebauten Teilbaums leben.
+
+## 2026-08-12 — CLAUDE.md gegen zwei fremde Vorlagen geprüft
+
+**Anlass:** Der Nutzer verwies auf zwei Quellen und bat ausdrücklich um
+sorgfältige Prüfung statt blinder Übernahme:
+[HumanLayer, „Writing a good CLAUDE.md"](https://www.humanlayer.dev/blog/writing-a-good-claude-md)
+und [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills).
+
+**Einschränkung, die hier festgehalten gehört:** Der HumanLayer-Artikel ist
+vom Egress-Proxy dieser Umgebung **blockiert**, zwei Spiegel ebenfalls.
+Grundlage war deshalb die Zusammenfassung aus der Websuche — zweite Hand.
+Das Karpathy-Repo ließ sich direkt lesen. Wer die Entscheidungen unten
+später anzweifelt, sollte den Originalartikel selbst prüfen.
+
+### Was gemessen wurde
+
+`CLAUDE.md` hatte 174 Zeilen, davon **64 im Block
+„Entwicklungs-Konventionen"** — dem mit Abstand größten. Beim Durchzählen:
+**28 dieser 64 Zeilen galten nur für bestimmte Arbeiten** (Abhängigkeiten,
+Datenschicht, Feature-Bau, Flutter-Start). Sie standen also in einer Datei,
+die bei *jeder* Sitzung vollständig gelesen wird, und hatten in den meisten
+davon nichts zu suchen.
+
+### Übernommen
+
+**1. Situative Regeln nach `docs/conventions.md`** (HumanLayer:
+aufgabenspezifische Dokus auslagern und nur mit kurzer Beschreibung
+listen).
+
+**Entscheidend ist dabei der Auslöser, nicht das Thema.** Ein Verweis
+„Konventionen siehe conventions.md" wird nie befolgt; „**bevor** du eine
+Bibliothek hinzufügst → dort nachlesen" schon. Ohne diese Präzisierung wäre
+die Auslagerung eine Verschlechterung gewesen: Die Regeln zur Datenschicht
+schützen vor unwiederbringlichem Datenverlust, und eine Regel, die niemand
+aufschlägt, schützt nicht.
+
+**2. „Behaupten ist nicht prüfen" als eigener Abschnitt.** Das ist der
+teuerste wiederkehrende Fehler dieses Projekts — sechsmal vorgekommen
+(2026-08-07 bis 2026-08-12) — und stand bisher nur verstreut in diesem
+Protokoll, also dort, wo man erst nachliest, wenn man den Fehler schon
+gemacht hat. Aus dem Karpathy-Repo stammt der Gedanke, Aufgaben in
+**überprüfbare Ziele** statt in imperative Schritte zu fassen
+(„Aktion → verify: Kontrolle"); die vier Regeln sind aber aus **unseren
+eigenen** Fehlern abgeleitet, nicht abgeschrieben.
+
+**3. „Chirurgisch ändern"** (Karpathy: *Surgical Changes*). Trifft hier
+belegbar: Beim Entfernen des Fälligkeitsmenüs wurde eine Animation
+mitgerissen, die ein anderer Teil noch benutzte, und neun Prüfskripte
+wurden per Suchen-und-Ersetzen „repariert", bis die Selektoren wieder
+matchten und die Prüfungen inhaltlich sinnlos waren.
+
+### Nicht übernommen — mit Begründung
+
+**Die 60-Zeilen-Marke.** HumanLayer hält die eigene Datei unter 60 Zeilen;
+der breitere Konsens liegt bei unter 300. Unsere 172 liegen dazwischen, und
+das ist hier richtig: Die Grundhaltung und die Doku-Pflicht (rund 40 Zeilen)
+sind in diesem Projekt **universell** und vom Nutzer mehrfach ausdrücklich
+eingefordert („und schön dokumentieren, ich will das nicht jedes Mal
+erwähnen BITTE"). Sie zu kürzen, um eine fremde Zahl zu treffen, würde
+genau die Erwartung untergraben, um die es ihm geht. Die richtige Frage ist
+nicht „wie viele Zeilen?", sondern „gilt das **jedes Mal**?".
+
+**„Simplicity First / minimum code" als Leitprinzip.** Das ist für
+Coding-Agents in fremden Codebasen geschrieben. Hier gilt teilweise das
+Gegenteil: ausführliche Begründungen, Prüfskripte zu jedem gemeldeten
+Fehler, ein Entscheidungsprotokoll. „Keine ungefragten Features" gilt
+weiterhin — aber als Sparsamkeit im *Produkt*, nicht in der *Dokumentation*.
+
+**„Fragen statt Vermutungen".** Der Nutzer hat in diesem Projekt mehrfach
+das Gegenteil verlangt („analysiere du das optimalste und führ dann die
+richtige entscheidung aus"). Für uns gilt: Annahme **benennen** und
+weiterarbeiten, nicht blockieren. Die bestehende Regel „Mitdenken statt
+abarbeiten" deckt das bereits ab.
+
+### Nebenbei behoben: drei Faktenfehler
+
+- **Session-Start-Hook** stand als offenes To-do („einrichten, sobald…"),
+  obwohl er seit 2026-08-06 lokal und seit 2026-08-07 auch in einer
+  Web-Sitzung nachweislich läuft.
+- **„Gearbeitet wird auf einem lokalen Klon"** galt absolut — während diese
+  Sitzung im Web lief. Jetzt umgebungsunabhängig formuliert, mit Verweis
+  auf `status.md` §0.
+- **„Proaktive Hinweise"** stand doppelt: einmal als Grundhaltung, einmal
+  als Konvention.
+
+### Ergebnis
+
+`CLAUDE.md` 174 → **172 Zeilen**, `docs/conventions.md` neu mit 60. Die
+Datei ist also kaum kürzer — aber **umgeschichtet**: 28 Zeilen „gilt
+vielleicht irgendwann" raus, rund 25 Zeilen „gilt jedes Mal und ist hier
+schon sechsmal schiefgegangen" rein.
+
+**Eine Beobachtung zum Schluss, weil sie den Wert der Regel belegt:** Beim
+Einarbeiten war meine erste Fassung **203 Zeilen lang** — ich hatte einen
+Artikel über Sparsamkeit gelesen und daraufhin mehr geschrieben. Erst das
+Nachmessen hat es gezeigt. Das ist dieselbe Familie wie „behaupten ist
+nicht prüfen", nur an einem Text statt an Code.
