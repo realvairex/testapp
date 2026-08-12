@@ -116,6 +116,26 @@ Ort und Auslöser fragen.**
   auf eine Frage, nicht das Dokument. Für „gibt es das?" reicht es; für
   eine Entscheidung nicht.
 
+### 6. Angelegt, aber nicht verwoben — 2 Vorfälle an einem Tag
+
+- `docs/conventions.md` wurde von **keinem** Sitzungswerkzeug erwähnt —
+  28 Zeilen Regeln in einer Datei, die im Ablauf nicht vorkam.
+- `docs/lernkurve.md` (diese Datei) hätte dasselbe Schicksal gehabt, wenn
+  der Nutzer nicht direkt danach gefragt hätte.
+
+**Der Grundsatz daraus** (Formulierung des Nutzers): *„Alles soll wie ein
+Netz sein. Wenn etwas in dieses Netz nicht verwoben ist, benutzt es auch
+keiner."* Beim Anlegen einer Datei gehören drei Fragen sofort beantwortet:
+**Von wo wird verwiesen? Bei welchem Auslöser? Wer schreibt sie fort?**
+
+Das Tückische: Beide Seiten sehen für sich genommen in Ordnung aus. Die
+Datei ist gut, die verweisende Datei ist gut — nur die Verbindung fehlt,
+und die sieht man nur, wenn man gezielt danach sucht. Deshalb prüft
+`session-check.sh` es jetzt mechanisch, und zwar **generisch für alle
+Dateien unter `docs/`**, nicht pro Datei: Die ersten beiden Prüfungen waren
+handgeschriebene Zwillinge, beim dritten Dokument wäre ein Drilling
+entstanden.
+
 ## Impulse von außen
 
 | Datum | Quelle | Was übernommen wurde |

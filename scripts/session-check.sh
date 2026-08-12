@@ -177,46 +177,43 @@ else
   ok "kein Scratchpad-Verzeichnis gefunden"
 fi
 
-sec "7. Ausgelagerte Dokumente erreichbar"
-# CLAUDE.md nennt Ausloeser ("bevor du X tust -> dort nachlesen") und laesst
-# die Regeln selbst in docs/conventions.md. Das funktioniert nur, solange
-# beide Seiten zusammenpassen. Wird dort ein Abschnitt geloescht oder
-# umbenannt, zeigt der Verweis ins Leere - und die Regel ist praktisch weg,
-# ohne dass es jemandem auffaellt. Genau dagegen ist diese Pruefung.
-if [ ! -f docs/conventions.md ]; then
-  if grep -q "docs/conventions.md" CLAUDE.md 2>/dev/null; then
-    bad "CLAUDE.md verweist auf docs/conventions.md - die Datei fehlt"
-  else
-    ok "keine ausgelagerten Konventionen vorhanden"
-  fi
+sec "7. Alles im Netz"
+# Grundsatz des Nutzers (2026-08-12): "Alles soll wie ein Netz sein. Wenn
+# etwas in dieses Netz nicht verwoben ist, benutzt es auch keiner."
+#
+# Generisch statt pro Datei: Vorher standen hier zwei fast gleiche Bloecke -
+# einer fuer conventions.md, einer fuer lernkurve.md. Beim dritten Dokument
+# waere es ein dritter geworden. Diese Fassung deckt jede kuenftige Datei
+# unter docs/ automatisch ab.
+lose=""
+for f in docs/*.md; do
+  base="$(basename "$f")"
+  treffer="$(grep -rl --exclude-dir=.git --exclude-dir=out -F "$base" \
+             CLAUDE.md docs scripts .claude 2>/dev/null | grep -v "^$f$" | wc -l)"
+  [ "$treffer" -eq 0 ] && lose="$lose $base"
+done
+if [ -n "$lose" ]; then
+  bad "niemand verweist auf:$lose - wird nie gelesen"
 else
+  ok "jede Datei unter docs/ ist von anderer Stelle verwiesen"
+fi
+
+# Inhaltliche Ergaenzung: Ein Verweis nuetzt nichts, wenn das Ziel den
+# Abschnitt nicht mehr hat, auf den der Ausloeser zeigt.
+if [ -f docs/conventions.md ]; then
   fehlend=""
   for thema in "Abhängigkeiten" "Datenschicht" "Feature" "Flutter-Code"; do
     grep -q "$thema" docs/conventions.md || fehlend="$fehlend $thema"
   done
-  if [ -n "$fehlend" ]; then
-    bad "docs/conventions.md fehlen Abschnitte zu:$fehlend"
-  elif ! grep -q "docs/conventions.md" CLAUDE.md; then
-    bad "docs/conventions.md wird von CLAUDE.md nicht verwiesen - wird nie gelesen"
-  elif ! grep -q "conventions" .claude/commands/start.md; then
-    bad "start.md erwaehnt docs/conventions.md nicht"
-  else
-    ok "Ausloeser in CLAUDE.md und Abschnitte in conventions.md passen zusammen"
-  fi
+  [ -n "$fehlend" ] && bad "docs/conventions.md fehlen Abschnitte zu:$fehlend" \
+                    || ok "die Ausloeser in CLAUDE.md finden ihre Abschnitte"
 fi
 
-# Dieselbe Falle wie oben: Eine Datei, auf die niemand verweist, wird nie
-# gelesen - und eine Lehre, die niemand liest, ist keine.
-if [ ! -f docs/lernkurve.md ]; then
-  grep -q "docs/lernkurve.md" CLAUDE.md 2>/dev/null \
-    && bad "CLAUDE.md verweist auf docs/lernkurve.md - die Datei fehlt" \
-    || ok "keine Lernkurve vorhanden"
-elif ! grep -q "docs/lernkurve.md" CLAUDE.md; then
-  bad "docs/lernkurve.md wird von CLAUDE.md nicht verwiesen - wird nie gelesen"
-elif ! grep -q "lernkurve" .claude/commands/ende.md; then
+# Und: Eine Datei, die niemand fortschreibt, veraltet still.
+if [ -f docs/lernkurve.md ] && ! grep -q "lernkurve" .claude/commands/ende.md; then
   bad "ende.md schreibt docs/lernkurve.md nicht fort - sie veraltet still"
-else
-  ok "docs/lernkurve.md ist verwiesen und wird beim Sitzungsende fortgeschrieben"
+elif [ -f docs/lernkurve.md ]; then
+  ok "docs/lernkurve.md wird beim Sitzungsende fortgeschrieben"
 fi
 
 sec "8. Sitzungsprotokoll"

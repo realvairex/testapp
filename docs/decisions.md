@@ -3353,3 +3353,41 @@ Eine Regel ohne ihren Preis wird irgendwann gestrichen, weil niemand mehr
 weiß, wofür sie da war. `CLAUDE.md` sagt *was* — knapp, damit es gelesen
 wird. `lernkurve.md` sagt *was es gekostet hat*. Erst zusammen überleben
 Regeln einen Sitzungswechsel.
+
+## 2026-08-12 — Grundsatz: „Alles gehört ins Netz"
+
+**Formulierung des Nutzers:** *„Alles soll wie ein Netz sein. Wenn etwas in
+dieses Netz nicht verwoben ist, benutzt es auch keiner."*
+
+Damit wird aus zwei Einzelfällen desselben Tages eine Regel —
+`docs/conventions.md` und `docs/lernkurve.md` wären beide angelegt und nie
+gelesen worden. Das ist dieselbe Sorte Verallgemeinerung wie „Overlays
+vermeiden" (2026-08-08): Wenn dieselbe Entscheidung mehrfach fällt, gehört
+sie dorthin, wo entschieden wird, nicht in verstreute Protokolleinträge.
+
+**Aufgenommen in `CLAUDE.md`** (Abschnitt „Arbeitsweise / Doku-Pflicht"),
+mit den drei Fragen, die beim Anlegen sofort zu beantworten sind: **Von wo
+wird verwiesen? Bei welchem Auslöser? Wer schreibt sie fort?**
+
+### Erst gemessen, dann geregelt
+
+Bevor die Regel geschrieben wurde, der Bestand geprüft: **Wird jede Datei
+im Repo von mindestens einer anderen erwähnt?** Ergebnis: ja, kein Loch —
+zwischen 2 und 15 Verweisen je Datei. Der Grundsatz beschreibt also den
+Zustand, den wir ohnehin anstreben; er sichert ihn nur ab.
+
+### Die Prüfung wurde dabei generisch statt spezifisch
+
+Beim Umsetzen fiel ein eigener Fehler auf: Für `conventions.md` und
+`lernkurve.md` standen in `session-check.sh` **zwei fast identische
+handgeschriebene Blöcke**. Beim dritten Dokument wäre ein dritter
+entstanden. Ersetzt durch **eine** Schleife über `docs/*.md` — kürzer als
+die Zwillinge und deckt jede künftige Datei automatisch ab.
+
+Das ist genau die Stelle, an der Verallgemeinern richtig ist: nicht
+vorsorglich („vielleicht kommen mal mehr"), sondern als die Dopplung
+tatsächlich dastand. Vgl. den Karpathy-Punkt „Simplicity First", bei dem es
+nicht um *wenig* Code geht, sondern um **Timing**.
+
+**Gegengeprüft:** eine unverwobene Datei angelegt → rot mit Namen; wieder
+entfernt → grün.

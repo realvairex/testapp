@@ -78,6 +78,13 @@ Für dieses Projekt gilt durchgängig:
   den ursprünglichen Chat.
 - Dies gilt automatisch, ohne dass der Nutzer danach fragen oder es
   einfordern muss.
+- **Alles gehört ins Netz.** *„Wenn etwas in dieses Netz nicht verwoben
+  ist, benutzt es auch keiner"* (Festlegung des Nutzers, 2026-08-12). Wer
+  eine Datei anlegt, verwebt sie **im selben Schritt**: Von wo wird auf sie
+  verwiesen, und **bei welchem Auslöser**? Wer schreibt sie fort? Eine
+  Datei, die niemand nennt, ist praktisch nicht vorhanden — und beide
+  Seiten sehen für sich genommen in Ordnung aus, weshalb es niemandem
+  auffällt. `scripts/session-check.sh` prüft das mechanisch (Abschnitt 7).
 
 ## Entwicklungs-Konventionen
 
