@@ -8,7 +8,9 @@ offene Fäden.
 Wird von `ende unfold` fortgeschrieben und von `scripts/session-check.sh`
 eingefordert. Neueste Sitzung oben.
 
----## 2026-08-12 — Das „Refreshen" der Liste: drei Ursachen, zwei Eigentore
+---
+
+## 2026-08-12 — Das „Refreshen" der Liste: drei Ursachen, zwei Eigentore
 
 **Gemacht**
 
