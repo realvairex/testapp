@@ -20,11 +20,24 @@ neue Regel dazukommt: vielleicht gibt es sie schon.
 **Wann schreiben:** Bei `ende unfold`, wenn ein Fehler **zum zweiten Mal**
 aufgetreten ist. Einmal ist ein Vorfall, zweimal ist ein Muster.
 
+**Woran man sieht, ob diese Datei etwas nützt:** Jedes Muster trägt ein
+**„zuletzt"**-Datum. Bleibt es stehen, während die Sitzungen weiterlaufen,
+wirkt die Gegenmaßnahme. Rückt es nach, wirkt sie nicht — dann ist die
+Regel zu schwach oder am falschen Ort, und *das* ist die Erkenntnis, nicht
+der Vorfall selbst. Ein Muster, das **drei Sitzungen** ruhig war, wandert
+nach unten zu „Beigelegt" — gelöscht wird nie, sonst kommt es
+unbeobachtet zurück.
+
+> Dieser Maßstab hat beim ersten Anlegen **gefehlt**. Ich hatte am selben
+> Tag die Regel „Erfolgskriterien vor der Arbeit" aufgenommen und sie beim
+> Bauen dieser Datei nicht angewandt — eine Sammlung ohne Maßstab ist ein
+> Archiv, kein Werkzeug.
+
 ---
 
 ## Die wiederkehrenden Fehlermuster
 
-### 1. Behaupten statt prüfen — 6 Vorfälle
+### 1. Behaupten statt prüfen — 6 Vorfälle · zuletzt 2026-08-12
 
 Mit Abstand der teuerste. Er tarnt sich jedes Mal anders:
 
@@ -45,7 +58,7 @@ fremde Dokumente geht, ist zweitrangig.
 (6 Regeln). Der wirksamste Einzelpunkt ist die **Gegenprobe**: den Fix
 entfernen, gleich messen, Unterschied ansehen.
 
-### 2. Der Fehler liegt in der Messung, nicht im Erzeugnis — 4 Vorfälle
+### 2. Der Fehler liegt in der Messung, nicht im Erzeugnis — 4 Vorfälle · zuletzt 2026-08-12
 
 Ein Prüfskript wird rot, und der erste Reflex ist, das Erzeugnis zu
 reparieren.
@@ -59,7 +72,7 @@ reparieren.
 Messung anzweifeln, dann das Erzeugnis; die Messung dann aber auch
 reparieren, nicht die Zusicherung entschärfen.*
 
-### 3. Zu grob geändert — 2 Vorfälle
+### 3. Zu grob geändert — 2 Vorfälle · zuletzt 2026-08-07
 
 - Beim Entfernen des Fälligkeitsmenüs wurde eine Animation mitgerissen,
   die ein anderer Teil noch benutzte.
@@ -68,7 +81,7 @@ reparieren, nicht die Zusicherung entschärfen.*
 
 **Daraus wurde:** `CLAUDE.md`, Abschnitt „Chirurgisch ändern".
 
-### 4. Der erste plausible Verursacher ist nicht der einzige — 1 Vorfall, aber teuer
+### 4. Der erste plausible Verursacher ist nicht der einzige — 1 Vorfall · zuletzt 2026-08-12
 
 Beim „Aufblitzen" der Listen fand ich den vollständigen Neuaufbau, hielt
 ihn für die Ursache und legte ihn als „verschwindet beim Flutter-Umstieg"
@@ -76,7 +89,7 @@ ab. Der Neuaufbau war echt — aber **unsichtbar**. Sichtbar war die
 Animation, die er auslöste. Darunter lagen noch Scrollstand und
 Cursorverlust. Drei Ursachen, ich hatte bei der ersten aufgehört.
 
-### 5. Zu lange gebraucht — vom Nutzer zweimal gemeldet
+### 5. Zu lange gebraucht — 2 Meldungen · zuletzt 2026-08-11
 
 Ursachen, nachgezählt: der vollständige Prüfungslauf dauert 8–10 Minuten
 (Fuzz-Skripte) und lief an einem Tag fünfmal; dazu breite Suche bei vagen
@@ -86,6 +99,26 @@ Vorgaben.
 (`run-mockup-tests.sh <filter>`), voller Lauf nur bei Eingriffen ins
 Datenmodell und zum Schluss. Plus Regel 6: **bei vager Vorgabe zuerst nach
 Ort und Auslöser fragen.**
+
+### 6. Angelegt, aber nicht verwoben — 2 Vorfälle · zuletzt 2026-08-12
+
+- `docs/conventions.md` wurde von **keinem** Sitzungswerkzeug erwähnt —
+  28 Zeilen Regeln in einer Datei, die im Ablauf nicht vorkam.
+- `docs/lernkurve.md` (diese Datei) hätte dasselbe Schicksal gehabt, wenn
+  der Nutzer nicht direkt danach gefragt hätte.
+
+**Der Grundsatz daraus** (Formulierung des Nutzers): *„Alles soll wie ein
+Netz sein. Wenn etwas in dieses Netz nicht verwoben ist, benutzt es auch
+keiner."* Beim Anlegen einer Datei gehören drei Fragen sofort beantwortet:
+**Von wo wird verwiesen? Bei welchem Auslöser? Wer schreibt sie fort?**
+
+Das Tückische: Beide Seiten sehen für sich genommen in Ordnung aus. Die
+Datei ist gut, die verweisende Datei ist gut — nur die Verbindung fehlt,
+und die sieht man nur, wenn man gezielt danach sucht. Deshalb prüft
+`session-check.sh` es jetzt mechanisch, und zwar **generisch für alle
+Dateien unter `docs/`**, nicht pro Datei: Die ersten beiden Prüfungen waren
+handgeschriebene Zwillinge, beim dritten Dokument wäre ein Drilling
+entstanden.
 
 ---
 
@@ -116,26 +149,6 @@ Ort und Auslöser fragen.**
   auf eine Frage, nicht das Dokument. Für „gibt es das?" reicht es; für
   eine Entscheidung nicht.
 
-### 6. Angelegt, aber nicht verwoben — 2 Vorfälle an einem Tag
-
-- `docs/conventions.md` wurde von **keinem** Sitzungswerkzeug erwähnt —
-  28 Zeilen Regeln in einer Datei, die im Ablauf nicht vorkam.
-- `docs/lernkurve.md` (diese Datei) hätte dasselbe Schicksal gehabt, wenn
-  der Nutzer nicht direkt danach gefragt hätte.
-
-**Der Grundsatz daraus** (Formulierung des Nutzers): *„Alles soll wie ein
-Netz sein. Wenn etwas in dieses Netz nicht verwoben ist, benutzt es auch
-keiner."* Beim Anlegen einer Datei gehören drei Fragen sofort beantwortet:
-**Von wo wird verwiesen? Bei welchem Auslöser? Wer schreibt sie fort?**
-
-Das Tückische: Beide Seiten sehen für sich genommen in Ordnung aus. Die
-Datei ist gut, die verweisende Datei ist gut — nur die Verbindung fehlt,
-und die sieht man nur, wenn man gezielt danach sucht. Deshalb prüft
-`session-check.sh` es jetzt mechanisch, und zwar **generisch für alle
-Dateien unter `docs/`**, nicht pro Datei: Die ersten beiden Prüfungen waren
-handgeschriebene Zwillinge, beim dritten Dokument wäre ein Drilling
-entstanden.
-
 ## Impulse von außen
 
 | Datum | Quelle | Was übernommen wurde |
@@ -143,6 +156,14 @@ entstanden.
 | 2026-08-12 | [HumanLayer, „Writing a good CLAUDE.md"](https://www.humanlayer.dev/blog/writing-a-good-claude-md) | Situative Regeln auslagern — **mit Auslöser**, nicht nur mit Thema. *(Artikel selbst unerreichbar, Domain gesperrt — Bewertung steht auf zweiter Hand.)* |
 | 2026-08-12 | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | „Surgical Changes"; „Goal-Driven Execution" (Erfolgskriterien vor der Arbeit) |
 | 2026-08-12 | Regel des Nutzers: *Verify, Don't Trust* | Quellen frisch holen und **gegnerisch** abgleichen |
+
+## Beigelegt — drei Sitzungen ruhig
+
+*(noch leer — die Muster oben sind alle jünger als drei Sitzungen)*
+
+Hier landet, was aufgehört hat. **Nicht löschen:** Ein Muster, das
+verschwindet, statt beigelegt zu werden, kommt unbeobachtet zurück, und
+niemand erkennt es wieder.
 
 ## Offene Schwächen — noch ohne Gegenmittel
 
@@ -157,6 +178,12 @@ Ehrlich benannt, damit sie nicht unbemerkt bleiben:
 - **Verhaltensregeln lassen sich nicht mechanisch prüfen.**
   `session-check.sh` kann nur feststellen, ob Regeln *vorhanden und
   erreichbar* sind — nicht, ob sie befolgt wurden.
+- **Ich melde nicht von selbst, wenn ein Dokument fehlt.** Diese Datei
+  entstand, weil der Nutzer danach fragte — nicht, weil mir auffiel, dass
+  die Lehren unauffindbar in 3289 Zeilen `decisions.md` lagen. Die
+  Doku-Pflicht in `CLAUDE.md` verlangt, Entscheidungen festzuhalten; sie
+  verlangt nicht, zu bemerken, dass eine **Sorte** von Wissen keinen Ort
+  hat. `ende unfold` fragt seit heute danach (Schritt 9).
 - **Neue Regeln wirken erst ab der nächsten Sitzung.** `CLAUDE.md` wird
   beim Start geladen; wer sie mitten in einer Sitzung ändert, hält sich
   aus Vorsatz daran, nicht durch Mechanik.

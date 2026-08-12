@@ -46,7 +46,15 @@ Arbeite dann das Folgende der Reihe nach ab:
    Vorbeigehen, Vermutungen.
 8. **`CLAUDE.md` prüfen.** Stimmen Status und Doku-Struktur noch? Die
    Datei bleibt schlank — Details gehören nach `docs/`.
-9. **Offene Fäden benennen.** Alles, was in der Luft hängt — eine
+9. **Offene Fäden benennen — und die Frage, auf die der Nutzer sonst
+   selbst kommen muss:** Gab es in dieser Sitzung Wissen, das **nirgendwo
+   hingehörte**? Nicht „ist es dokumentiert", sondern „hat diese *Sorte*
+   Wissen überhaupt einen Ort". So entstand `docs/lernkurve.md` — die
+   Lehren lagen längst da, nur unauffindbar in über 3000 Zeilen
+   `decisions.md`, und aufgefallen ist es dem Nutzer, nicht mir. Fehlt ein
+   Ort, sag es von dir aus.
+
+   Alles Übrige, was in der Luft hängt — Alles, was in der Luft hängt — eine
    Frage, auf die du keine Antwort bekommen hast, ein Verdacht, dem du
    nicht nachgegangen bist, ein Fehler, den du bewusst stehen gelassen
    hast — gehört sichtbar nach `docs/status.md`. Nicht in deinen Kopf.
