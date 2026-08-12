@@ -269,6 +269,8 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Listen-Kennzeichnung in der Sidebar | **Farbige Punkte**, keine Ordner-Icons. |
 | Hover im hellen Design | Muss **heller** als der Grundton sein, nicht dunkler. |
 | Farben aus fremden Screenshots | Werden nicht übernommen — nur Struktur und Anordnung. |
+| Alles gehört ins Netz | *„Wenn etwas in dieses Netz nicht verwoben ist, benutzt es auch keiner"* (2026-08-12). Wer eine Datei anlegt, beantwortet sofort: **von wo verwiesen, bei welchem Auslöser, wer schreibt sie fort?** `session-check.sh` §7 prüft es mechanisch für alle `docs/*.md`. |
+| Lernkurve statt nur Protokoll | `docs/lernkurve.md` ordnet Fehler nach **Muster** statt nach Datum. Fortschreiben nur beim **zweiten** Vorkommen — einmal ist ein Vorfall. Maßstab ist die Kennzahl „wer findet die Fehler". |
 | Fremde Quellen bewerten | **Frisch holen und selbst lesen**, nie aus einer Zusammenfassung schließen — ein Repo wird geklont, nicht über eine Vorschau beurteilt. Regel des Nutzers („Verify, Don't Trust"), aufgenommen 2026-08-12 nach einem konkreten Fehlgriff. Steht in `CLAUDE.md`. |
 | Historische Einträge in `docs/decisions.md` | Werden **nicht überschrieben**. Korrekturen kommen als **Nachtrag darunter**, damit nachvollziehbar bleibt, was damals galt. Vom Nutzer bestätigt (2026-08-07). |
 | Git-Tags für Meilensteine | Technisch möglich (nachgewiesen 2026-08-06), aber **vorerst nicht genutzt**. `milestones.md` bleibt die Wahrheit. Tags erst ab echtem App-Code, **zusätzlich** zur Tabelle. |
@@ -336,6 +338,22 @@ dieselbe Antwort noch einmal geben zu müssen.
   weil `super_editor` den Cursor auf einer Knotenposition führt und
   keine Füllzeile braucht. Zeit, die hier hineinfließt, ist verloren.
   Nicht als „geht kaputt" missverstehen, wenn der Lauf mal rot ist.
+
+### Offene Fäden aus dem 2026-08-12
+
+- **`scripts/lernkurve-abgleich.sh` meldet sechs `[OFFEN]`-Einträge aus
+  2026-08-05/06.** Durchgesehen: Es sind Produktentscheidungen und
+  Einzelfall-Bugs, **keine** wiederkehrenden Arbeitsfehler. Sie bleiben
+  bewusst außerhalb der Lernkurve. Wer das Skript künftig laufen lässt,
+  muss sie deshalb nicht erneut prüfen — außer sie treten wieder auf.
+- **Die Zählungen in `lernkurve.md` werden von Hand gepflegt.** Kommt ein
+  siebter Vorfall zu einem Muster und niemand zählt hoch, stimmt die Zahl
+  nicht mehr, und es fällt niemandem auf. Bewusst nicht automatisiert:
+  Das bräuchte ein Format in `decisions.md`, das es noch nicht gibt.
+  Wenn die Zahlen driften, ist das der Moment.
+- **Der HumanLayer-Artikel bleibt unerreichbar** (Domain auf Proxy-Ebene
+  gesperrt, auch per `curl`: 403). Alle Aussagen darüber stehen auf
+  zweiter Hand — vermerkt in `decisions.md` und `lernkurve.md`.
 
 ## 5. Wo was steht
 

@@ -3391,3 +3391,51 @@ nicht um *wenig* Code geht, sondern um **Timing**.
 
 **Gegengeprüft:** eine unverwobene Datei angelegt → rot mit Namen; wieder
 entfernt → grün.
+
+## 2026-08-12 — Zwei weitere Muster, gefunden durch das eigene Abgleich-Skript
+
+Beim `ende unfold` lieferte `scripts/lernkurve-abgleich.sh` seine erste
+echte Ausbeute — zwei Muster, die ich ohne die Liste nicht gesehen hätte:
+
+**Muster 8: Textersetzung per Skript, ohne das Ergebnis anzusehen.** Drei
+Vorfälle an einem Tag (`session-log.md` mit Überschrift am Trennstrich,
+`lernkurve.md` mit falsch platziertem Abschnitt, `ende.md` mit doppeltem
+Halbsatz). Der Kern: Ein `replace()` meldet nur dann einen Fehler, wenn
+das **Suchmuster** nicht passt — nicht, wenn das **Ergebnis** unsinnig ist.
+Die Ersetzung gelingt, und das Ergebnis ist trotzdem falsch. Dieselbe
+Familie wie Muster 1: ausgeführt, aber nicht beobachtet. Gegenmittel:
+nach jeder Ersetzung `sed -n 'X,Yp'` oder `grep -n '^## '` — eine Zeile.
+
+**Muster 9: Werkzeug im Scratchpad angelegt, obwohl es ins Repo gehört.**
+2026-08-06 (40 Prüfskripte) und 2026-08-11 (`shots.js`). Bemerkenswert:
+Beim zweiten Mal hat `session-check.sh` es gefunden, nicht ich. **Das Netz
+hat gehalten.**
+
+### Die Kennzahl wurde dadurch aussagekräftiger
+
+| Wer fand den Fehler | Anzahl |
+|---|---|
+| ich selbst | 13 |
+| ein Prüfskript | 2 |
+| **der Nutzer** | **6** |
+
+Die mittlere Zeile ist neu und die eigentliche Erkenntnis: **Wo eine
+mechanische Prüfung existiert, findet sie den Fehler — ohne dass jemand
+daran denken muss.** Das ist der Grund, warum der Ausbau von
+`session-check.sh` und `run-mockup-tests.sh` mehr gebracht hat als jede
+Vorsatzregel. Es ist auch die Antwort auf die Frage des Nutzers, wie es
+sein kann, dass ich Dinge übersehe: Vorsatz skaliert nicht, Netze schon.
+
+### Was das Skript NICHT leistet — nachgeprüft
+
+Die sechs `[OFFEN]`-Einträge aus 2026-08-05/06 wurden einzeln
+durchgesehen: Sharing-Scope, Tech-Stack-Richtung, ein Scrollbar-Bug, ein
+Flacker-Bug beim Spaltenschließen, die Superlist-Recherche und die
+Scratchpad-Entscheidung. Davon ist genau einer ein wiederkehrender
+Arbeitsfehler (Scratchpad → jetzt Muster 9); der Rest sind
+Produktentscheidungen und Einzelfall-Bugs.
+
+**Daraus die Lesart für künftige Läufe:** `[OFFEN]` heißt „ansehen", nicht
+„eintragen". Ein Skript kann Kandidaten liefern, keine Muster erkennen —
+und ein Skript, das so täte, wäre schädlich (siehe die zweite, verworfene
+Fassung mit ihrem falschen „erfasst"-Urteil).

@@ -60,7 +60,7 @@ Arbeite dann das Folgende der Reihe nach ab:
    `decisions.md`, und aufgefallen ist es dem Nutzer, nicht mir. Fehlt ein
    Ort, sag es von dir aus.
 
-   Alles Übrige, was in der Luft hängt — Alles, was in der Luft hängt — eine
+   Alles Übrige, was in der Luft hängt — eine
    Frage, auf die du keine Antwort bekommen hast, ein Verdacht, dem du
    nicht nachgegangen bist, ein Fehler, den du bewusst stehen gelassen
    hast — gehört sichtbar nach `docs/status.md`. Nicht in deinen Kopf.

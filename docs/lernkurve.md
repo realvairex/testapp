@@ -154,6 +154,44 @@ nicht (das Skript läuft ohne Netz), deshalb eine bewusste Frage.
 > ich nur die Fehler aus dem *laufenden* Chat gesammelt, statt die
 > vorhandene Doku systematisch durchzugehen.
 
+### 8. Textersetzung per Skript, ohne das Ergebnis anzusehen — 3 Vorfälle · zuletzt 2026-08-12
+
+| Datum | Gestalt | Wer fand es |
+|---|---|---|
+| 2026-08-12 | `session-log.md`: Überschrift klebte am Trennstrich (`---## 2026-08-12`) → die Prüfung erkannte den Eintrag nicht | Prüfskript |
+| 2026-08-12 | `lernkurve.md`: Muster 6 landete hinter „Was nicht funktioniert hat" statt bei den Mustern | ich (beim Nachlesen) |
+| 2026-08-12 | `ende.md`: doppelter Halbsatz („Alles Übrige… Alles, was in der Luft hängt…") | ich (beim `ende unfold`) |
+
+**Der Kern:** Ein `python3 -c "…replace(…)"` meldet keinen Fehler, wenn das
+Ergebnis unsinnig ist — nur wenn das Suchmuster gar nicht passt. Die
+Ersetzung *gelingt* also, und das Ergebnis ist trotzdem falsch. Das ist
+dieselbe Familie wie Muster 1: Der Vorgang wurde ausgeführt, aber nicht
+**beobachtet**.
+
+**Daraus wurde:** Nach jeder Textersetzung die betroffene Stelle ansehen —
+`sed -n 'X,Yp'` oder `grep -n "^## "` für die Gliederung. Das kostet eine
+Zeile und hätte alle drei Fälle gefunden.
+
+Bemerkenswert: Zweimal fiel es **mir** auf, einmal dem Prüfskript. Wo eine
+mechanische Prüfung existiert, greift sie — deshalb ist der Ausbau der
+Prüfungen wirksamer als der Vorsatz, sorgfältiger zu sein.
+
+### 9. Werkzeug im Scratchpad angelegt, obwohl es ins Repo gehört — 2 Vorfälle · zuletzt 2026-08-11
+
+| Datum | Gestalt | Wer fand es |
+|---|---|---|
+| 2026-08-06 | **40 Prüfskripte** lagen ausschließlich im Scratchpad — bei einem Sitzungswechsel ersatzlos verloren | ich |
+| 2026-08-11 | `shots.js` (Screenshots des Aufräum-Modus) erst beim Sitzungsende gerettet, nicht gleich angelegt | `session-check.sh` |
+
+**Der Kern:** Die Regel in `CLAUDE.md` sagt *„von vornherein im Repo
+anlegen"*. In der Praxis entsteht das Skript im Scratchpad, weil es
+„nur schnell etwas nachsehen" sollte — und wird dann doch zum Werkzeug.
+Der Übergang ist fließend und deshalb schwer zu bemerken.
+
+**Was hilft:** `session-check.sh` Abschnitt 6 listet das Scratchpad beim
+Sitzungsende auf. Das ist ein **Netz**, kein Vorsatz — es hat beim zweiten
+Vorfall funktioniert.
+
 ---
 
 ## Wer die Fehler findet — die eigentliche Kennzahl
@@ -167,12 +205,19 @@ Stand 2026-08-12, über alle Muster:
 
 | | Anzahl |
 |---|---|
-| von mir selbst gefunden | 10 |
+| von mir selbst gefunden | 13 |
+| von einem Prüfskript gefunden | 2 |
 | **vom Nutzer gemeldet** | **6** |
 
 **Diese Zahl ist der Maßstab dieser Datei.** Sinkt der rechte Wert über die
 nächsten Sitzungen, wirken die Regeln. Bleibt er, wirken sie nicht — egal
 wie gut sie klingen.
+
+**Die zweite Zeile ist die wichtigste Erkenntnis der Datei:** Wo eine
+mechanische Prüfung existiert, findet sie den Fehler — ohne dass jemand
+daran denken muss. Das ist der Grund, warum der Ausbau von
+`session-check.sh` und `run-mockup-tests.sh` mehr gebracht hat als jede
+Vorsatzregel.
 
 Auffällig dabei: Bei Muster 2 (Messfehler) habe ich **alle sechs** selbst
 gefunden. Bei den sichtbaren Dingen — Animation, veröffentlichter Stand —

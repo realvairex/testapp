@@ -10,6 +10,73 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-12 (nachmittags) — Die Arbeitsweise selbst überarbeitet
+
+**Gemacht**
+
+- **`CLAUDE.md` gegen zwei fremde Vorlagen geprüft** (HumanLayer-Artikel,
+  `multica-ai/andrej-karpathy-skills`). 28 von 64 Zeilen im größten Block
+  waren **situative** Regeln → ausgelagert nach `docs/conventions.md`; in
+  `CLAUDE.md` bleibt je eine Zeile **mit Auslöser**.
+- **Neue Abschnitte in `CLAUDE.md`:** „Behaupten ist nicht prüfen"
+  (6 Regeln) und „Chirurgisch ändern".
+- **`docs/lernkurve.md` angelegt** — ordnet Fehler nach **Muster** statt
+  nach Datum. Neun Muster, die Kennzahl „wer findet die Fehler", ein
+  Abschnitt „Beigelegt" und einer für **offene Schwächen**.
+- **`scripts/lernkurve-abgleich.sh`** — gleicht den Bestand gegen die
+  Lernkurve ab, läuft in `ende unfold` Schritt 5.
+- **`session-check.sh` Abschnitt 7 „Alles im Netz"** — generisch für alle
+  `docs/*.md`, plus Auslöser-Konsistenz und Fortschreibe-Pflicht.
+
+**Entschieden**
+
+- **„Alles gehört ins Netz"** (Formulierung des Nutzers): Wer eine Datei
+  anlegt, beantwortet sofort — von wo verwiesen, bei welchem Auslöser, wer
+  schreibt sie fort. Mechanisch geprüft.
+- **„Verify, Don't Trust"** (Regel des Nutzers): Quellen frisch holen und
+  **gegnerisch** abgleichen. Als Punkt 5 unter „Behaupten ist nicht
+  prüfen" — dieselbe Fehlerfamilie, nur auf fremdes Material gerichtet.
+- **Nicht übernommen:** die 60-Zeilen-Marke (unsere Doku-Pflicht ist
+  universell und ausdrücklich eingefordert), „minimum code" als
+  Leitprinzip, „immer erst fragen".
+- **Fortschreiben der Lernkurve erst beim ZWEITEN Vorkommen.** Ohne diese
+  Schwelle würde sie zur zweiten Kopie von `decisions.md`.
+
+**Was in dieser Sitzung schiefging — in der Reihenfolge, in der es auffiel**
+
+1. Aus einer **Werkzeug-Zusammenfassung** geschlussfolgert und die
+   `CLAUDE.md` umgebaut, ohne das Repo zu lesen. Der Nutzer fragte nach;
+   beim Klonen zeigten sich drei Fehler in meiner Bewertung.
+2. Auf die Nachfrage „wirklich alles?" **erneut ja gesagt** — es waren
+   6 von 9 Dateien. *„Alles" ist eine Mengenangabe und gehört gezählt.*
+3. `conventions.md` und `lernkurve.md` wären beide **nirgends verwoben**
+   gewesen — angelegt und nie gelesen.
+4. Die Lernkurve **aus dem Gespräch gebaut statt aus dem Bestand**: acht
+   Fallstricke und dreizehn Fehler-Überschriften lagen im Repo, keine
+   davon durchgegangen. Muster 7 fehlte deshalb.
+5. Das Abgleich-Skript war **zweimal selbst falsch** — es durchsuchte nur
+   §4, und fällte danach ein falsches „erfasst"-Urteil über ein
+   Allerweltswort. Beide Male durch Gegenprobe entlarvt.
+6. **Drei Textersetzungen ohne Nachsehen des Ergebnisses** — daraus wurde
+   Muster 8. Der vierte Versuch scheiterte heute laut an einem
+   Syntaxfehler, was der bessere Ausgang ist.
+
+**Offen**
+
+- Sechs `[OFFEN]`-Einträge des Abgleich-Skripts aus 2026-08-05/06 sind
+  durchgesehen: Produktentscheidungen und Einzelfall-Bugs, **keine**
+  wiederkehrenden Arbeitsfehler. Bleiben bewusst draußen.
+- Die Zählungen in `lernkurve.md` werden **von Hand** gepflegt und können
+  still driften. Bewusst nicht automatisiert — das bräuchte ein Format in
+  `decisions.md`, das es noch nicht gibt.
+- Der HumanLayer-Artikel bleibt unerreichbar (Proxy, 403). Zweite Hand.
+- **Am Produkt wurde heute Nachmittag nichts geändert.** Das Mockup ist
+  unverändert seit `64cf13e` und entspricht dem veröffentlichten Stand.
+- Fachlich unverändert Punkt 1 der Todo: **Aufgaben in andere Aufgaben
+  ziehen**.
+
+---
+
 ## 2026-08-12 — Das „Refreshen" der Liste: drei Ursachen, zwei Eigentore
 
 **Gemacht**
