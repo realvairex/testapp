@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-11
+Stand: 2026-08-12
 
 ---
 
@@ -122,10 +122,9 @@ Was fertig ist:
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Letzter vollständiger Lauf (2026-08-11, nach dem
-  Aufräum-Modus): 54 grün, 0 rot.** Dass `test_4bugs` dabei grün war, ist
-  **Glück, keine Reparatur** — der Wackelkandidat trifft etwa jeden
-  zweiten Lauf (siehe Abschnitt 4).
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-12, nach den
+  Flacker-Reparaturen): 53 grün, 1 rot** — das eine ist `test_4bugs`, der
+  bekannte Wackelkandidat, der etwa jeden zweiten Lauf trifft (Abschnitt 4).
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
   Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein

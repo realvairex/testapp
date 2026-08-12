@@ -8,7 +8,78 @@ offene Fäden.
 Wird von `ende unfold` fortgeschrieben und von `scripts/session-check.sh`
 eingefordert. Neueste Sitzung oben.
 
----
+---## 2026-08-12 — Das „Refreshen" der Liste: drei Ursachen, zwei Eigentore
+
+**Gemacht**
+
+- Der Nutzer meldete *„eine sehr kleine Animation, die aussieht, als würde
+  sich die Seite refreshen"* und stellte die entscheidende Frage selbst:
+  *„Refresht sie sich, oder wird jedes Mal eine Animation ausgelöst?"* Es
+  war beides — und es waren am Ende **drei** Ursachen:
+  1. `animation: block-in` hing **unbedingt** an `.inline-embed`. Weil jede
+     Änderung alle Zeilen neu erzeugt, blendeten sich bei jedem Klick
+     sämtliche Zeilen neu ein. Sechs laufende Animationen pro Klick,
+     nachgemessen mit `document.getAnimations()`. Jetzt an `.ist-neu`.
+  2. Kalender und Farbreihe blendeten bei jedem Klick neu ein, obwohl sie
+     schon offen waren. Gleicher Mechanismus, gleiche Lösung.
+  3. **Scrollstand und Cursorposition gingen bei jedem Neuaufbau verloren.**
+     Eine lange Liste sprang beim Abhaken nach ganz oben. Behoben mit
+     `zustandMerken()` / `zustandZurueck()` um den Aufbau herum.
+- Der kleine Fortschrittsbalken an der Aufgabenzeile bewegt sich jetzt wie
+  der im Aufräum-Modus — und lief vorher **überhaupt nicht**: Das
+  `transition` stand auf `width`, und ein frisch erzeugtes Element hat
+  keinen Vorzustand. Der Fehler war Wochen alt.
+- Zwei neue Prüfskripte: `test_kein_flackern.js` (11 Zusicherungen),
+  `test_fortschritt.js` (9).
+- `run-mockup-tests.sh` startet nur noch `test_`/`measure_`/`verify_`.
+
+**Entschieden**
+
+- **Das sichtbare Aufblitzen wird im Mockup behoben, der Neuaufbau darunter
+  nicht.** Die Animation war ein Einzeiler; eine gezielte Aktualisierung
+  wäre eine zweite Renderlogik neben der bestehenden — für ein Artefakt,
+  das eingefroren wird. Als Anforderung steht beides in `spec.md` §2.2.
+- **Einblenden ist für Neues** (`spec.md` §2.2). In Flutter ist die Falle
+  dieselbe: Eine Einblend-Animation an einem Eintrag, der bei jedem
+  Zustandswechsel neu gebaut wird, läuft jedes Mal.
+- **Ein Neuaufbau darf nicht kosten, was der Nutzer eingestellt hat**
+  (`spec.md` §2.2). `ScrollController` und `FocusNode` müssen dort
+  **außerhalb** des neu gebauten Teilbaums leben.
+
+**Zwei Eigentore, beide in der Messung**
+
+1. `locator.click()` scrollt das Element vor dem Klick in den sichtbaren
+   Bereich — die Messung meldete den Scroll-Fix als wirkungslos, obwohl er
+   griff. Der Klick wird jetzt **im Browser** ausgelöst.
+2. `return bl.scrollTop` **nach** dem Klick liefert 0, weil das Element
+   dann abgehängt ist. Ein Wert, der gemessen, aber wertlos ist.
+
+**Entschieden hat die Gegenprobe:** Fix per `git stash` entfernen, mit
+derselben Methode messen, Unterschied ansehen. Ohne sie hätte ich eine
+Reparatur dokumentiert, ohne zu wissen, ob sie wirkt. **Das gehört ab jetzt
+zu jeder Fehlerbehebung, deren Wirkung man nicht unmittelbar sieht.**
+
+Die übergreifende Lehre des Tages: *„Sieht aus wie ein Refresh"* hieß nicht,
+dass man den Neuaufbau sieht. Ich hatte am Vortag den teuren, nicht
+behebbaren Verursacher gefunden und war dabei stehen geblieben — und hätte
+das billige, tatsächlich sichtbare Übel stehen lassen. **Der erste
+plausible Verursacher ist nicht automatisch der richtige.**
+
+**Offen**
+
+- **Aufgabe in Aufgabe verschieben** (→ Unteraufgabe) bleibt Punkt 1 der
+  Todo. Zu klären: Schachtelungstiefe und was passiert, wenn man eine
+  Aufgabe auf ihre eigene Unteraufgabe zieht.
+- **Der vollständige Neuaufbau bleibt bestehen** — bewusst, siehe oben. Wer
+  ihn doch im Mockup beheben will, findet die Begründung dagegen in
+  `decisions.md` (2026-08-11).
+- `verify_center` meldet weiterhin eine veraltete „MISALIGNED"-Erwartung.
+- `test_4bugs` bleibt der bekannte Wackelkandidat.
+- Der Nutzer hat zuletzt *„besser, aber noch nicht ganz clean"* gesagt und
+  danach nichts Konkretes mehr gemeldet. **Falls wieder etwas zuckt: nach
+  dem genauen Ort und der genauen Aktion fragen** — breit zu suchen hat
+  diese Sitzung mehr Zeit gekostet als jede einzelne Reparatur.
+
 ## 2026-08-11 — Aufräum-Modus gebaut und in sechs Runden nachgeschärft
 
 **Gemacht**
