@@ -41,7 +41,13 @@ Arbeite folgende Schritte ab, bevor du antwortest:
    lassen. Kam etwas Neues dazu, sag in einer Zeile, was.
 4. Lies gezielt nach, was für die anstehende Aufgabe relevant ist:
    `docs/decisions.md` für das Warum hinter einer Festlegung,
-   `docs/concept.md` für die Produktvision.
+   `docs/concept.md` für die Produktvision,
+   **`docs/conventions.md`, sobald einer ihrer Auslöser eintritt** — eine
+   Bibliothek hinzufügen oder aktualisieren, die Datenschicht bauen, ein
+   Feature beginnen oder abschließen, den Flutter-Bau starten. Die
+   Auslöser stehen auch in `CLAUDE.md`; die Regeln zur Datenschicht
+   schützen vor **unwiederbringlichem** Datenverlust, also lieber einmal
+   zu viel nachsehen.
 
 **Prüfe dabei den Hook mit:** Wenn zu Beginn dieser Sitzung *keine*
 Zeile `=== Projekt Unfold ===` erschienen ist, ist der Session-Start-Hook

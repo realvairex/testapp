@@ -177,7 +177,35 @@ else
   ok "kein Scratchpad-Verzeichnis gefunden"
 fi
 
-sec "7. Sitzungsprotokoll"
+sec "7. Verweise auf docs/conventions.md"
+# CLAUDE.md nennt Ausloeser ("bevor du X tust -> dort nachlesen") und laesst
+# die Regeln selbst in docs/conventions.md. Das funktioniert nur, solange
+# beide Seiten zusammenpassen. Wird dort ein Abschnitt geloescht oder
+# umbenannt, zeigt der Verweis ins Leere - und die Regel ist praktisch weg,
+# ohne dass es jemandem auffaellt. Genau dagegen ist diese Pruefung.
+if [ ! -f docs/conventions.md ]; then
+  if grep -q "docs/conventions.md" CLAUDE.md 2>/dev/null; then
+    bad "CLAUDE.md verweist auf docs/conventions.md - die Datei fehlt"
+  else
+    ok "keine ausgelagerten Konventionen vorhanden"
+  fi
+else
+  fehlend=""
+  for thema in "Abhängigkeiten" "Datenschicht" "Feature" "Flutter-Code"; do
+    grep -q "$thema" docs/conventions.md || fehlend="$fehlend $thema"
+  done
+  if [ -n "$fehlend" ]; then
+    bad "docs/conventions.md fehlen Abschnitte zu:$fehlend"
+  elif ! grep -q "docs/conventions.md" CLAUDE.md; then
+    bad "docs/conventions.md wird von CLAUDE.md nicht verwiesen - wird nie gelesen"
+  elif ! grep -q "conventions" .claude/commands/start.md; then
+    bad "start.md erwaehnt docs/conventions.md nicht"
+  else
+    ok "Ausloeser in CLAUDE.md und Abschnitte in conventions.md passen zusammen"
+  fi
+fi
+
+sec "8. Sitzungsprotokoll"
 if [ "$KURZ" = "1" ]; then
   :
 elif [ -f docs/session-log.md ] && grep -q "^## $today" docs/session-log.md; then

@@ -3241,3 +3241,49 @@ Eine Kleinigkeit am Rande, die dem Repo-Autor gehört: Die Cursor-Fassung
 der Richtlinien enthält den Tradeoff-Absatz („bias toward caution over
 speed") **nicht**, obwohl `CURSOR.md` ausdrücklich verlangt, beide Fassungen
 synchron zu halten.
+
+## 2026-08-12 — „Steht in der Datei" ist noch nicht „implementiert"
+
+**Die Frage des Nutzers:** *„Okay, also hast du das neue Wissen auch
+implementiert?"* — Beim Nachprüfen (statt Antworten aus dem Gedächtnis) kam
+eine echte Lücke heraus:
+
+**`docs/conventions.md` wurde von keinem der drei Sitzungswerkzeuge
+erwähnt** — nicht von `start.md`, nicht von `ende.md`, nicht von
+`session-check.sh`. Ich hatte 28 Zeilen Regeln aus `CLAUDE.md` in eine
+Datei ausgelagert, die im Sitzungsablauf schlicht nicht vorkam. Der
+Verweis stand nur in `CLAUDE.md` selbst. Das hätte funktionieren *können* —
+aber es war nirgends abgesichert.
+
+**Behoben in zwei Schritten:**
+
+1. **`start.md` nennt die Datei jetzt** bei den Dokumenten, die *bei Bedarf*
+   gelesen werden, zusammen mit ihren Auslösern. Bewusst nicht bei den
+   Dateien, die *immer* gelesen werden — sonst wäre die Auslagerung
+   sinnlos gewesen.
+2. **`session-check.sh` prüft die Verweise mechanisch** (neuer Abschnitt 7).
+   Er meldet drei Zustände: Datei fehlt, obwohl `CLAUDE.md` sie nennt;
+   ein Abschnitt fehlt, auf den ein Auslöser zeigt; oder der Verweis ist
+   aus `CLAUDE.md` verschwunden, sodass die Datei nie gelesen würde.
+
+**Warum das nötig ist:** Eine ausgelagerte Regel, deren Verweis ins Leere
+zeigt, ist praktisch gelöscht — und niemandem fällt es auf, weil beide
+Dateien für sich genommen in Ordnung aussehen. Bei den Regeln zur
+Datenschicht wäre der Preis unwiederbringlicher Datenverlust.
+
+**Die Prüfung wurde gegengeprüft**, wie es die eigene Regel verlangt: Datei
+entfernt → rot; einen Abschnitt gelöscht → rot mit Namen des fehlenden
+Abschnitts; Verweis aus `CLAUDE.md` entfernt → rot. Danach wiederhergestellt
+→ grün. Ohne diesen Schritt wäre es wieder eine Prüfung gewesen, von der
+niemand weiß, ob sie prüft.
+
+### Was ausdrücklich NICHT implementiert ist
+
+- **Die neuen Regeln wirken erst ab der nächsten Sitzung.** `CLAUDE.md`
+  wird beim *Start* geladen; in dieser Sitzung liegt noch die alte Fassung
+  im Kontext. Dass ich mich seit heute daran halte, ist Vorsatz, nicht
+  Mechanik.
+- **Verhaltensregeln lassen sich nicht mechanisch erzwingen.** „Behaupten
+  ist nicht prüfen" und „eine Zusammenfassung ist keine Quelle" kann kein
+  Skript kontrollieren. Prüfbar ist nur, ob die Regeln **vorhanden und
+  erreichbar** sind — das tut Abschnitt 7 jetzt.
