@@ -41,6 +41,16 @@ Belege in `docs/decisions.md` (2026-08-07 bis 2026-08-12).
    `git stash` entfernen, gleich messen, Unterschied ansehen. Sonst wird
    eine Reparatur gemeldet, von der niemand weiß, ob sie repariert.
 4. **Der erste plausible Verursacher ist nicht automatisch der richtige.**
+5. **Eine Zusammenfassung ist keine Quelle.** Wer aus einer Webseite, einem
+   fremden Repo oder einem Dokument etwas ableitet, holt es **frisch** und
+   liest es **selbst** — und gleicht die eigene Analyse dann *gegnerisch*
+   damit ab, in der Annahme, sie enthalte Fehler. Das gilt erst recht für
+   Zusammenfassungen, die ein **anderes Werkzeug** erzeugt hat: Ein Repo
+   wird geklont und gelesen, nicht über eine Vorschau beurteilt.
+6. **Erfolgskriterien vor der Arbeit, nicht danach.** Aus „ich mache X"
+   wird „X → prüfbar an: Y". Bei einer vagen Vorgabe („noch nicht ganz
+   clean") zuerst nach **Ort und Auslöser** fragen, statt breit zu suchen —
+   breites Suchen hat hier mehr Zeit gekostet als jede einzelne Reparatur.
 
 ## Chirurgisch ändern
 

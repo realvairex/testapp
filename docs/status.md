@@ -269,6 +269,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Listen-Kennzeichnung in der Sidebar | **Farbige Punkte**, keine Ordner-Icons. |
 | Hover im hellen Design | Muss **heller** als der Grundton sein, nicht dunkler. |
 | Farben aus fremden Screenshots | Werden nicht übernommen — nur Struktur und Anordnung. |
+| Fremde Quellen bewerten | **Frisch holen und selbst lesen**, nie aus einer Zusammenfassung schließen — ein Repo wird geklont, nicht über eine Vorschau beurteilt. Regel des Nutzers („Verify, Don't Trust"), aufgenommen 2026-08-12 nach einem konkreten Fehlgriff. Steht in `CLAUDE.md`. |
 | Historische Einträge in `docs/decisions.md` | Werden **nicht überschrieben**. Korrekturen kommen als **Nachtrag darunter**, damit nachvollziehbar bleibt, was damals galt. Vom Nutzer bestätigt (2026-08-07). |
 | Git-Tags für Meilensteine | Technisch möglich (nachgewiesen 2026-08-06), aber **vorerst nicht genutzt**. `milestones.md` bleibt die Wahrheit. Tags erst ab echtem App-Code, **zusätzlich** zur Tabelle. |
 | Repo-lokale Commit-Identität | **Bleibt so**, obwohl sie einen Klon nicht überlebt. Nach jedem Klon einmal setzen — Schrittfolge in §0. |

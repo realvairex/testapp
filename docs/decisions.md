@@ -3146,3 +3146,79 @@ Einarbeiten war meine erste Fassung **203 Zeilen lang** — ich hatte einen
 Artikel über Sparsamkeit gelesen und daraufhin mehr geschrieben. Erst das
 Nachmessen hat es gezeigt. Das ist dieselbe Familie wie „behaupten ist
 nicht prüfen", nur an einem Text statt an Code.
+
+## 2026-08-12 (Nachtrag) — Ich habe aus einer Zusammenfassung geschlussfolgert
+
+**Der Eintrag oben („CLAUDE.md gegen zwei fremde Vorlagen geprüft") bleibt
+stehen, ist aber in Teilen falsch.** Historische Einträge werden hier nicht
+überschrieben (Festlegung des Nutzers, 2026-08-07) — deshalb dieser
+Nachtrag.
+
+**Anlass:** Der Nutzer fragte, ob ich mir *wirklich alles* aus dem Repo
+angesehen habe. Antwort: **nein.** Ich hatte eine von einem anderen Werkzeug
+erzeugte Zusammenfassung der README und zwei Paraphrasen der `CLAUDE.md` —
+mehr nicht. Daraufhin habe ich seine wichtigste Datei umgebaut.
+
+Er stellte im selben Zug die Regel dazu:
+
+> **Verify, Don't Trust** — When producing an analysis or summarization of
+> something gleaned from a resource, do not trust a memory or retained
+> summary of that resource. Always retrieve the resource afresh and compare
+> it to the summary or analysis you are preparing. When comparing, do so in
+> an adversarial way: you are fact-checking work that you suspect at the
+> start contains errors and hallucinations.
+
+### Was der Abgleich am geklonten Repo ergab
+
+| Behauptung (aus der Zusammenfassung) | Wirklichkeit |
+|---|---|
+| `CLAUDE.md` „ca. 100–120 Zeilen" | **65** |
+| 6 Dateien | **9** |
+| `skills/` kam nicht vor | existiert: `skills/karpathy-guidelines/SKILL.md` |
+| `EXAMPLES.md` = „praktische Beispiele" | **522 Zeilen — die größte Datei, ungelesen** |
+
+### Drei Korrekturen an meiner Bewertung
+
+**1. „Simplicity First" habe ich gegen einen Strohmann abgelehnt.** Ich
+schrieb, es sei „für Coding-Agents in fremden Codebasen" und hier gelte
+teilweise das Gegenteil. Im Original steht aber nicht „wenig schreiben",
+sondern: *„The problem is **timing**: they add complexity before it's
+needed"* und *„Good code is code that solves today's problem simply, not
+tomorrow's problem prematurely."* Das ist kein Argument gegen Dokumentation
+— es richtet sich gegen **verfrühte Abstraktion**, und das trifft uns sehr
+wohl. Meine Ablehnung war zu pauschal, weil ich nur die Überschrift kannte.
+
+**2. Den Tradeoff-Absatz hatte ich übersehen.** Das Repo sagt selbst:
+*„These guidelines bias toward caution over speed. For trivial tasks, use
+judgment."* Meine Einwände gegen „fragen statt vermuten" waren also weniger
+originell als dargestellt — die Quelle nennt den Preis selbst.
+
+**3. „Goal-Driven Execution" habe ich unterschätzt — und es ist der
+wertvollste Punkt für unser tatsächliches Problem.** Der Kernsatz aus der
+README stand in meiner Zusammenfassung nicht:
+
+> „LLMs are exceptionally good at looping until they meet specific goals…
+> Don't tell it what to do, give it success criteria and watch it go."
+> — und: *„Strong success criteria let the LLM loop independently. Weak
+> criteria ('make it work') require constant clarification."*
+
+Der Nutzer hat sich in dieser Sitzung **zweimal** über die Dauer beklagt.
+Ein erheblicher Teil davon lief nach genau diesem Muster: vage Vorgabe
+(„noch nicht ganz clean"), daraufhin breite Suche. Die Regel dagegen ist
+billig — **erst Ort und Auslöser klären, dann messen** — und steht jetzt
+als Punkt 6 in `CLAUDE.md`.
+
+### Aufgenommen
+
+Als Punkt 5 unter „Behaupten ist nicht prüfen": *Eine Zusammenfassung ist
+keine Quelle.* Bewusst dort und nicht als eigener Abschnitt — es ist
+dieselbe Fehlerfamilie, nur auf **Quellen** statt auf **Code** angewandt.
+Genau diese Hälfte fehlte: Die vier bisherigen Punkte adressieren
+ungeprüfte Behauptungen über *das eigene Erzeugnis*, nicht über *fremdes
+Material*.
+
+**Was das Ganze über die Werkzeuge sagt:** `WebFetch` liefert die Antwort
+eines kleinen Modells auf eine Frage, nicht die Seite. Für „gibt es das?"
+reicht das; für „darauf baue ich eine Entscheidung" nicht. Ein Repo lässt
+sich klonen und wirklich lesen — das kostete hier keine zwei Minuten und
+hätte alle drei Fehler oben verhindert.
