@@ -3222,3 +3222,22 @@ eines kleinen Modells auf eine Frage, nicht die Seite. Für „gibt es das?"
 reicht das; für „darauf baue ich eine Entscheidung" nicht. Ein Repo lässt
 sich klonen und wirklich lesen — das kostete hier keine zwei Minuten und
 hätte alle drei Fehler oben verhindert.
+
+**Nachtrag zum Nachtrag (gleicher Tag):** Als der Nutzer nachfragte, ob nun
+*wirklich alles* gelesen sei, ergab das Nachzählen: **nein — 6 von 9
+Dateien.** Es fehlten `.claude-plugin/marketplace.json`,
+`.cursor/rules/karpathy-guidelines.mdc` und `README.zh.md`. Inzwischen
+gelesen; sie enthalten nichts Neues (Plugin-Metadaten, eine Kopie der
+Richtlinien für Cursor, die chinesische Übersetzung der README).
+
+**Zweimal in Folge „alles geprüft" gesagt, ohne nachgezählt zu haben** —
+beim ersten Mal grob falsch, beim zweiten Mal knapp daneben. Die Lehre ist
+nicht neu, aber sie sitzt jetzt: **„Alles" ist eine Mengenangabe und
+gehört gezählt.** Der HumanLayer-Artikel bleibt unerreichbar (Domain auf
+Proxy-Ebene gesperrt, auch per `curl`: 403) — jede Aussage darüber steht
+weiterhin auf zweiter Hand.
+
+Eine Kleinigkeit am Rande, die dem Repo-Autor gehört: Die Cursor-Fassung
+der Richtlinien enthält den Tradeoff-Absatz („bias toward caution over
+speed") **nicht**, obwohl `CURSOR.md` ausdrücklich verlangt, beide Fassungen
+synchron zu halten.
