@@ -99,6 +99,27 @@ ist temporär, Ungepushtes ist verloren, und die Weboberfläche kennt keine
 eingecheckten Slash-Befehle — `start unfold` / `ende unfold` als Text
 schreiben.
 
+**Die Prüfskripte laufen auch im Web** — nachgewiesen am 2026-08-13 mit
+einem vollständigen Lauf (53 grün, 1 rot: `test_4bugs`, der bekannte
+Wackelkandidat aus Abschnitt 4; derselbe Stand wie lokal). Einrichtung im
+frischen Container:
+
+```bash
+npm ci                       # zwei Pakete, wenige Sekunden
+bash scripts/run-mockup-tests.sh
+```
+
+⚠️ **Kein `npx playwright install`.** Chromium ist im Container bereits
+vorhanden und wird über `PLAYWRIGHT_BROWSERS_PATH` gefunden; der
+Nachinstallations-Schritt ist dort ausdrücklich abgeschaltet. Wer ihn
+trotzdem aufruft, wartet auf einen Download, der nichts hinzufügt.
+
+⚠️ **Branches löschen geht im Web-Container nicht.** `git push origin
+--delete <branch>` bricht mit `HTTP 403` am Agent-Proxy ab — normales
+Pushen funktioniert, nur das Entfernen einer Referenz ist gesperrt
+(festgestellt 2026-08-13). Aufräumen also am lokalen Klon oder in der
+GitHub-Oberfläche.
+
 ---
 
 ## 1. Wo wir stehen
