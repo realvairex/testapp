@@ -97,6 +97,7 @@ Nachschlagen also grob anspringen, nicht blind zaehlen.
 | 3923 | 2026-08-13 (abends) | Workflow beschleunigen, ohne Sicherheit abzubauen |
 | 4042 | 2026-08-13 (abends) | Datenschicht im Prototyp: das Mockup wird benutzbar |
 | 4153 | 2026-08-13 (abends) | Das Kästchen springt beim Umschalten |
+| 4242 | 2026-08-13 (abends) | „Alles unter dem Titel rutscht nach unten" |
 
 <!-- VERZEICHNIS:ENDE -->
 
@@ -4332,3 +4333,70 @@ Gründe wiederkehren können:
   zweite Aussage über dieselbe Tat.
 - **Widerspruch zu `status.md` §3**: „Konfetti, Klänge, Zeitmesser im
   Aufräum-Modus — bewusst nicht."
+
+## 2026-08-13 (abends) — „Alles unter dem Titel rutscht nach unten"
+
+Der Nutzer meldete beim Benutzen des Prototyps: Beim Ab- und Anhaken der
+letzten Aufgabe verschiebe sich alles unter der Überschrift „Eingang" ein
+Stück nach unten. **Der erste Fehler, den die echte Nutzung gefunden hat**
+— genau der Grund, aus dem die Datenschicht gebaut wurde.
+
+### Zuerst nicht reproduzierbar
+
+Vier Messungen im Container ergaben **0,0 px** Versatz: mit Beispieldaten,
+mit genau einer Aufgabe, an Kopfzeile, Meta-Zeile und Aufgabenzeile, und
+über den gesamten Verlauf der Bewegung. Auch keine Animation an der Zeile.
+
+Statt es als „geht bei mir" abzulegen, war die nächste Frage, **wovon** es
+abhängen könnte. Die Kopfzeile ist eine Flex-Zeile: Ihre Höhe ist die des
+**größten** Elements.
+
+| `--fs-xl` | Titel | Knopf | Kopf mit Knopf | ohne | Sprung |
+|---|---|---|---|---|---|
+| **22 px** (unsere) | 26,4 | 26,0 | 26,4 | 26,4 | **0,0** |
+| 21 px | 25,2 | 26,0 | 26,0 | 25,2 | 0,8 px |
+| 20 px | 24,0 | 26,0 | 26,0 | 24,0 | **2,0 px** |
+
+**Der Titel gewinnt mit 0,4 px Vorsprung.** Die Titelhöhe ist berechenbar
+(`22px × 1.2`), die Knopfhöhe hängt an der **Systemschrift**: Der Container
+rendert mit DejaVu, der Nutzer unter Windows mit Segoe UI. Kippt der
+Vorsprung, bestimmt der Knopf die Höhe — und weil er nur bei offenen
+Aufgaben gebaut wurde, sprang die ganze Spalte beim Abhaken.
+
+**Die Lehre ist nicht der Fehler, sondern die Bauart:** Ein Layout, das auf
+0,4 px Vorsprung beruht, ist nicht robust, sondern hatte Glück. Dass es
+hier auffiel, lag am Betriebssystem des Nutzers — auf einem dritten Rechner
+wäre es wieder anders.
+
+### Behoben an der Ursache
+
+Der Knopf wird jetzt **immer** gebaut und bei leerem Eingang nur
+`visibility: hidden` geschaltet. Damit kann die Höhe der Kopfzeile gar
+nicht mehr von ihm abhängen — unabhängig von Schrift, Zoom und System.
+
+`display: none` hätte den Sprung nicht behoben, `min-height` nur eine neue
+Zahl geraten. `visibility: hidden` erhält außerdem die ursprüngliche
+Aussage: Das Element ist weder klickbar noch im Tab-Verlauf noch für
+Screenreader vorhanden — es gibt weiterhin **keinen Weg** in den
+Aufräum-Modus, wenn nichts aufzuräumen ist.
+
+### Die Prüfung prüft die Regel, nicht diesen Rechner
+
+`test_kopf_stabil.js` misst bei **vier Schriftgrößen** (22/21/20/18 px) —
+darunter drei, die den Vorsprung absichtlich umkehren. Eine Prüfung, die
+nur „bei 22 px springt nichts" sagt, wäre bei genau diesem Fehler grün
+gewesen. Gegengeprüft: Ohne den Fix kippen **neun** Zusicherungen, bei
+22 px aber **keine** — der Beweis, dass die Auswahl der Schriftgrößen die
+eigentliche Arbeit macht.
+
+### Und Muster 10 zum vierten Mal
+
+`test_aufraeumen` meldete daraufhin rot: Es sicherte zu, dass der Knopf
+**aus dem Aufbau verschwindet** — ein *Zustand*. Die *Regel* („kein Weg in
+den Aufräum-Modus bei leerem Eingang") war eingehalten. Die Zusicherung
+prüft jetzt Sichtbarkeit, Klickbarkeit und Fokussierbarkeit statt der
+Anwesenheit im DOM.
+
+Damit steht Muster 10 aus `docs/lernkurve.md` bei **vier** Vorfällen an
+einem Tag — und zum ersten Mal hat es eine *Reparatur* blockiert statt nur
+eine Entscheidung.

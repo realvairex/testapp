@@ -432,8 +432,29 @@ const balkenVerlauf = (page, auswahl) =>
   await page.waitForTimeout(400);
   console.log('>>> Escape verlässt den Aufräum-Modus:',
     (await page.locator('.tidy').count()) === 0);
+  // Geprüft wird die REGEL ("kein Weg in den Aufräum-Modus, wenn nichts
+  // aufzuräumen ist"), nicht mehr der damalige Zustand ("der Knopf ist
+  // nicht im Aufbau"). Seit 2026-08-13 wird er immer gebaut und nur
+  // unsichtbar geschaltet - sonst änderte sich die Höhe der Kopfzeile,
+  // sobald er kam oder ging, und die ganze Spalte rutschte.
+  //
+  // Diese Zusicherung hat den Unterschied zuerst als Fehler gemeldet,
+  // obwohl die Regel eingehalten war: genau Muster 10 aus
+  // docs/lernkurve.md. Deshalb steht hier jetzt die Wirkung.
+  const einstieg = await page.evaluate(() => {
+    const k = document.querySelector('.tidy-start');
+    if (!k) return { sichtbar: false, klickbar: false, fokussierbar: false };
+    const st = getComputedStyle(k);
+    return {
+      sichtbar: st.visibility === 'visible' && st.display !== 'none',
+      klickbar: st.pointerEvents !== 'none',
+      // visibility:hidden nimmt das Element aus Tab-Reihenfolge und
+      // Screenreader-Baum - der Weg ist also auch ohne Maus zu.
+      fokussierbar: (function () { k.focus(); return document.activeElement === k; })()
+    };
+  });
   console.log('>>> der Eingang ist leer, also fehlt auch der Einstieg:',
-    (await page.locator('.tidy-start').count()) === 0);
+    !einstieg.sichtbar && !einstieg.klickbar && !einstieg.fokussierbar);
 
   // --- Die Bewegungssprache ist wirklich verdrahtet ----------------------
   // Zwei Regeln aus spec.md §2.8/§3, die man beim Umbauen leicht verliert.

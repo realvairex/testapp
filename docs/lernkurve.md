@@ -213,13 +213,14 @@ abstellen — das Netz muss ihn auffangen. Der Zähler steht bei **3**.
 
 ---
 
-### 10. Eine Prüfung schreibt einen **Zustand** fest statt einer **Regel** — 3 Vorfälle · zuletzt 2026-08-13
+### 10. Eine Prüfung schreibt einen **Zustand** fest statt einer **Regel** — 4 Vorfälle · zuletzt 2026-08-13
 
 | Datum | Prüfung | Schrieb fest | Statt der Regel |
 |---|---|---|---|
 | 2026-08-13 | `test_list_header` | den Hexwert des alten Taubenblaus | „der Punkt zeigt die gewählte Farbe" |
 | 2026-08-13 | `test_aufraeumen` | die Liste der damaligen `--ease-spring`-Fundstellen | „federnd nur, wo etwas ankommt" |
 | 2026-08-13 | `verify_center` (offen) | die alte Achse der Gruppenzeile | die Ausrichtungsregel |
+| 2026-08-13 | `test_aufraeumen` | „der Knopf ist nicht im DOM" | „kein Weg in den Aufräum-Modus bei leerem Eingang" |
 
 **Der Kern:** So eine Prüfung meldet einen Fehler **genau dann, wenn eine
 Entscheidung korrekt umgesetzt wird**. Sie schützt nicht, sie bremst — und
@@ -236,6 +237,12 @@ falsch gebaut — aufgefallen ist es erst, als es wehtat.
 erlaubte Entscheidung ändert — meldet die Prüfung dann rot?* Wenn ja,
 prüft sie den Zustand. Richtig ist, die **Beziehung** zu prüfen („der Punkt
 trägt dieselbe Farbe wie die Liste"), nicht den Wert.
+
+**Der vierte Fall ist der teuerste Beleg:** Er hat eine **Reparatur**
+blockiert, nicht nur eine Entscheidung. Der Knopf musste im Aufbau bleiben,
+damit die Kopfzeile nicht mehr springt — und genau das meldete die Prüfung
+als Fehler. Wer der Prüfung geglaubt hätte, hätte den Fehler des Nutzers
+stehen lassen.
 
 **Noch kein Netz.** Anders als bei Muster 9 gibt es hier keine mechanische
 Prüfung — eine Prüfung, die prüft, ob Prüfungen Regeln statt Zuständen

@@ -431,8 +431,25 @@ Eingang-Spalte wird ausgetauscht. Das folgt der Design-Richtung aus
 praktischen Grund dazu: Die Zielliste, in die gerade einsortiert wird,
 muss **sichtbar bleiben** — sie ist das Ziel der Wegflug-Bewegung.
 
-Gestartet wird über einen Knopf im Kopf der Eingang-Spalte. Er erscheint
-nur, wenn dort etwas Offenes liegt.
+Gestartet wird über einen Knopf im Kopf der Eingang-Spalte. Er ist **nur
+benutzbar, wenn dort etwas Offenes liegt** — ein Knopf, der auf einen
+leeren Eingang zeigt, wäre eine Aufforderung ins Leere.
+
+> **Sein Platz bleibt aber reserviert** (2026-08-13, nach einem Fund aus
+> der echten Nutzung). Die Kopfzeile ist so hoch wie ihr größtes Element;
+> Titel (`fs-xl` × 1,2 = 26,4 px) und Knopf (~26 px) liegen nur **0,4 px**
+> auseinander, und die Knopfhöhe hängt an der **Systemschrift**. Wo der
+> Knopf minimal höher rendert, bestimmt er die Höhe — und beim Abhaken der
+> letzten Aufgabe rutschte die ganze Spalte sichtbar auf und ab. Beim
+> Entwickler (Linux/DejaVu) trat es **nicht** auf, beim Nutzer
+> (Windows/Segoe UI) schon.
+>
+> Der Knopf wird deshalb immer angelegt und bei leerem Eingang nur
+> unsichtbar geschaltet (`visibility: hidden`) — weder klickbar noch im
+> Tab-Verlauf noch für Screenreader. **Ein Layout, dessen Stabilität auf
+> 0,4 px Vorsprung beruht, ist nicht robust, sondern hatte Glück.**
+> Geprüft von `test_kopf_stabil.js`, und zwar bei **vier** Schriftgrößen —
+> bei unserer eigenen allein wäre die Prüfung grün gewesen.
 
 #### Aufbau der Seite
 

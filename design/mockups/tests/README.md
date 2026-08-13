@@ -104,6 +104,7 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
 | **Datenschicht des Prototyps** (Speichern, Export, Import, kaputter Stand) | `test_speichern` |
 | Sprung-Bewegung des Kästchens beim Ab- und Zurückhaken | `test_kaestchen` |
+| Kopfzeile der Eingang-Spalte springt nicht (Aufräumen-Knopf) | `test_kopf_stabil` |
 | Welche Animation bei welcher Interaktion **tatsächlich** läuft | `measure_animationen` |
 | Wie die Marke aussieht und wie groß der Wimpel dabei wird | `shot_logo`, `shot_logo_groessen` |
 

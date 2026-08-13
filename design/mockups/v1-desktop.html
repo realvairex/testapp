@@ -1026,6 +1026,10 @@
     padding: 5px 12px 5px 9px; border-radius: var(--r-pill); cursor: pointer;
     transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) var(--ease);
   }
+  /* Leerer Eingang: Der Knopf ist weg, sein Platz bleibt. Siehe die
+     Begruendung an der Stelle, die ihn baut - ohne den reservierten Platz
+     rutscht die ganze Spalte, sobald die letzte Aufgabe abgehakt wird. */
+  .tidy-start.unsichtbar { visibility: hidden; pointer-events: none; }
   .tidy-start:hover { background: var(--chip-hover); color: var(--ink); }
   .tidy-start svg { color: var(--accent); }
 
@@ -3319,11 +3323,27 @@
         // Der Einstieg in den Aufraeum-Modus steht dort, wo aufgeraeumt wird,
         // und nur dann, wenn es etwas aufzuraeumen gibt. Ein Knopf, der auf
         // einen leeren Eingang zeigt, waere eine Aufforderung ins Leere.
+        // Der Knopf wird IMMER gebaut und bei leerem Eingang nur unsichtbar
+        // geschaltet - er verschwindet nicht aus dem Aufbau.
+        //
+        // Grund (2026-08-13, vom Nutzer gemeldet): Die Kopfzeile ist so hoch
+        // wie ihr groesstes Element. Titel (22px * 1.2 = 26,4px) und Knopf
+        // (~26px) liegen nur 0,4px auseinander, und die Knopfhoehe haengt an
+        // der Schrift des Systems. Wo der Knopf auch nur ein halbes Pixel
+        // hoeher rendert, bestimmt ER die Hoehe - und beim Ab- und Anhaken
+        // der letzten Aufgabe rutschte alles darunter sichtbar auf und ab.
+        // Im Linux-Container war der Sprung 0px, beim Nutzer sichtbar; genau
+        // die Sorte Fehler, die nur auf einem anderen Rechner auftritt.
+        //
+        // "visibility: hidden" statt "display: none": Der Platz bleibt
+        // reserviert, das Element ist aber weder klickbar noch im
+        // Tab-Verlauf noch fuer Screenreader vorhanden. Die Aussage der
+        // urspruenglichen Fassung - kein Knopf, der auf einen leeren Eingang
+        // zeigt - bleibt damit erhalten.
         var zuTun = list.tasks.filter(function (x) { return !x.done; }).length;
-        if (zuTun) {
-          html += '<button class="tidy-start" type="button" data-tidy="start" title="Eingang durchgehen">' +
-                  svgBesen() + "Aufräumen</button>";
-        }
+        html += '<button class="tidy-start' + (zuTun ? "" : " unsichtbar") + '" type="button"' +
+                ' data-tidy="start" title="Eingang durchgehen">' +
+                svgBesen() + "Aufräumen</button>";
       } else {
         html += '<button class="col-dot" data-color-for="' + list.id + '" style="background:' + list.color + '"' +
                 ' aria-label="Farbe der Liste ändern" title="Farbe ändern"></button>';
