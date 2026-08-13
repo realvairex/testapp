@@ -3439,3 +3439,96 @@ Produktentscheidungen und Einzelfall-Bugs.
 „eintragen". Ein Skript kann Kandidaten liefern, keine Muster erkennen —
 und ein Skript, das so täte, wäre schädlich (siehe die zweite, verworfene
 Fassung mit ihrem falschen „erfasst"-Urteil).
+
+## 2026-08-13 — Aufgaben in andere Aufgaben ziehen
+
+Der erste offene Punkt aus `status.md` §2, seit dem 2026-08-11 als Todo
+bestätigt. Bis hierher ließ sich eine Aufgabe nur auf eine **Liste** in der
+Sidebar ziehen — das Datenmodell kennt seit jeher beliebig tiefe
+Verschachtelung (`spec.md` §1), das Ziehen kam nicht hinterher.
+
+Der Nutzer hat vor dem Bau zwei Fragen beantwortet.
+
+### Keine Tiefenbegrenzung
+
+**Erwogen:** eine Grenze (etwa vier Ebenen), weil es keine Suche gibt
+(`spec.md` §4.6) und eine Aufgabe drei Ebenen tief nur durch Durchklicken
+auffindbar ist. Maximal drei Spalten sind gleichzeitig sichtbar, ab der
+vierten wird gescrollt.
+
+**Entschieden: keine Grenze.** Eine Grenze müsste dem Nutzer erklärt
+werden („warum geht hier nichts mehr rein?") und löst das eigentliche
+Problem nicht — das ist nicht die Tiefe, sondern das **Wiederfinden**.
+Dafür ist die Suche zuständig, nicht ein Limit. Vom Nutzer bestätigt.
+
+### Der Kreisfall wird gar nicht erst angeboten
+
+Zieht man „Urlaub planen" auf ihre eigene Unteraufgabe „Flüge
+vergleichen", müsste die Aufgabe in sich selbst stecken. Drei Wege
+standen zur Wahl:
+
+| | | |
+|---|---|---|
+| a) | im eigenen Unterbau **keine Markierung**, Loslassen folgenlos | **gewählt** |
+| b) | erlauben, danach Fehlermeldung | verworfen |
+| c) | erlauben, Unterbau automatisch umhängen | verworfen |
+
+**Für a):** Der Nutzer sieht beim Ziehen, dass dort nichts hingeht, statt
+es nach dem Loslassen zu erfahren — derselbe Grundsatz wie beim Kopf der
+Listenspalte (`spec.md` §2.5): Der Zustand ist ablesbar, ohne dass man
+etwas ausprobieren muss. **Gegen c):** Es rät, was gemeint war, und
+rechnet den Baum um, ohne zu fragen.
+
+**Kein theoretischer Fall.** Ein Baum, der sich selbst enthält, lässt
+`recomputeAncestors()` im Kreis laufen; dort steht seit Längerem eine
+Notbremse mit dem Kommentar „would loop forever and freeze the whole app".
+Die Prüfung sitzt deshalb **zweimal**: in `resolveSpot()`, damit erst gar
+nichts angeboten wird, und in `moveTaskIntoTask()` für jeden anderen
+Aufrufweg. Die Oberfläche entscheidet, was sie **anbietet**, das Modell,
+was es **zulässt**.
+
+### Mitte = hinein, Drittel = daneben — und was in der Sidebar wirklich steht
+
+`status.md` schlug vor, „dieselbe Sprache wie in der Sidebar" zu nehmen,
+„wo Listen schon in Gruppen wandern — Mitte der Zeile = hinein,
+oberes/unteres Drittel = daneben".
+
+**Nachgesehen: Die Sidebar macht das nicht.** Dort entscheidet die
+**Art des Ziels**, nicht die Höhe des Zeigers — eine Liste über einer
+*Gruppenzeile* heißt „hinein", über einer *Listenzeile* heißt es
+„daneben" (nach Hälften, nicht nach Dritteln). Die Drittel-Regel war ein
+Vorschlag, kein Bestand. Notiert, weil eine falsche Herkunftsangabe
+später als Beleg gelesen wird.
+
+**Der Vorschlag trägt trotzdem** — aus einem eigenen Grund: Bei Aufgaben
+gibt es keine zwei Zeilenarten, an denen sich „hinein" und „daneben"
+unterscheiden ließen. Jede Aufgabe kann beides sein, Geschwister und
+Elternteil. Damit bleibt die Position in der Zeile der einzige verfügbare
+Unterschied.
+
+### „Hinein" spaltenübergreifend, „daneben" nur auf der eigenen Seite
+
+„Hinein" gilt für **jede sichtbare Aufgabenzeile**, auch in einer anderen
+Spalte — sonst wäre eine Aufgabe, die auf der eigenen Seite gar nicht
+steht, unerreichbar (und der Kreisfall oben entstünde nie, die Prüfung
+wäre toter Code). „Daneben" gibt es nur dort, wo sortiert wird: auf der
+eigenen Seite. In einer fremden Spalte zählt deshalb die **ganze Zeile**
+als „hinein" — ein Drittel, das nichts tut, sähe aus wie ein Fehler.
+
+**Bewusst nicht gebaut:** „daneben" über Spaltengrenzen hinweg. Vermerkt
+in `spec.md` §2.4, samt Hinweis auf die vorhandenen Bausteine.
+
+### Gegenprobe statt Zutrauen
+
+Alle 21 Zusicherungen von `test_unteraufgabe.js` waren im **ersten** Lauf
+grün — der Moment, in dem laut `CLAUDE.md` zuerst die Messung anzuzweifeln
+ist. Also den Einbau per `git stash` entfernt und gleich noch einmal
+gemessen: **14 der 21 kippen**, die übrigen 7 beschreiben vorhandenes
+Verhalten (Umsortieren nach Hälften, Ausgangslage). Damit ist belegt, dass
+das Skript den Einbau misst und nicht sich selbst.
+
+Zusätzlich geprüft, dass die Markierung nicht nur als CSS-Klasse gesetzt,
+sondern auch **gezeichnet** wird (`getComputedStyle`): Für
+`.inline-embed.drop-into` gibt es keine eigene Regel, es greift die
+allgemeine — und `.inline-embed` hat `overflow: hidden`. Gemessen:
+`rgb(238,108,77) 0 0 0 1.5px inset` auf `rgb(252,231,224)`.

@@ -1397,6 +1397,78 @@
     return true;
   }
 
+  // --- Aufgabe in eine andere Aufgabe (= Unteraufgabe) ---
+  //
+  // Bis hierher liess sich eine Aufgabe nur auf eine LISTE in der Sidebar
+  // ziehen. Eine Aufgabe unter eine andere zu haengen ging gar nicht, obwohl
+  // das Datenmodell beliebig tiefe Verschachtelung kennt (spec.md 1).
+  //
+  // Anmerkung, bewusst nicht angefasst: moveTaskToList() oben macht das
+  // Aushaengen von Hand, obwohl es knotenAushaengen() gibt - dieselbe Arbeit
+  // an zwei Stellen. Hier wird der Helfer benutzt.
+
+  // Enthaelt der Teilbaum unter `wurzel` die Aufgabe `id`? Die Wurzel selbst
+  // zaehlt mit: Eine Aufgabe in sich selbst zu haengen ist derselbe Fehler.
+  function istImTeilbaum(wurzel, id) {
+    if (!wurzel) return false;
+    if (wurzel.id === id) return true;
+    for (var i = 0; i < wurzel.subtasks.length; i++) {
+      if (istImTeilbaum(wurzel.subtasks[i], id)) return true;
+    }
+    return false;
+  }
+
+  // Darf `quelleId` unter `zielId` haengen? Das ist die Frage, die BEIM
+  // ZIEHEN gestellt wird, damit im eigenen Unterbau erst gar keine Ablage
+  // angeboten wird (Entscheidung des Nutzers, 2026-08-13): Man sieht, dass
+  // dort nichts hingeht, statt es nach dem Loslassen zu erfahren.
+  //
+  // Warum das kein theoretischer Fall ist: Zieht man "Urlaub planen" auf ihre
+  // eigene Unteraufgabe "Fluege vergleichen", entstuende ein Baum, der sich
+  // selbst enthaelt. recomputeAncestors() traegt gegen genau diese Lage schon
+  // eine Notbremse ("would loop forever and freeze the whole app") - besser,
+  // die Lage entsteht gar nicht erst.
+  function darfHineinZiehen(quelleId, zielId) {
+    if (!quelleId || !zielId || quelleId === zielId) return false;
+    var quelle = findTaskGlobal(quelleId);
+    var ziel = findTaskGlobal(zielId);
+    if (!quelle || !ziel) return false;
+    // Der eigene Unterbau - der Kreisschluss.
+    if (istImTeilbaum(quelle, zielId)) return false;
+    // Schon direktes Kind? Dann waere die Ablage ein Aus- und Wiedereinbau
+    // am selben Ort, sichtbar nur als Sprung ans Ende der Unteraufgaben.
+    for (var i = 0; i < ziel.subtasks.length; i++) {
+      if (ziel.subtasks[i].id === quelleId) return false;
+    }
+    return true;
+  }
+
+  function moveTaskIntoTask(taskId, ownerId, zielId) {
+    if (!darfHineinZiehen(taskId, zielId)) return false;
+    var ziel = findTaskGlobal(zielId);
+    // Knoten UND Blockverweis wandern gemeinsam - eines von beiden zu
+    // vergessen erzeugt eine Aufgabe ohne Zeile oder eine Zeile ins Leere.
+    // knotenAushaengen() schliesst auch die Spalten, die auf die verschobene
+    // Aufgabe zeigen (die zentrale Regel aus spec.md 4.3).
+    var aus = knotenAushaengen(ownerId, taskId);
+    if (!aus) return false;
+    knotenEinhaengen(zielId, aus.node, ziel.subtasks.length, -1);
+
+    // Das Ziel hat ein Kind mehr und kann dadurch unfertig werden; der
+    // bisherige Besitzer hat eines weniger und kann dadurch fertig werden.
+    // Beide brauchen ihren eigenen Durchgang: Das Ziel muss KEIN Nachfahre
+    // des Besitzers sein - zieht man aus einer Spalte rechts in eine Aufgabe
+    // links, liegen sie in verschiedenen Zweigen.
+    ziel.done = ziel.subtasks.length > 0 && ziel.subtasks.every(function (x) { return x.done; });
+    recomputeAncestors(ziel.id);
+    var owner = findList(ownerId) || findTaskGlobal(ownerId);
+    if (owner && owner.subtasks) {
+      owner.done = owner.subtasks.length > 0 && owner.subtasks.every(function (x) { return x.done; });
+      recomputeAncestors(owner.id);
+    }
+    return true;
+  }
+
   // ==================== Aufräum-Modus (docs/spec.md 2.8) ====================
   //
   // Ein gefuehrter Durchgang durch den Eingang: eine Aufgabe nach der
@@ -4193,6 +4265,38 @@
           }
         }
 
+        // Dann die Aufgabenzeilen: Mitte = HINEIN (wird Unteraufgabe),
+        // oberes/unteres Drittel = daneben.
+        //
+        // "Hinein" gilt fuer jede sichtbare Aufgabenzeile, auch in einer
+        // anderen Spalte - sonst waere eine Aufgabe, die auf der eigenen
+        // Seite nicht steht, gar nicht erreichbar. "Daneben" gibt es dagegen
+        // nur dort, wo ueberhaupt sortiert wird: auf der eigenen Seite. In
+        // einer fremden Spalte zaehlt deshalb die GANZE Zeile als "hinein" -
+        // ein Drittel, das nichts tut, saehe aus wie ein Fehler.
+        if (marker.indexOf("task:") === 0) {
+          var uz = document.elementFromPoint(x, y);
+          var zeile = uz && uz.closest && uz.closest('.inline-embed[data-embed-marker^="task:"]');
+          if (zeile && zeile !== el) {
+            var zielId = zeile.getAttribute("data-embed-marker").slice(5);
+            var eigeneSeite = zeile.closest(".page-editor") === container;
+            var zr = zeile.getBoundingClientRect();
+            var drittel = zr.height / 3;
+            var hinein = !eigeneSeite || (y >= zr.top + drittel && y < zr.bottom - drittel);
+            if (hinein) {
+              // In den eigenen Unterbau wird NICHTS angeboten - keine
+              // Markierung, kein Aufschlag. Loslassen tut dann nichts und
+              // die Zeile springt zurueck.
+              if (!darfHineinZiehen(marker.slice(5), zielId)) return null;
+              return { target: zeile, pos: "into", inAufgabe: zielId };
+            }
+            if (eigeneSeite) {
+              return { target: zeile, pos: y < zr.top + drittel ? "before" : "after" };
+            }
+            return null;
+          }
+        }
+
         var all = container.childNodes;
         var others = [];
         for (var i = 0; i < all.length; i++) {
@@ -4210,6 +4314,12 @@
           var eigner = el.closest(".page-editor").getAttribute("data-editor-for");
           var aufgabenId = (el.getAttribute("data-embed-marker") || "").slice(5);
           if (moveTaskToList(aufgabenId, eigner, spot.nachListe)) renderAll();
+          return;
+        }
+        if (spot.inAufgabe) {
+          var eignerSeite = el.closest(".page-editor").getAttribute("data-editor-for");
+          var quellId = (el.getAttribute("data-embed-marker") || "").slice(5);
+          if (moveTaskIntoTask(quellId, eignerSeite, spot.inAufgabe)) renderAll();
           return;
         }
         var editor = spot.target.closest(".page-editor");

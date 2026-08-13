@@ -248,6 +248,67 @@ lockerer wirken als der Fließtext darüber.
 - Eine Liste kann auf eine Gruppe gezogen werden (= in die Gruppe
   aufnehmen) oder zwischen zwei Listen (= umsortieren).
 
+#### Aufgabe auf Aufgabe = Unteraufgabe — ✅ ENTSCHIEDEN (2026-08-13)
+
+Eine Aufgabe lässt sich auf eine **andere Aufgabe** ziehen und wird deren
+Unteraufgabe. Vorher ging nur der Weg auf eine Liste in der Sidebar; das
+Datenmodell (§1) kennt beliebig tiefe Verschachtelung, das Ziehen kam
+nicht hinterher.
+
+Wohin genau, entscheidet die **Höhe des Zeigers in der Zielzeile**:
+
+| Zone | Wirkung |
+|---|---|
+| oberes Drittel | daneben, davor |
+| **Mitte** | **hinein** (wird Unteraufgabe, hinten angehängt) |
+| unteres Drittel | daneben, dahinter |
+
+**„Hinein" gilt für jede sichtbare Aufgabenzeile, auch in einer anderen
+Spalte** — sonst wäre eine Aufgabe, die auf der eigenen Seite gar nicht
+steht, unerreichbar. **„Daneben" gibt es dagegen nur auf der Seite, auf
+der gerade sortiert wird.** In einer fremden Spalte zählt deshalb die
+**ganze Zeile** als „hinein": Ein Drittel, das nichts tut, sähe aus wie
+ein Fehler.
+
+> ⚠️ **Noch nicht gebaut:** „daneben" über Spaltengrenzen hinweg — eine
+> Aufgabe also als *Geschwister* in eine fremde Seite einzusortieren. Wer
+> das nachrüstet, braucht ein Einhängen an einer **Position** statt am
+> Ende; die Bausteine dafür (`knotenAushaengen`/`knotenEinhaengen` im
+> Mockup) tragen den Index bereits.
+
+**Keine Tiefenbegrenzung.** Eine Grenze müsste erklärt werden („warum geht
+hier nichts mehr rein?") und löst das eigentliche Problem nicht: Das ist
+nicht die Tiefe, sondern das **Wiederfinden**. Dafür ist die Suche
+zuständig (§4.6), nicht ein Limit.
+
+**Der Kreisfall wird gar nicht erst angeboten.** Zieht man eine Aufgabe
+über ihren eigenen Unterbau — beliebig tief —, erscheint **keine
+Ablagemarkierung**; Loslassen bewirkt nichts und die Zeile springt zurück.
+Dasselbe gilt, wo die Ablage folgenlos wäre: über der Aufgabe selbst und
+über einem Ziel, dessen direktes Kind sie schon ist.
+
+> **Warum nicht erlauben und hinterher melden:** Der Nutzer soll beim
+> Ziehen *sehen*, dass dort nichts hingeht, statt es nach dem Loslassen zu
+> erfahren. Das ist derselbe Grundsatz wie beim Kopf der Listenspalte
+> (§2.5): Der Zustand ist ablesbar, ohne dass man etwas ausprobieren muss.
+>
+> **Und warum es nicht bloß Kosmetik ist:** Ein Baum, der sich selbst
+> enthält, lässt das Hochrechnen der Erledigt-Kaskade (§2.2) im Kreis
+> laufen. Im Mockup steht dort bereits eine Notbremse gegen genau diese
+> Lage — besser, sie entsteht gar nicht erst. In Flutter gehört die
+> Prüfung deshalb in den Bearbeitungs-Pfad, nicht in die Zieh-Oberfläche:
+> Die Oberfläche entscheidet, was sie **anbietet**, das Modell entscheidet,
+> was es **zulässt**. Beides ist nötig.
+
+**Beim Verschieben werden die abgeleiteten Werte in beide Richtungen
+nachgezogen:** Das Ziel bekommt ein Kind mehr und kann dadurch unfertig
+werden, der bisherige Besitzer eines weniger und dadurch fertig. Die
+beiden müssen **getrennt** nachgerechnet werden — zieht man aus einer
+Spalte rechts in eine Aufgabe links, liegen sie in verschiedenen Zweigen
+und einer ist kein Vorfahr des anderen.
+
+Geprüft von `test_unteraufgabe.js` (21 Zusicherungen).
+
 ### 2.5 Kopf einer Listenspalte — ✅ ENTSCHIEDEN (2026-08-07)
 
 Farbpunkt, dann Titel. Kein Menü.

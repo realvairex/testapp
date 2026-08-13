@@ -167,30 +167,13 @@ Was fertig ist:
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
-1. **Aufgaben in andere Aufgaben ziehen** (→ Unteraufgabe) — vom Nutzer
-   am 2026-08-11 angemerkt, **noch nicht gebaut**. Heute lässt sich eine
-   Aufgabe nur auf eine **Liste** in der Sidebar ziehen, nicht auf eine
-   andere Aufgabe.
-
-   *Vorgeschlagene Lösung:* dieselbe Sprache wie in der Sidebar, wo Listen
-   schon in Gruppen wandern — **Mitte der Zeile = hinein**, oberes/unteres
-   Drittel = daneben. Die Zieh-Maschinerie (`SORT_CONFIGS`) kennt diese
-   Unterscheidung bereits (`resolveSpot`, `drop-into` vs.
-   `drop-before/after`); es fehlt die Verdrahtung für Aufgabenzeilen.
-   Vorher entscheiden lassen, dann bauen.
-
-   **Vom Nutzer am 2026-08-11 ausdrücklich als Todo bestätigt.** Zu klären
-   vor dem Bau: Wie tief darf geschachtelt werden (heute unbegrenzt, siehe
-   §1)? Und was passiert, wenn man eine Aufgabe auf ihre eigene
-   Unteraufgabe zieht — die Prüfung auf diesen Fall gibt es noch nicht.
-
-2. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
+1. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
    „welches Kürzel?"; das Ziel ist seit 2026-08-07 der Eingang. Lässt sich
    im Browser nicht bauen, muss also rein spezifiziert werden.
 
-3. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
+2. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
 
-4. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
+3. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
    (Lint/Typecheck/Test bei jedem Push), Session-Start-Hook um
    Build-/Test-Befehle erweitern — und **die Datenschicht zuerst**
    (Speicherformat, Schema-Version, atomares Schreiben, Export), bevor
@@ -202,6 +185,26 @@ Auf der Merkliste, bewusst zurückgestellt: Befehlspalette ⌘K
 Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen
 sichtbar bleiben).
+
+**Erledigt — Aufgaben lassen sich in andere Aufgaben ziehen (2026-08-13).**
+**Mitte der Zeile = hinein** (wird Unteraufgabe), oberes/unteres Drittel =
+daneben. Beide offenen Fragen sind beantwortet: **keine Tiefenbegrenzung**
+(das Problem ist das Wiederfinden, nicht die Tiefe — dafür ist die Suche
+zuständig) und **der Kreisfall wird gar nicht erst angeboten** (im eigenen
+Unterbau erscheint keine Markierung, Loslassen bleibt folgenlos).
+Vollständig in `spec.md` §2.4, Begründungen in `docs/decisions.md`.
+Geprüft von `test_unteraufgabe.js` (21 Zusicherungen; per `git stash`
+gegengeprüft — ohne den Einbau kippen 14 davon).
+
+> **Nicht gebaut, bewusst:** „daneben" über Spaltengrenzen hinweg. „Hinein"
+> geht in jede sichtbare Spalte, „daneben" nur auf der eigenen Seite; in
+> einer fremden Spalte zählt deshalb die ganze Zeile als „hinein".
+>
+> **Nebenbefund, der eine Korrektur wert ist:** Hier stand, die Sidebar
+> unterscheide „hinein" und „daneben" nach Dritteln. Nachgesehen: Sie tut
+> es nach der **Art des Ziels** (Gruppenzeile vs. Listenzeile), nicht nach
+> der Höhe des Zeigers. Die Drittel-Regel war ein Vorschlag, kein Bestand —
+> sie trägt trotzdem, weil es bei Aufgaben keine zwei Zeilenarten gibt.
 
 **Erledigt — der Aufräum-Modus ist entschieden und gebaut (2026-08-11).**
 Ein geführter Durchgang durch den Eingang: eine Aufgabe nach der anderen,
