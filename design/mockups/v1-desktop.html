@@ -3408,6 +3408,62 @@
   // "to" on the next frame. Only `transform` ever animates - layout (flex-basis,
   // scrollLeft) is always committed to its final value up front, so there is
   // no per-frame reflow during the animation itself, only compositing.
+  // --- Gegenstauchung, die wirklich gegenstaucht ------------------------
+  //
+  // Beim Verkleinern einer Spalte wird sie per FLIP gedehnt (scaleX) und
+  // ihr Inhalt gegengestaucht. Beide liefen bisher als gewoehnlicher
+  // Uebergang auf derselben Kurve von ihrem Start- auf ihren Zielwert -
+  // und das hebt sich NUR an den Enden auf: Zur Mitte hin ist der Kehrwert
+  // von 1,5 eben 0,667 und nicht 0,75.
+  //
+  // Nachgemessen am 2026-08-13 (Meldung des Nutzers "es ist nicht dieselbe
+  // Animation, es wirkt nicht clean"): Das Produkt aus beiden Skalierungen
+  // stieg auf 1,115 - der Inhalt war mitten in der Bewegung bis zu
+  // 12,5% zu breit und zog sich dann zusammen. Am Anfang und am Ende
+  // stimmte alles, deshalb faellt es auf einem Standbild nicht auf.
+  //
+  // Loesung: Der Inhalt bekommt keinen Zwei-Punkt-Uebergang mehr, sondern
+  // Zwischenbilder, deren Werte an jeder Stelle der exakte Kehrwert der
+  // aeusseren Skalierung sind. Beide laufen dann zwangslaeufig auf 1,000.
+  function bezier(x1, y1, x2, y2) {
+    // Kubische Bezierkurve wie CSS sie rechnet; x per Bisektion loesen.
+    var kx = function (t) { var u = 1 - t; return 3*u*u*t*x1 + 3*u*t*t*x2 + t*t*t; };
+    var ky = function (t) { var u = 1 - t; return 3*u*u*t*y1 + 3*u*t*t*y2 + t*t*t; };
+    return function (x) {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      var lo = 0, hi = 1, t = x;
+      for (var i = 0; i < 24; i++) { t = (lo + hi) / 2; if (kx(t) < x) lo = t; else hi = t; }
+      return ky(t);
+    };
+  }
+
+  function ease() {
+    // Aus der Skala lesen, damit die Gegenstauchung automatisch mitzieht,
+    // falls --ease je geaendert wird.
+    var roh = getComputedStyle(document.documentElement).getPropertyValue("--ease").trim();
+    var m = roh.match(/cubic-bezier\(([^)]+)\)/);
+    if (!m) return function (x) { return x; };
+    var z = m[1].split(",").map(function (s) { return parseFloat(s); });
+    return bezier(z[0], z[1], z[2], z[3]);
+  }
+
+  function dauerSlow() {
+    var roh = getComputedStyle(document.documentElement).getPropertyValue("--dur-slow").trim();
+    var n = parseFloat(roh);
+    return /ms/.test(roh) ? n : n * 1000;
+  }
+
+  function gegenScaleKeyframes(von) {
+    var f = ease(), bilder = [];
+    for (var i = 0; i <= 24; i++) {
+      var p = i / 24;
+      var aussen = von + (1 - von) * f(p);
+      bilder.push({ offset: p, transform: "scaleX(" + (1 / aussen) + ")" });
+    }
+    return bilder;
+  }
+
   function runFlip(el, plan, callback) {
     if (!plan.length) { if (callback) callback(); return; }
     el.classList.add("anim-lock");
@@ -3417,12 +3473,27 @@
     }
     void el.offsetWidth;
     requestAnimationFrame(function () {
+      var ohneBewegung = prefersReducedMotion();
       for (var j = 0; j < plan.length; j++) {
         var item = plan[j];
         item.column.classList.add("col-animating");
-        if (item.colInner) item.colInner.classList.add("col-animating");
         item.column.style.transform = item.toCol;
-        if (item.colInner) item.colInner.style.transform = item.toInner || "";
+        if (!item.colInner) continue;
+
+        // Wird gestaucht? Dann laeuft die Gegenstauchung ueber
+        // Zwischenbilder statt ueber einen Zwei-Punkt-Uebergang, damit sie
+        // die aeussere Skalierung an JEDER Stelle aufhebt und nicht nur an
+        // den Enden. Ohne Skalierung (reines Verschieben) bleibt es beim
+        // billigeren Uebergang.
+        var stauchen = item.scaleVon && Math.abs(item.scaleVon - 1) > 0.001;
+        if (stauchen && !ohneBewegung && item.colInner.animate) {
+          item.colInner.style.transform = "";
+          item.colInner.animate(gegenScaleKeyframes(item.scaleVon),
+            { duration: dauerSlow(), easing: "linear", fill: "backwards" });
+        } else {
+          item.colInner.classList.add("col-animating");
+          item.colInner.style.transform = item.toInner || "";
+        }
       }
       setTimeout(function () {
         for (var k = 0; k < plan.length; k++) {
@@ -3462,7 +3533,11 @@
             fromCol: "translateX(" + deltaX + "px) scaleX(" + scaleRatio + ")",
             toCol: "translateX(0) scaleX(1)",
             fromInner: "scaleX(" + (1 / scaleRatio) + ")",
-            toInner: "scaleX(1)"
+            toInner: "scaleX(1)",
+            // Der Kehrwert muss WAEHREND der Bewegung gelten, nicht nur an
+            // ihren Enden - siehe gegenScaleKeyframes(). Dafuer braucht
+            // runFlip den Zahlenwert, nicht nur die fertige Zeichenkette.
+            scaleVon: scaleRatio
           });
         }
       }

@@ -105,6 +105,7 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | **Datenschicht des Prototyps** (Speichern, Export, Import, kaputter Stand) | `test_speichern` |
 | Sprung-Bewegung des Kästchens beim Ab- und Zurückhaken | `test_kaestchen` |
 | Kopfzeile der Eingang-Spalte springt nicht (Aufräumen-Knopf) | `test_kopf_stabil` |
+| Inhalt wird während der Spalten-Bewegung nicht verzerrt | `test_flip_sauber` |
 | Welche Animation bei welcher Interaktion **tatsächlich** läuft | `measure_animationen` |
 | Wie die Marke aussieht und wie groß der Wimpel dabei wird | `shot_logo`, `shot_logo_groessen` |
 

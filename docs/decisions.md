@@ -98,6 +98,7 @@ Nachschlagen also grob anspringen, nicht blind zaehlen.
 | 4042 | 2026-08-13 (abends) | Datenschicht im Prototyp: das Mockup wird benutzbar |
 | 4153 | 2026-08-13 (abends) | Das Kästchen springt beim Umschalten |
 | 4242 | 2026-08-13 (abends) | „Alles unter dem Titel rutscht nach unten" |
+| 4309 | 2026-08-13 (abends) | „Es ist nicht dieselbe Animation" — und der Nutzer hatte recht |
 
 <!-- VERZEICHNIS:ENDE -->
 
@@ -4400,3 +4401,81 @@ Anwesenheit im DOM.
 Damit steht Muster 10 aus `docs/lernkurve.md` bei **vier** Vorfällen an
 einem Tag — und zum ersten Mal hat es eine *Reparatur* blockiert statt nur
 eine Entscheidung.
+
+## 2026-08-13 (abends) — „Es ist nicht dieselbe Animation" — und der Nutzer hatte recht
+
+Beim Benutzen des Prototyps meldete der Nutzer, das Öffnen des **ersten**
+Unterpanels wirke „nicht clean", beim **zweiten** sei es „perfekt" — und:
+*„ich habe das Gefühl, dass es nicht dieselbe Animation ist."*
+
+### Zwei Fehlspuren, bevor die richtige kam
+
+1. **Ausgelassene Bilder.** Gemessen: beim ersten Panel ein Bild mit
+   33,3 ms (statt 16,7), beim zweiten keines; 14,6 ms synchrone Arbeit im
+   Klick. Real, aber **nicht** das, was der Nutzer sah — er stellte selbst
+   klar: *„mit Ruckler meinte ich, dass es visuell einfach nicht so
+   animiert und auch nicht so clean."*
+2. Erst die zweite Aussage („nicht dieselbe Animation") führte zur
+   Ursache. **Sie war wörtlich zu nehmen.**
+
+### Es sind wirklich zwei verschiedene Bewegungen
+
+`animateColumnChange` behandelt zwei Fälle unterschiedlich:
+
+| | Bewegung |
+|---|---|
+| **neue** Spalte | `translateX` vom rechten Rand — reines Schieben |
+| **vorhandene** Spalte | `scaleX` (FLIP) plus Gegenstauchung des Inhalts |
+
+Beim ersten Unterpanel schrumpft der Eingang von voller Breite auf die
+Hälfte — er wird also gedehnt und zurückskaliert. Beim zweiten behalten
+die Spalten ihre Breite, es wird nur geschoben. Deshalb der Unterschied.
+
+### Der eigentliche Fehler: die Gegenstauchung stauchte nicht gegen
+
+Außen `scaleX: 2 → 1`, innen `scaleX: 0,5 → 1`, beide als
+Zwei-Punkt-Übergang auf derselben Kurve. **Das hebt sich nur an den Enden
+auf.** Der Kehrwert von 1,5 ist 0,667 und nicht 0,75.
+
+| Zeit | außen | innen | Produkt |
+|---|---|---|---|
+| 30 ms | 2,000 | 0,500 | 1,000 |
+| **80 ms** | 1,642 | 0,679 | **1,115** |
+| 130 ms | 1,221 | 0,890 | 1,086 |
+| 430 ms | 1,000 | 1,000 | 1,000 |
+
+**Der Inhalt war mitten in der Bewegung bis zu 12,5 % zu breit** und zog
+sich dann zusammen. Auf einem Standbild unsichtbar — Anfang und Ende
+stimmen ja —, in Bewegung deutlich. Genau „nicht clean".
+
+### Behoben
+
+Der Inhalt bekommt keinen Zwei-Punkt-Übergang mehr, sondern
+**Zwischenbilder, deren Werte an jeder Stelle der exakte Kehrwert der
+äußeren Skalierung sind** (25 Stützstellen, Web Animations API, linear
+dazwischen). Kurve und Dauer werden aus `--ease` und `--dur-slow`
+**gelesen**, nicht kopiert — ändert jemand die Skala, zieht die
+Gegenstauchung automatisch mit.
+
+Gemessen nach dem Einbau: **0,00 %** über die gesamte Bewegung.
+
+Ohne Skalierung (reines Verschieben) bleibt es beim billigeren Übergang;
+bei `prefers-reduced-motion` ebenfalls.
+
+### Warum die Prüfung den Verlauf misst
+
+`test_flip_sauber.js` tastet **jedes Bild** ab und prüft das Produkt der
+beiden Skalierungen. Eine Zusicherung auf Anfang und Ende wäre grün
+gewesen — dort war ja nie etwas falsch. Sie prüft außerdem vorher, dass
+überhaupt gestaucht wird (`scaleX > 1,5`); sonst könnte sie stillschweigend
+nichts messen und trotzdem grün melden.
+
+Gegengeprüft: ohne den Fix meldet sie 12,46 %.
+
+### Offen
+
+Der Nutzer meldete zusätzlich: *„die Sidebar springt raus statt raus zu
+pushen."* Gemessen wandert sie in 24 Zwischenschritten über 400 ms — sie
+springt also nicht. Sie legt aber **78 % des Weges in den ersten 133 ms**
+zurück, weil `--ease` stark vorn lastig ist. Ob das gemeint ist, ist noch
+nicht geklärt; nachgefragt.
