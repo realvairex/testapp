@@ -368,6 +368,22 @@ Zeilenbreite verteilt.
   wenn es eng wird; dann kürzt er mit „…". Fortschritt und Pille
   schrumpfen **nie** — sonst würde die Information gekürzt statt des
   Titels.
+- **Das Kästchen springt beim Umschalten kurz an** (2026-08-13): von 0,6
+  auf 1,2 mit 15° Drehung und zurück, **400 ms** auf `--ease`. Es bleibt
+  dabei **eckig** (`--r-sm`) — die Bewegung stammt aus einer fremden
+  Vorlage, die Form nicht.
+  - **In beide Richtungen**, auch beim Zurücknehmen (Festlegung des
+    Nutzers). Abweichend von der sonstigen Regel, dass Federndes nur dort
+    steht, wo etwas *ankommt*: Hier ist es die Quittung auf einen Druck,
+    und ein Druck fühlt sich in beide Richtungen gleich an.
+  - Der Überschwinger steckt in den **Bildern**, nicht in der Kurve.
+    Deshalb `--ease` und nicht `--ease-spring` — sonst schwingt es zweimal
+    über.
+  - **Ausgelöst wird sie von der Handlung, nie vom Zustand.** Hinge sie an
+    „ist erledigt", liefe sie bei jedem Neuaufbau für jede erledigte
+    Aufgabe erneut — genau das „Refreshen" aus §2.2. Nur das *angeklickte*
+    Kästchen springt, nicht die per Kaskade miterledigten Unteraufgaben.
+  - Geprüft von `test_kaestchen.js`.
 - **Keine rechtsbündige Datumsspalte.** Sie wäre die übliche Lösung,
   entsteht hier aber gar nicht: Nur ein Teil der Aufgaben hat ein Datum,
   der rechte Rand bliebe löchrig. Und in einem Dokument gehört eine

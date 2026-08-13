@@ -153,7 +153,7 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 62 Playwright-Skripte, davon **58 vom
+- **`design/mockups/tests/`** — 63 Playwright-Skripte, davon **59 vom
   Läufer gestartet** (`test_`, `measure_`, `verify_`; die vier `shot_`
   machen nur Bilder). Sie messen das Mockup in
   einem echten Browser nach. Gestartet werden sie mit

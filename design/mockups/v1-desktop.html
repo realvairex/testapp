@@ -748,6 +748,35 @@
   .check-btn svg { opacity: 0; transform: scale(0.4); transition: opacity var(--dur-fast) ease, transform var(--dur-slow) var(--ease-spring); }
   .check-btn.done svg { opacity: 1; transform: scale(1); }
 
+  /* Das Kaestchen springt beim Abhaken kurz an und dreht sich dabei minimal
+     - und genauso beim Zuruecknehmen (Wunsch des Nutzers 2026-08-13).
+     Uebernommen wurde nur die BEWEGUNG einer Vorlage (uiverse,
+     "keyframes-fill"); Form, Farben und Dauer bleiben unsere: unser
+     Rechteck statt des Kreises, --dur-slow statt der 0,5s der Vorlage.
+
+     Sie laeuft auf --ease und NICHT auf --ease-spring: Der Ueberschwinger
+     steckt schon in den Bildern (1.2 bei 50%). Mit einer federnden Kurve
+     obendrauf schwaenge es zweimal ueber - und eine vierte Kurve waere es
+     ohnehin nicht, die Skala laesst genau drei zu (docs/spec.md 3).
+
+     Abweichung von der Vorlage, bewusst: Die faengt bei scale(0) an, weil
+     dort ein Symbol aus dem Nichts erscheint. Unser Kaestchen ist schon da
+     und wechselt nur seinen Zustand - bei scale(0) saehe es aus, als waere
+     es kurz weg gewesen. 0.6 sagt "das hat sich geaendert" statt "das ist
+     neu".
+
+     WICHTIG - die Klasse setzt der KLICK, nicht der Zustand. Haengt man sie
+     an .done, laeuft sie bei jedem Neuaufbau fuer jede erledigte Aufgabe
+     erneut los. Das ist woertlich das "Refreshen der Liste", das der Nutzer
+     am 2026-08-12 gemeldet hat (siehe Kommentar bei .inline-embed.ist-neu). */
+  .check-btn.gerade-abgehakt { animation: check-pop var(--dur-slow) var(--ease); }
+  @keyframes check-pop {
+    0%   { transform: scale(0.6); }
+    50%  { transform: scale(1.2) rotate(15deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .check-btn.gerade-abgehakt { animation: none; } }
+
   /* flex: 0 1 auto statt 1 - der Titel nimmt nur so viel Platz, wie sein
      Text braucht, und schrumpft erst, wenn es eng wird. Mit flex: 1 dehnte
      er sich ueber die ganze Zeile und drueckte die Faelligkeits-Pille ans
@@ -3849,6 +3878,16 @@
         recomputeAncestors(node.id);
         renderColumns();
         renderSidebar();
+        // Erst NACH dem Neuaufbau, und nur an das eine angeklickte
+        // Kaestchen: Die Zeilen werden hier komplett neu erzeugt, das alte
+        // Element gibt es nicht mehr. Bewusst nicht an die Unteraufgaben,
+        // die setDoneCascade mitnimmt - gedrueckt hat der Nutzer genau eins,
+        // und ein Dutzend gleichzeitig springender Kaestchen waere Unruhe
+        // statt Quittung.
+        if (!prefersReducedMotion()) {
+          var frische = document.querySelectorAll('.check-btn[data-check="' + node.id + '"]');
+          for (var fi = 0; fi < frische.length; fi++) frische[fi].classList.add("gerade-abgehakt");
+        }
       }
       return;
     }

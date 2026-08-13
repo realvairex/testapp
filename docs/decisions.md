@@ -96,6 +96,7 @@ Nachschlagen also grob anspringen, nicht blind zaehlen.
 | 3848 | 2026-08-13 | Sechs fremde Werkzeuge geprüft, keines übernommen |
 | 3923 | 2026-08-13 (abends) | Workflow beschleunigen, ohne Sicherheit abzubauen |
 | 4042 | 2026-08-13 (abends) | Datenschicht im Prototyp: das Mockup wird benutzbar |
+| 4153 | 2026-08-13 (abends) | Das Kästchen springt beim Umschalten |
 
 <!-- VERZEICHNIS:ENDE -->
 
@@ -4242,3 +4243,92 @@ Fehler 1 auf, der ohne ihn unentdeckt geblieben wäre.
   überleben das — sie hängen am Browser, nicht an der Datei.
 - **Genau deshalb ist die Schema-Version keine Formalie:** Sobald eine neue
   Fassung die Datenform ändert, trifft sie auf echte Daten des Nutzers.
+
+## 2026-08-13 (abends) — Das Kästchen springt beim Umschalten
+
+Der Nutzer brachte eine Vorlage von uiverse.io mit („keyframes-fill", ein
+kreisförmiges Häkchen) und wollte **die Bewegung, aber unsere eckige
+Form**. uiverse.io ist von der Egress-Policy gesperrt — den Code hat er
+eingefügt, gelesen habe ich also das Original und keine Zusammenfassung.
+
+### Was tatsächlich neu ist
+
+Der Vergleich vorweg, weil er die Arbeit klein macht: Unser `.check-btn`
+konnte den größten Teil schon.
+
+| | Vorlage | Unser Kästchen (vorher) |
+|---|---|---|
+| Form | Kreis | **Rechteck** (`--r-sm`) |
+| Ungehakt → gehakt | zwei SVGs werden getauscht | Fläche füllt sich, Haken skaliert ein |
+| Bewegung | `scale(0)` → `scale(1.2) rotate(15deg)` → normal | `scale(0.4)` → `scale(1)`, federnd |
+
+Neu sind also nur die **Drehung** und dass die Bewegung **in beide
+Richtungen** läuft. Die SVGs der Vorlage wurden nicht übernommen.
+
+### Vier Anpassungen an unser Regelwerk
+
+| Vorlage | Übernommen als | Grund |
+|---|---|---|
+| `0.5s` | `--dur-slow` (400 ms) | Die Skala kennt drei Dauern (`spec.md` §3). 400 ms war ohnehin schon die Dauer der Kästchen-Bewegung |
+| Kurve unbestimmt | `--ease`, **nicht** `--ease-spring` | Der Überschwinger steckt schon in den Bildern (1.2 bei 50 %). Mit federnder Kurve obendrauf schwänge es zweimal über |
+| `scale(0)` am Anfang | `scale(0.6)` | Bei der Vorlage erscheint ein Symbol *aus dem Nichts*. Unser Kästchen ist schon da und wechselt nur den Zustand — bei `scale(0)` sähe es aus, als wäre es kurz weg gewesen |
+| Kreis | Rechteck bleibt | Wunsch des Nutzers; außerdem gilt „Farben und Formen aus fremden Vorlagen werden nicht übernommen, nur Struktur" (`status.md` §3) |
+
+### Die Abweichung von einer eigenen Regel, bewusst
+
+`spec.md` §3 sagt, Federndes gehört nur dorthin, **wo etwas ankommt** —
+deshalb steht `--ease-spring` in der Belohnungsschicht und nicht am
+Fortschrittsbalken. Ein Pop beim **Zurücknehmen** widerspricht dem auf den
+ersten Blick: Zurücknehmen ist kein Ankommen.
+
+Der Nutzer wollte es ausdrücklich in beide Richtungen (Frage gestellt,
+Antwort „ja"). Die Begründung, die das trägt: Hier ist die Bewegung nicht
+die Belohnung für ein Ergebnis, sondern die **Quittung auf einen Druck** —
+und ein Druck fühlt sich in beide Richtungen gleich an. Genau deshalb
+läuft sie auch auf `--ease` statt auf der Federkurve: Sie sagt „gedrückt",
+nicht „geschafft".
+
+### Der Fallstrick, der hier lauerte
+
+Die Bewegung braucht `@keyframes` (eine Drehung „hin und zurück" geht mit
+`transition` nicht). Damit lief sie in genau die Falle vom **2026-08-12**:
+Hinge die Animation an der Klasse `.done`, liefe sie bei **jedem**
+Neuaufbau für **jede** erledigte Aufgabe erneut los — wörtlich das
+„ständige Refreshen der Liste", das der Nutzer damals gemeldet hat.
+
+Gelöst mit dem Muster, das im Projekt schon steht (`ist-neu`,
+`gerade-gewaehlt`): Die Klasse setzt der **Klick**, nach dem Neuaufbau,
+und nur an das *eine* angeklickte Kästchen. Die per Kaskade miterledigten
+Unteraufgaben springen bewusst nicht — ein Dutzend gleichzeitig
+hüpfender Kästchen wäre Unruhe statt Quittung.
+
+`test_kaestchen.js` sichert genau das ab: Zwei seiner zwölf Zusicherungen
+prüfen, dass ein **Spaltenwechsel keine** Animation auslöst. Per
+`git stash` gegengeprüft — ohne den Einbau kippen fünf.
+
+### Und zum vierten Mal an diesem Tag: der Fehler lag in der Messung
+
+`test_kaestchen.js` meldete zunächst rot für „läuft auf der Hauskurve".
+Ursache war nicht die Animation, sondern die Prüfung:
+`animation.effect.getTiming().easing` liefert bei einer CSS-Animation
+**immer `linear`** — die Kurve hängt an den einzelnen Bildern, nicht am
+Effekt. Nachgesehen statt geglaubt: `getComputedStyle().animationTimingFunction`
+zeigte die richtige Kurve. Der Hinweis steht jetzt als Kommentar im Skript,
+damit die nächste Prüfung nicht dieselbe Falle stellt.
+
+### Verworfen: die Sternchen am „Erledigt"-Knopf
+
+Davor lag eine andere Vorlage vor (uiverse „proud-lionfish-83"): Sterne,
+die aus dem Knopf herausfliegen. Der Nutzer hat sie nach der Analyse
+selbst fallen lassen („vergessen wir das andere"). Festgehalten, weil die
+Gründe wiederkehren können:
+
+- **`.tidy-body` hat `overflow-y: auto`** — der Bereich schneidet ab. Die
+  Sterne der Vorlage fliegen bis `left: -25%` und `115%`; bei uns wären
+  sie beschnitten, seitlich könnte sogar eine Scrollleiste erscheinen.
+  Platz ist rundherum nur ~24 px.
+- **„Erledigt" hat schon eine Belohnung** (`spec.md` §2.8): erst Strich
+  durch den Titel, dann sinkt die Karte zusammen. Die Sterne wären eine
+  zweite Aussage über dieselbe Tat.
+- **Widerspruch zu `status.md` §3**: „Konfetti, Klänge, Zeitmesser im
+  Aufräum-Modus — bewusst nicht."

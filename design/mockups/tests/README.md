@@ -103,6 +103,7 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
 | **Datenschicht des Prototyps** (Speichern, Export, Import, kaputter Stand) | `test_speichern` |
+| Sprung-Bewegung des Kästchens beim Ab- und Zurückhaken | `test_kaestchen` |
 | Welche Animation bei welcher Interaktion **tatsächlich** läuft | `measure_animationen` |
 | Wie die Marke aussieht und wie groß der Wimpel dabei wird | `shot_logo`, `shot_logo_groessen` |
 
