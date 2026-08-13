@@ -35,8 +35,14 @@
     --accent-ink: #faf3e1;
     --accent-soft: #ffe3d2;       /* ABGELEITET */
     --accent-line: #ffc4a3;       /* ABGELEITET */
-    --urgent: #b43852;            /* vom Nutzer */
-    --urgent-soft: #f8e2e6;       /* ABGELEITET */
+    /* Warnton. Der erste Vorschlag des Nutzers (#b43852) war ihm zu
+       knallig - nachgemessen hatte er Buntheit 53, mehr als jede
+       Listenfarbe. Dieser hier liegt bei 37: erkennbar dasselbe Rot, nur
+       ohne Signalcharakter. Gehalten wurde der Rosenrot-Bereich, damit er
+       nicht in Richtung Akzent (Orange) rutscht - Abstand zu Tangerine 62,
+       zur naechsten Listenfarbe (Lehm) 29. */
+    --urgent: #96444e;            /* ABGELEITET */
+    --urgent-soft: #f6e6e8;       /* ABGELEITET */
     /* Erledigtes soll zuruecktreten, nicht rufen: ein gedaempftes Grau auf
        demselben Gewicht wie der durchgestrichene Text daneben. Eine dunkle
        Marke zoege mehr Blick auf sich als die offenen Aufgaben. */
@@ -140,8 +146,10 @@
     --accent-ink: #222222;
     --accent-soft: #3a2113;    /* ABGELEITET */
     --accent-line: #5c3520;    /* ABGELEITET */
-    --urgent: #e2637e;         /* ABGELEITET: #b43852 traegt auf Schwarz nicht */
-    --urgent-soft: #3a1a22;    /* ABGELEITET */
+    /* Aufgehellt, weil #96444e auf Schwarz als Text nicht traegt - und
+       zugleich entsaettigt wie sein helles Gegenstueck (Buntheit 32). */
+    --urgent: #c97b84;         /* ABGELEITET */
+    --urgent-soft: #33191d;    /* ABGELEITET */
     --done: #8a8a8a;           /* ABGELEITET */
     --done-ink: #1a1a1a;
     --list-inbox: #bc9271;     /* Lehm */
@@ -180,8 +188,8 @@
       --accent-ink: #222222;
       --accent-soft: #3a2113;
       --accent-line: #5c3520;
-      --urgent: #e2637e;
-      --urgent-soft: #3a1a22;
+      --urgent: #c97b84;
+      --urgent-soft: #33191d;
       --done: #8a8a8a;
       --done-ink: #1a1a1a;
       --list-inbox: #bc9271;
@@ -578,6 +586,17 @@
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
+  /* Dieselbe Form wie in der Sidebar: Dort sitzt die Ablagemarke auf einer
+     Zeile mit --r-md, und der inset-Schatten folgt der Rundung - die Linie
+     biegt an den Enden weich ab. An der Aufgabenzeile lief sie bis
+     2026-08-13 hart und eckig aus, weil .inline-embed keinen Radius hat.
+     Es ist dieselbe Aussage ("hier landet es"), also muss sie gleich
+     aussehen. Der Radius gilt NUR im Ablagezustand: Dauerhaft gesetzt
+     wuerde er zusammen mit overflow:hidden den Ziehgriff an den Ecken
+     beschneiden, ohne dass es dafuer einen Grund gaebe. */
+  .inline-embed.drop-before,
+  .inline-embed.drop-after,
+  .inline-embed.drop-into { border-radius: var(--r-md); }
 
   /* Explicit drag handle. Dragging embeds is driven by pointer events, not
      the native HTML5 drag API: these blocks live inside a contenteditable,
@@ -4524,7 +4543,12 @@
     }
   });
 
-  document.documentElement.setAttribute("data-theme", "light");
+  // Dunkel ist der Standard (Festlegung des Nutzers, 2026-08-13). Bewusst
+  // fest gesetzt und nicht der Systemeinstellung ueberlassen: Das Mockup
+  // soll bei jedem gleich aussehen, sonst beurteilen zwei Leute
+  // verschiedene Bilder. Die Rueckfallebene fuer "System dunkel" bleibt
+  // trotzdem gepflegt - sie greift, sobald das Attribut fehlt.
+  document.documentElement.setAttribute("data-theme", "dark");
   renderAll();
 })();
 </script>

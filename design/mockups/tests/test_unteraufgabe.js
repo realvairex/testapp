@@ -61,7 +61,16 @@ const markierungGezeichnet = (page) => page.evaluate(() => {
   const el = document.querySelector('.drop-into');
   if (!el) return null;
   const s = getComputedStyle(el);
-  return { schatten: s.boxShadow, flaeche: s.backgroundColor };
+  return { schatten: s.boxShadow, flaeche: s.backgroundColor, radius: s.borderRadius };
+});
+
+// Die Ablagemarke an der Aufgabenzeile muss dieselbe FORM haben wie die in
+// der Sidebar - dort folgt sie der Rundung der Zeile und biegt an den
+// Enden weich ab. Bis 2026-08-13 lief sie an der Aufgabe hart und eckig
+// aus, weil .inline-embed keinen Radius hat (vom Nutzer bemerkt).
+const markenRadius = (page) => page.evaluate(() => {
+  const el = document.querySelector('.drop-before, .drop-after, .drop-into');
+  return el ? parseFloat(getComputedStyle(el).borderRadius) : null;
 });
 
 // Was zeigt die Ablagemarkierung gerade an? null = gar nichts.
@@ -162,6 +171,15 @@ async function loslassen(page) {
     const m = await markierung(page);
     console.log('>>> oberes Drittel kuendigt "davor" an:',
       !!m && m.art === 'before', JSON.stringify(m));
+
+    // Gegen die Sidebar gemessen, nicht gegen eine Zahl: Die beiden müssen
+    // gleich aussehen, nicht zufällig beide gerundet sein.
+    const rAufgabe = await markenRadius(page);
+    const rSidebar = await page.locator('.nav-item[data-list]').first()
+      .evaluate((e) => parseFloat(getComputedStyle(e).borderRadius));
+    console.log('Radius der Ablagemarke - Aufgabe:', rAufgabe, '· Sidebar:', rSidebar);
+    console.log('>>> die Marke ist gerundet wie in der Sidebar:',
+      rAufgabe > 0 && rAufgabe === rSidebar);
     await loslassen(page);
 
     const oben = await titelIn(page, 0);

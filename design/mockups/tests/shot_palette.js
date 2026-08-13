@@ -28,11 +28,19 @@ const path = require('path');
 // Text, Listenpunkte. Alles, was unten mit ABGELEITET markiert ist, hat
 // der Nutzer NICHT vorgegeben; es ist aus den vier Tonen gerechnet und
 // steht zur Diskussion.
+// ⚠️ ACHTUNG, seit die Palette uebernommen ist: Die WAHRHEIT steht in
+// docs/spec.md 3 und im Mockup selbst. Die Werte hier sind nur noch ein
+// AUSGANGSPUNKT zum Ausprobieren der naechsten Palette. Wer hier etwas
+// aendert, aendert nichts an der App - und wer die App aendert, muss diese
+// Datei nicht nachziehen. Sie hinkt bewusst hinterher; verlass dich fuer
+// den Ist-Zustand nie auf sie.
+//
 // Nachgeliefert am 2026-08-13: ein Rot fuer "ueberfaellig". Der Grund war
 // eine Luecke, keine Vorliebe - aus Tangerine allein liess sich kein
-// Warnton gewinnen, der nicht wie der Akzent aussieht.
+// Warnton gewinnen, der nicht wie der Akzent aussieht. Der erste Ton des
+// Nutzers (#b43852) war ihm zu knallig (Buntheit 53); jetzt 37.
 const LINEN = '#faf3e1', COTTON = '#f5e7c6', TANGERINE = '#ff6d1f',
-      BLACK = '#222222', RED = '#b43852';
+      BLACK = '#222222', RED = '#96444e';
 
 // ===================== Die Listenfamilie ===============================
 //
@@ -82,7 +90,7 @@ const PALETTE = {
     '--accent-soft': '#ffe3d2',    // ABGELEITET
     '--accent-line': '#ffc4a3',    // ABGELEITET
     '--urgent': RED,
-    '--urgent-soft': '#f8e2e6',    // ABGELEITET: Tint von RED auf Linen
+    '--urgent-soft': '#f6e6e8',    // ABGELEITET: Tint von RED auf Linen
     '--done': '#656565',           // ABGELEITET
     '--done-ink': LINEN,
     // Listenfarben, vorgeschlagen 2026-08-13. Siehe LISTENFAMILIE unten.
@@ -113,11 +121,11 @@ const PALETTE = {
     '--accent-ink': BLACK,
     '--accent-soft': '#3a2113',    // ABGELEITET
     '--accent-line': '#5c3520',    // ABGELEITET
-    // ABGELEITET: RED selbst traegt auf Schwarz als Text nicht (3,4:1),
+    // ABGELEITET: RED selbst traegt auf Schwarz als Text nicht,
     // deshalb aufgehellt - derselbe Handgriff wie umgekehrt im hellen
     // Modus beim Akzent.
-    '--urgent': '#e2637e',
-    '--urgent-soft': '#3a1a22',    // ABGELEITET
+    '--urgent': '#c97b84',
+    '--urgent-soft': '#33191d',    // ABGELEITET
     '--done': '#8a8a8a',           // ABGELEITET
     '--done-ink': '#1a1a1a',
     // Dieselbe Familie, aufgehellt fuer den dunklen Grund.

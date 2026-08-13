@@ -62,6 +62,19 @@ const KONTRAST_FN = () => {
     (await page.locator('#optionsBtn').count()) === 0 &&
     (await page.locator('.options-panel').count()) === 0);
 
+  // Standard ist DUNKEL (Festlegung des Nutzers, 2026-08-13). Geprüft wird
+  // beides: das Attribut UND dass der Schalter es anzeigt - eine Voreinstellung,
+  // die der Schalter nicht mitbekommt, sieht aus wie ein kaputter Schalter.
+  const start = await page.evaluate(() => ({
+    attribut: document.documentElement.getAttribute('data-theme'),
+    aktivesFeld: (document.querySelector('.theme-seg-btn.active') || {}).textContent,
+    grund: getComputedStyle(document.body).backgroundColor
+  }));
+  console.log('Start:', JSON.stringify(start));
+  console.log('>>> die App startet im dunklen Design:', start.attribut === 'dark');
+  console.log('>>> und der Schalter zeigt das auch an:',
+    (start.aktivesFeld || '').trim() === 'Dunkel');
+
   const messen = async (key) => {
     await page.click('[data-set-theme="' + key + '"]');
     await page.waitForTimeout(400); // --dur-base 200ms plus Reserve

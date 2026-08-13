@@ -3673,3 +3673,74 @@ Durchgefallene in beiden Modi.**
 **Offen geblieben:** `paper` und `surface-sunken` tragen weiterhin
 denselben Ton (Recycled Cotton); das Fenster trennt sich nur über seinen
 Schatten vom Grund. Bewusst so übernommen, aber jederzeit änderbar.
+
+## 2026-08-13 — Drei Nachbesserungen nach dem Ansehen
+
+Alle drei kamen vom Nutzer, nachdem er die Palette im Artifact hatte. Das
+ist der Wert des Veröffentlichens: Zwei davon hätte keine Messung
+gefunden.
+
+### Der Warnton war zu knallig
+
+`#b43852` kam vom Nutzer, nach dem Ansehen hat er ihn selbst verworfen.
+Nachgemessen: **Buntheit 53** — mehr als jede Listenfarbe und fast so
+viel wie der Akzent. Ein Warnton darf auffallen, aber er stand in einer
+Palette aus Erdtönen wie ein Fremdkörper.
+
+Ersetzt durch **`#96444e`** (Buntheit **37**). Ausgewählt aus sieben
+gerechneten Kandidaten nach vier Kriterien gleichzeitig: Buntheit deutlich
+unter dem alten Wert, Kontrast auf Linen über AA (5,87:1), Abstand zum
+Akzent groß (CIELAB 62) und Abstand zur nächsten Listenfarbe groß genug
+(Lehm, 29). Zwei Kandidaten fielen genau am letzten Kriterium durch —
+`#8f4a4a` und `#a2504e` lagen bei 23 bzw. 24 und wären neben dem
+Lehm-Punkt zur Verwechslung geworden.
+
+**Der Rosenrot-Bereich wird gehalten.** Ein ruhigerer Ton wäre auch über
+Richtung Backstein zu haben gewesen, aber dort rutscht er dem Akzent
+entgegen — und zwei Bedeutungen in benachbarten Farben sind schlimmer als
+ein etwas lauterer Ton.
+
+Dunkelmodus entsprechend: **`#c97b84`** (Buntheit 32 statt 53).
+
+> **Anzumerken:** Damit stammen nur noch **vier** Farben direkt vom
+> Nutzer. Der Warnton ist jetzt abgeleitet und in `spec.md` §3 als solcher
+> gekennzeichnet — sonst hielte ihn später jemand für eine Vorgabe und
+> traute sich nicht daran.
+
+### Die Ablagemarke war an der Aufgabe eckig, in der Sidebar rund
+
+Vom Nutzer mit Screenshot gemeldet. **Kein Entwurf, ein Versehen:** In der
+Sidebar sitzt die Marke auf einer Zeile mit `r-md`, und der
+`inset`-Schatten folgt dieser Rundung. An der Aufgabenzeile gibt es keinen
+Radius, also hat der Schatten nichts, dem er folgen könnte — er läuft hart
+aus.
+
+Es ist dieselbe Aussage („hier landet es"), also muss sie gleich aussehen
+— derselbe Grundsatz wie beim Fortschrittsbalken, der sich überall gleich
+bewegt.
+
+Der Radius gilt **nur im Ablagezustand**. Dauerhaft gesetzt würde er
+zusammen mit `overflow: hidden` den Ziehgriff an den Ecken beschneiden,
+ohne dass es dafür einen Grund gäbe.
+
+**Geprüft gegen die Sidebar, nicht gegen eine Zahl.** Die Zusicherung
+vergleicht den gemessenen Radius der Aufgabenmarke mit dem der
+Sidebar-Zeile. Beide sollen *gleich* sein — eine fest verdrahtete `10`
+wäre genau der Fehler, der `test_list_header` heute früh rot gemacht hat.
+
+### Dunkel ist der Standard
+
+Festlegung des Nutzers. Bewusst **fest gesetzt** und nicht der
+Systemeinstellung überlassen: Ein Mockup, das bei zwei Leuten verschieden
+aussieht, taugt nicht zum gemeinsamen Beurteilen. Die
+`prefers-color-scheme`-Rückfallebene bleibt trotzdem gepflegt — sie
+greift, sobald kein `data-theme` gesetzt ist.
+
+Zwei Zusicherungen in `test_theme_switch.js`: das Attribut **und** dass
+der Schalter es anzeigt. Eine Voreinstellung, die der Schalter nicht
+mitbekommt, sieht aus wie ein kaputter Schalter.
+
+### Nachgemessen
+
+Voller Lauf **55 grün, 0 rot**. `test_unteraufgabe` steht jetzt bei 23
+Zusicherungen, `test_theme_switch` bei 10.

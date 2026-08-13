@@ -307,7 +307,24 @@ beiden müssen **getrennt** nachgerechnet werden — zieht man aus einer
 Spalte rechts in eine Aufgabe links, liegen sie in verschiedenen Zweigen
 und einer ist kein Vorfahr des anderen.
 
-Geprüft von `test_unteraufgabe.js` (21 Zusicherungen).
+#### Die Ablagemarke sieht überall gleich aus
+
+Ob eine Liste in eine Gruppe wandert oder eine Aufgabe unter eine andere —
+es ist dieselbe Aussage („hier landet es"), also hat sie **dieselbe Form**:
+Die Marke sitzt auf einer Zeile mit `r-md`, und ihre Linie **folgt der
+Rundung**, biegt an den Enden also weich ab. Kein hart auslaufender
+Strich.
+
+> Am 2026-08-13 vom Nutzer bemerkt: In der Sidebar war sie gerundet, an
+> der Aufgabenzeile lief sie eckig aus. Es war kein Entwurf, sondern ein
+> Versehen — die Aufgabenzeile trug schlicht keinen Radius, und der
+> `inset`-Schatten hat nichts, dem er folgen könnte. Der Radius gilt
+> **nur im Ablagezustand**; dauerhaft gesetzt würde er zusammen mit dem
+> Zuschnitt der Zeile den Ziehgriff an den Ecken beschneiden.
+
+Geprüft von `test_unteraufgabe.js` (23 Zusicherungen) — die Rundung wird
+dabei **gegen die Sidebar** gemessen, nicht gegen eine Zahl: Die beiden
+sollen gleich aussehen, nicht zufällig beide gerundet sein.
 
 ### 2.5 Kopf einer Listenspalte — ✅ ENTSCHIEDEN (2026-08-07)
 
@@ -643,7 +660,7 @@ wo etwas ankommt; nie dort, wo etwas gemessen wird.**
 
 ### Die Palette „Koernig" — ✅ ÜBERNOMMEN (2026-08-13)
 
-**Fünf Farben kommen vom Nutzer**, alles Übrige ist daraus abgeleitet und
+**Vier Farben kommen vom Nutzer**, alles Übrige ist daraus abgeleitet und
 in dieser Spalte als **abgl.** gekennzeichnet. Der Unterschied ist
 wichtig: Eine vorgegebene Farbe wird nicht angetastet, eine abgeleitete
 darf nachgezogen werden, wenn eine Messung es verlangt.
@@ -654,7 +671,13 @@ darf nachgezogen werden, wenn eine Messung es verlangt.
 | Recycled Cotton | `#f5e7c6` |
 | Electric Tangerine | `#ff6d1f` |
 | Black Hole | `#222222` |
-| Rot für Überfälliges | `#b43852` |
+
+> **Der Warnton ist keine der vier.** Der Nutzer hatte zunächst `#b43852`
+> geliefert und ihn nach dem Ansehen als **zu knallig** verworfen —
+> nachgemessen hatte er Buntheit 53, mehr als jede Listenfarbe. Der
+> abgeleitete Ersatz liegt bei 37: erkennbar dasselbe Rot, ohne
+> Signalcharakter. Gehalten wurde der Rosenrot-Bereich, damit er nicht in
+> Richtung Akzent rutscht.
 
 ### Farben — Hell
 | Token | Wert | | Verwendung |
@@ -673,7 +696,7 @@ darf nachgezogen werden, wenn eine Messung es verlangt.
 | `accent` | `#ff6d1f` | | Flächen, Icons, Logo, Dekoration |
 | `accent-strong` | `#a64714` | abgl. | **Akzentfarbe für Text** |
 | `accent-soft` | `#ffe3d2` | abgl. | Hintergrund aktiver Zustände |
-| `urgent` | `#b43852` | | überfällig / heute |
+| `urgent` | `#96444e` | abgl. | überfällig / heute |
 | `done` / `done-ink` | `#656565` / `#faf3e1` | abgl. | Erledigt-Marke |
 
 ### Farben — Dunkel
@@ -688,8 +711,14 @@ darf nachgezogen werden, wenn eine Messung es verlangt.
 | `ink` / `ink-soft` / `ink-faint` | `#faf3e1` / `#b8b0a0` / `#a09a8c` | abgl. |
 | `accent` / `accent-strong` | `#ff6d1f` | |
 | `accent-soft` | `#3a2113` | abgl. |
-| `urgent` | `#e2637e` | abgl. |
+| `urgent` | `#c97b84` | abgl. |
 | `done` / `done-ink` | `#8a8a8a` / `#1a1a1a` | abgl. |
+
+**Standard ist der dunkle Modus** (Festlegung des Nutzers, 2026-08-13).
+Bewusst fest gesetzt und nicht der Systemeinstellung überlassen: Sonst
+beurteilen zwei Leute verschiedene Bilder. Die Rückfallebene für „System
+dunkel" bleibt trotzdem gepflegt — sie greift, sobald kein `data-theme`
+gesetzt ist. Geprüft von `test_theme_switch.js`.
 
 > **Der zweite Akzentton ist nur im Hellen nötig, der zweite Warnton nur
 > im Dunklen.** Electric Tangerine trägt als Text auf Linen 2,54:1 und
