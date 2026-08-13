@@ -92,6 +92,24 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Kein Aufblitzen bei gewöhnlichen Aktionen | `test_kein_flackern` |
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
+| Welche Animation bei welcher Interaktion **tatsächlich** läuft | `measure_animationen` |
+| Wie die Marke aussieht und wie groß der Wimpel dabei wird | `shot_logo`, `shot_logo_groessen` |
+
+**`measure_animationen.js` beantwortet eine Frage, die sonst jedes Mal neu
+von Hand gestellt wird:** „Ich klicke auf X — blendet da etwas ein, oder
+poppt es hin?" Es liest `document.getAnimations()` unmittelbar nach dem
+Klick aus und listet Ziel, Name und Dauer. So kam heraus, dass der Eingang
+seine Zeilen mit `block-in` einblendet, eine per „+" angelegte Liste aber
+ohne Übergang erschien. Wer eine Bewegung ergänzt, prüft damit nach, ob
+sie am Ziel ankommt — und ob sie dieselbe ist wie an vergleichbarer
+Stelle.
+
+**`shot_logo.js` und `shot_logo_groessen.js` gehören zur offenen
+Logo-Frage** (v1 gegen v2, `docs/status.md`). Das erste fotografiert den
+Sidebar-Kopf in beiden Darstellungen, das zweite zeigt, wie groß der
+Wimpel bei verschiedenen Kopfhöhen wird — nötig, weil v2 einen anderen
+viewBox hat und der Wimpel darin erst bei y=48 beginnt. Beide schreiben
+nach `out/` und prüfen nichts; der Läufer startet sie deshalb nicht mit.
 
 Die vier `measure_`/`verify_`-Skripte messen nach, ob ein Icon
 tatsächlich mittig in seinem Knopf sitzt — das war ein hartnäckiger
