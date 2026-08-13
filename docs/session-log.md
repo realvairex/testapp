@@ -10,6 +10,77 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-13 — Ziehen in Unteraufgaben, und eine Palette zur Ansicht
+
+Erste Sitzung im Web seit dem Umzug auf den lokalen Klon. Zwei Dinge über
+die Umgebung, die vorher niemand wusste und die jetzt in `status.md` §0
+stehen: **Die Prüfskripte laufen hier** (`npm ci` genügt, der Browser ist
+im Container schon da — ein `playwright install` wäre ein Download ohne
+Wirkung), und **Branches löschen geht nicht** (`git push --delete`
+scheitert am Agent-Proxy mit 403, normales Pushen funktioniert). Der
+Nutzer wollte einen leeren Branch entfernt; das musste ich ihm
+zurückgeben.
+
+**Gebaut: Aufgaben lassen sich in andere Aufgaben ziehen.** Der erste
+offene Punkt aus `status.md` §2, seit dem 2026-08-11 als Todo bestätigt.
+Mitte der Zeile = hinein, oberes/unteres Drittel = daneben. Der Nutzer
+hat vorher beide offenen Fragen entschieden: keine Tiefenbegrenzung, und
+der Kreisfall wird gar nicht erst angeboten. Vollständig in `spec.md`
+§2.4, Begründungen in `decisions.md`.
+
+**Beim Erklären wurde die Aufgabe erst richtig verstanden.** Der Nutzer
+bat um ein Beispiel („ich verstehe es nicht ganz"). Beim Ausformulieren
+fiel auf, dass der Kreisfall auf einer *einzelnen* Seite gar nicht
+auftreten kann — dort sind alle Aufgaben Geschwister, keine ist Nachfahre
+einer anderen. Hätte ich nur seitenintern gebaut, wäre die
+Kreis-Prüfung **Code gewesen, der nie läuft** — genau das Muster, vor dem
+`CLAUDE.md` warnt. Erreichbar wird der Fall erst spaltenübergreifend, und
+deshalb gilt „hinein" jetzt für jede sichtbare Spalte.
+
+**Drei Messfehler, alle selbst gefunden — aber erst auf Nachfrage der
+eigenen Regeln.**
+
+1. `test_unteraufgabe.js` war im **ersten** Lauf komplett grün. Statt das
+   zu glauben: Einbau per `git stash` entfernt, gleich noch einmal
+   gemessen. **14 der 21 Zusicherungen kippen**, die übrigen 7 beschreiben
+   vorhandenes Verhalten. Erst damit war belegt, dass das Skript den
+   Einbau misst.
+2. Der Test prüfte, dass die Ablagemarkierung als **Klasse** gesetzt ist —
+   nicht, dass man sie **sieht**. Für `.inline-embed.drop-into` gibt es
+   keine eigene CSS-Regel, und `.inline-embed` hat `overflow: hidden`.
+   Nachgemessen mit `getComputedStyle`, sie wird gezeichnet.
+3. Bei der Palette sprang ein Kontrastwert von 12,98 auf 4,86, ohne dass
+   sich eine Farbe geändert hatte: `querySelector('.nav-name')` traf im
+   Eingang die *aktive* Zeile. Erst die Messung angezweifelt, dann den
+   Selektor repariert — nicht den Wert hingenommen.
+
+**Farbpalette Koernig — angesehen, nicht übernommen.** Der Nutzer legte
+vier Farben vor und wollte einen Screenshot. Daraus wurde
+`shot_palette.js`: überschreibt die Tokens zur Laufzeit, schreibt vier
+Screenshots und misst die Kontraste mit. Das Mockup bleibt unangetastet.
+
+Zwei Lücken gemeldet, beide vom Nutzer geschlossen bzw. beauftragt:
+**Electric Tangerine trägt als Textfarbe nicht** (2,54:1 — dieselbe
+Falle, gegen die die Spec längst `--accent-strong` vorsieht), und **die
+vier Farben geben weder einen Warnton noch Listenfarben her**. Der Nutzer
+lieferte `#B43852` nach und bat um eine Listenfamilie. Vorgeschlagen:
+Lehm, Olive, Ocker, Taubenblau, Tanne — Erdtöne mit einem kühlen Anker,
+**Petrol und Blauviolett ausgeschlossen**, weil die für Listenfarben
+schon einmal verworfen wurden. Unterscheidbarkeit über CIELAB gerechnet
+statt behauptet (engstes Paar 23,2).
+
+**Offen**
+
+- **Die Palette ist nicht entschieden.** Übernimmt der Nutzer sie, wandern
+  die Werte nach `spec.md` §3 **und** ins Mockup — beides zusammen.
+- **`--paper` und `--surface-sunken` tragen denselben Ton**; das Fenster
+  trennt sich nur über seinen Schatten vom Grund. Bewusst so, aber eine
+  Entscheidung.
+- **„Daneben" über Spaltengrenzen** ist nicht gebaut, vermerkt in
+  `spec.md` §2.4.
+- **Der Branch `claude/start-unfold-r00zcz`** wartet weiter auf Löschung
+  vom lokalen Klon aus.
+
 ## 2026-08-12 (nachmittags) — Die Arbeitsweise selbst überarbeitet
 
 **Gemacht**

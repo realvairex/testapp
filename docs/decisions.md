@@ -3532,3 +3532,94 @@ sondern auch **gezeichnet** wird (`getComputedStyle`): Für
 `.inline-embed.drop-into` gibt es keine eigene Regel, es greift die
 allgemeine — und `.inline-embed` hat `overflow: hidden`. Gemessen:
 `rgb(238,108,77) 0 0 0 1.5px inset` auf `rgb(252,231,224)`.
+
+## 2026-08-13 — Eine neue Farbpalette, geprüft statt übernommen
+
+Der Nutzer hat die Palette **Koernig** vorgelegt: Sustainable Linen
+`#FAF3E1`, Recycled Cotton `#F5E7C6`, Electric Tangerine `#FF6D1F`,
+Black Hole `#222222`. Gewünscht war zunächst nur ein Screenshot.
+
+**Noch nicht entschieden.** Das Mockup ist unverändert; die Tokens werden
+von `design/mockups/tests/shot_palette.js` nur zur Laufzeit überschrieben.
+Das ist bewusst so: Eine Palette lässt sich am Bild beurteilen, und ein
+Umbau, den niemand angesehen hat, ist teurer zurückzunehmen als
+vorzubereiten.
+
+### Was die vier Farben nicht hergeben
+
+Die App braucht rund zwanzig Farb-Tokens. Alles Übrige ist abgeleitet und
+im Skript als `ABGELEITET` markiert — damit später niemand einen
+gerechneten Ton für eine Festlegung des Nutzers hält.
+
+**Zwei Ableitungen waren nicht Geschmack, sondern Pflicht:**
+
+1. **`--accent-strong`.** Electric Tangerine als Textfarbe ergibt
+   **2,54:1** auf Linen — weit unter AA. Das ist exakt dieselbe Lage, aus
+   der die alte Palette bereits einen zweiten Akzentton hat (§3 der Spec).
+   Abgeleitet: `#A64714` (65 % Helligkeit, Farbton gehalten), gemessen
+   4,86:1. **Im Dunkelmodus entfällt der zweite Ton** — auf Black Hole
+   trägt das Original mit 5,65:1.
+2. **`--ink-faint`.** Erster Versuch `#6b6b6b` riss AA am Sidebar-Zähler
+   (4,35:1). Nachgezogen auf `#656565` (4,75:1). Nicht die Schwelle
+   gesenkt — die Regel aus der Lernkurve.
+
+### Zwei Lücken, die der Nutzer geschlossen hat
+
+**Rot.** Aus Tangerine allein liess sich kein Warnton gewinnen, der nicht
+wie der Akzent aussieht; „Heute" und „überfällig" lasen sich im ersten
+Durchgang wie Akzenttext. Gemeldet, und der Nutzer hat `#B43852`
+nachgeliefert. Im Dunkelmodus aufgehellt (`#E2637E`), weil das Original
+auf Schwarz als Text nicht trägt — der spiegelbildliche Handgriff zum
+Akzent im hellen Modus.
+
+**Listenfarben.** Die Palette kennt keine. Fünf Punkte allein aus
+Tangerine und Schwarz unterscheiden sich nur in der Helligkeit, und auf
+8 px ist das keine Unterscheidung mehr. Auf Bitte des Nutzers eine Reihe
+vorgeschlagen:
+
+| | | |
+|---|---|---|
+| Lehm | `#9B7355` | `#BC9271` |
+| Olive | `#7D8A4E` | `#9BA968` |
+| Ocker | `#C1902F` | `#DDAE50` |
+| Taubenblau | `#5C7590` | `#7E97B4` |
+| Tanne | `#4A7A5E` | `#6D9E82` |
+
+Zwei Zonen bleiben frei, weil sie belegt sind: **Orange** trägt der
+Akzent, **Rosenrot** das Überfällige. Eine Listenfarbe dort wäre eine
+zweite Bedeutung in derselben Farbe.
+
+**Petrol und Blauviolett sind ausgeschlossen** — beide standen schon
+einmal in der Reihe und wurden verworfen, weil sie „als Fremdkörper
+wirkten" (§3 der Spec). Deshalb Erdtöne mit genau **einem** kühlen Anker
+(Taubenblau), der aus der bestehenden Reihe stammt.
+
+> **Anzumerken:** Das damalige Argument stützte sich auf eine Palette mit
+> **Navy** als Textfarbe. Koernig hat stattdessen neutrales Schwarz, der
+> Fremdkörper-Effekt wäre also womöglich schwächer. Die Festlegung wird
+> hier trotzdem eingehalten und nicht stillschweigend umgangen; wenn
+> Petrol wieder zur Debatte stehen soll, ist das eine eigene Entscheidung
+> des Nutzers.
+
+**Unterscheidbarkeit gerechnet, nicht behauptet:** CIELAB-Abstand (CIE76)
+aller Paare, auch gegen Akzent und Warnton. Engstes Paar **23,2**
+(Olive/Tanne) — deutlich über den ~10, ab denen es auf kleiner Fläche
+unsicher wird.
+
+### Zwei eigene Messfehler, unterwegs gefunden
+
+Beide gehören zum Muster „die Messung zuerst anzweifeln":
+
+- **Der Warnton fiel durchs Raster.** Die überfällige Pille steht nur im
+  Eingang, gemessen wurde aber erst nach dem Wechsel auf eine Listenseite.
+  Ausgerechnet die neu dazugekommene Farbe wäre ungeprüft geblieben. Jetzt
+  wird auf beiden Ansichten gemessen und zusammengeführt.
+- **`.nav-name` traf je nach Ansicht eine andere Zeile.** Im Eingang ist
+  die erste Navigationszeile die *aktive* — Akzenttext auf Akzentfläche.
+  Der Kontrastwert sprang von 12,98 auf 4,86, ohne dass sich eine Farbe
+  geändert hatte. Selektor auf `:not(.active)` verengt.
+
+**Offen und beim Übernehmen zu klären:** `--paper` (außerhalb des
+Fensters) und `--surface-sunken` (Sidebar) tragen derzeit beide Recycled
+Cotton. Das Fenster trennt sich nur über seinen Schatten vom Grund. Es
+sieht ruhig aus, ist aber eine Entscheidung und kein Zwang.

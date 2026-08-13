@@ -139,12 +139,12 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 54 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 55 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Letzter vollständiger Lauf (2026-08-12, nach den
-  Flacker-Reparaturen): 53 grün, 1 rot** — das eine ist `test_4bugs`, der
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, nach dem Ziehen
+  in Unteraufgaben): 54 grün, 1 rot** — das eine ist `test_4bugs`, der
   bekannte Wackelkandidat, der etwa jeden zweiten Lauf trifft (Abschnitt 4).
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
@@ -153,7 +153,7 @@ Was fertig ist:
   Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
   Anfassen des Skripts die Erwartung nachziehen.
 
-  ⚠️ **Wichtige Einschränkung:** Nur **sechzehn** der 54 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **siebzehn** der 55 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
@@ -164,6 +164,18 @@ Was fertig ist:
   beiden Themes — nachgemessen mit `test_contrast.js`.
 
 ## 2. Was als Nächstes dran ist
+
+> 🎨 **Beim Nutzer, davor:** Die Farbpalette **Koernig** liegt als
+> Vorschlag vor und ist **noch nicht übernommen** — das Mockup ist
+> unverändert. Angesehen wird sie mit
+> `NODE_PATH=node_modules node design/mockups/tests/shot_palette.js`
+> (schreibt vier Screenshots nach `out/` und misst die Kontraste mit).
+> Vier Farben kommen vom Nutzer, dazu sein Rot `#B43852`; die
+> Listenfamilie und rund ein Dutzend Hilfstöne sind **abgeleitet** und im
+> Skript als solche markiert. Entscheidet der Nutzer sich dafür, wandern
+> die Werte nach `spec.md` §3 und ins Mockup — beides zusammen, sonst
+> driften sie auseinander. Begründungen und offene Punkte:
+> `docs/decisions.md`, 2026-08-13.
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
@@ -420,3 +432,21 @@ Artifact-Werkzeug). Sonst entsteht eine zweite, leere Adresse, und der
 Nutzer schaut weiter auf den alten Stand, während er glaubt, den neuen
 zu sehen — ein Fehler, der lange unbemerkt bleiben kann. Nur innerhalb
 derselben Sitzung, in der veröffentlicht wurde, genügt der Dateipfad.
+
+**Zwei Angaben, die beim Veröffentlichen gleich bleiben müssen** (am
+2026-08-13 zum ersten Mal festgehalten, weil sie vorher nirgends
+standen und jede Sitzung sie neu erfinden musste):
+
+| | |
+|---|---|
+| Symbol (`favicon`) | 🗂️ |
+| Titel | steht im `<title>` der Datei — „Unfold — Konzept-Mockup (Desktop)" |
+
+Ein wechselndes Symbol liest sich wie eine andere Seite: Der Nutzer
+findet seinen Tab am Bild, nicht am Text.
+
+**Und noch ein Schritt davor**, seit 2026-08-13 bekannt: Wer aus einer
+**neuen** Sitzung heraus veröffentlicht, muss die Adresse **erst
+abrufen** (`WebFetch`), sonst verweigert das Werkzeug die
+Veröffentlichung — es kann nicht wissen, ob inzwischen jemand anders
+etwas geändert hat. Kein Fehler, nur ein Zwischenschritt.
