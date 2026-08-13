@@ -1230,6 +1230,49 @@
 
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .page-editor:focus, .page-editor:focus-visible { outline: none; }
+
+  /* --------------------------------------------------------------------
+     Prototyp-Leiste (Export / Import)
+
+     Geruest, kein Entwurf. Sie steht bewusst abgesetzt am unteren Rand und
+     NICHT in der Sidebar: Deren untere Leiste ist entschieden (docs/status.md,
+     Abschnitt 3 - vier Neuentwuerfe wurden abgelehnt). Die spaetere
+     Flutter-App soll diese Warze nicht erben, deshalb sieht sie auch nicht
+     wie ein Teil der App aus.
+     -------------------------------------------------------------------- */
+  /* Sie steht OBEN, nicht unten. Grund, gemessen am 2026-08-13: Das
+     App-Fenster endet bei y=720, das Schnell-Eingabefeld liegt bei y=680 -
+     eine Leiste am unteren Rand deckt es zu. Aufgefallen ist das nicht beim
+     Ansehen, sondern weil die Pruefung das Feld nicht mehr anklicken konnte.
+     Oberhalb des Fensters sind 80px frei; die Leiste bleibt deshalb flach. */
+  #protoLeiste {
+    position: fixed; left: 50%; transform: translateX(-50%); top: 4px;
+    z-index: 9000; max-width: min(900px, calc(100vw - 40px)); max-height: 60px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 6px 4px 12px;
+    background: var(--surface); color: var(--ink-soft);
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+    box-shadow: 0 6px 24px rgba(0,0,0,.28);
+    font-size: 12px; line-height: 1.35;
+  }
+  #protoLeiste .proto-text {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #protoLeiste.warnt { max-height: none; }
+  #protoLeiste.warnt .proto-text { white-space: normal; }
+  #protoLeiste.warnt { border-color: var(--due-over, #96444e); }
+  #protoLeiste .proto-text { flex: 1 1 auto; }
+  #protoLeiste .proto-text strong { color: var(--ink); }
+  #protoLeiste .proto-warn { color: var(--due-over, #96444e); }
+  #protoLeiste .proto-knoepfe { flex: 0 0 auto; display: flex; gap: 6px; align-items: center; }
+  #protoLeiste button {
+    font: inherit; color: var(--ink); background: var(--surface-sunken);
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    padding: 3px 9px; cursor: pointer;
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  #protoLeiste button:hover { background: var(--chip-bg); color: var(--accent-strong); }
+  #protoLeiste #protoZu { padding: 3px 7px; color: var(--ink-faint); }
 </style>
 
 <div class="page">
@@ -4582,7 +4625,338 @@
   // soll bei jedem gleich aussehen, sonst beurteilen zwei Leute
   // verschiedene Bilder. Die Rueckfallebene fuer "System dunkel" bleibt
   // trotzdem gepflegt - sie greift, sobald das Attribut fehlt.
-  document.documentElement.setAttribute("data-theme", "dark");
+  // ====================================================================
+  // Datenschicht des Prototyps
+  // ====================================================================
+  //
+  // Zweck: Das Mockup soll im Alltag benutzbar sein, damit echte Fehler und
+  // Verbesserungen auffallen (Entscheidung 2026-08-13). Ohne Speichern ist
+  // es das nicht - jedes Neuladen loescht alles.
+  //
+  // Die Regeln aus docs/conventions.md ("Die Datenschicht bauen") gelten
+  // hier schon, obwohl das nur ein Prototyp ist. Der Grund: Die Daten
+  // liegen NUR im Browser. Es gibt keinen Server, der sie im Zweifel noch
+  // hat, und ein Fehler an dieser Stelle ist unwiederbringlich.
+  //
+  //   - offenes Format          -> JSON, lesbar, dokumentiert
+  //   - Export                  -> jederzeit, als Datei
+  //   - Schema-Version          -> steht in den Daten, mit Migrationspfad
+  //   - atomares Schreiben      -> localStorage.setItem ist je Schluessel
+  //                                atomar; zusaetzlich haelt SICHERUNG den
+  //                                letzten guten Stand, falls ein Schreiben
+  //                                unvollstaendige Daten hinterlaesst
+  //
+  // Bewusst NICHT gespeichert wird die reine Ansicht (offene Spalten,
+  // Kalender, Aufraeum-Modus): Das ist kein Bestand, und ein halb offener
+  // Aufraeum-Modus nach dem Neuladen waere verwirrend statt hilfreich.
+
+  var SPEICHER_SCHLUESSEL = "unfold.daten";
+  var SPEICHER_SICHERUNG = "unfold.daten.sicherung";
+  var SPEICHER_HINWEIS = "unfold.hinweis-gesehen";
+  var SCHEMA = 1;
+
+  var speicherGesperrt = false;   // true, wenn der Browser nichts zulaesst
+  var speicherFehler = null;
+
+  function speicherVerfuegbar() {
+    try {
+      window.localStorage.setItem("unfold.probe", "1");
+      window.localStorage.removeItem("unfold.probe");
+      return true;
+    } catch (e) {
+      speicherFehler = e && e.name ? e.name : String(e);
+      return false;
+    }
+  }
+
+  // Was gespeichert wird. Bewusst flach und benannt, damit ein Export von
+  // Hand lesbar ist und die spaetere Flutter-Datenschicht dieselbe Form
+  // uebernehmen kann.
+  function standErheben() {
+    return {
+      schema: SCHEMA,
+      erzeugtVon: "unfold-mockup",
+      gespeichertAm: new Date().toISOString(),
+      naechsteId: uid,
+      gruppen: groups,
+      listen: lists,
+      ansicht: {
+        eingeklappteGruppen: state.collapsedGroups || {},
+        darstellung: currentThemePref()
+      }
+    };
+  }
+
+  // Migrationen. Heute gibt es nur Schema 1 - der Pfad steht trotzdem
+  // schon, weil er sonst genau dann fehlt, wenn er gebraucht wird.
+  function migriere(daten) {
+    if (!daten || typeof daten !== "object") return null;
+    var v = daten.schema;
+    if (typeof v !== "number") return null;
+    if (v > SCHEMA) return { zuNeu: true };   // aus einer neueren Fassung
+    // if (v === 1) { ... daten = nach2(daten); v = 2; }
+    return daten;
+  }
+
+  // Nur so viel pruefen, dass kaputte Daten nicht den Bestand ersetzen.
+  // Eine strengere Pruefung waere hier schaedlich: Sie wuerde bei einer
+  // harmlosen Abweichung lieber alles verwerfen.
+  function plausibel(daten) {
+    return daten && Array.isArray(daten.listen) && Array.isArray(daten.gruppen) &&
+           daten.listen.length > 0;
+  }
+
+  function speichernJetzt() {
+    if (speicherGesperrt) return;
+    try {
+      var text = JSON.stringify(standErheben());
+      // Erst den bisherigen guten Stand sichern, dann ueberschreiben. Bricht
+      // das Schreiben mittendrin ab, ist die Sicherung noch vollstaendig.
+      var alt = window.localStorage.getItem(SPEICHER_SCHLUESSEL);
+      if (alt) window.localStorage.setItem(SPEICHER_SICHERUNG, alt);
+      window.localStorage.setItem(SPEICHER_SCHLUESSEL, text);
+    } catch (e) {
+      speicherGesperrt = true;
+      speicherFehler = e && e.name ? e.name : String(e);
+      hinweisZeigen();
+    }
+  }
+
+  var speicherUhr = null;
+  function planeSpeichern() {
+    if (speicherUhr) clearTimeout(speicherUhr);
+    speicherUhr = setTimeout(function () { speicherUhr = null; speichernJetzt(); }, 400);
+  }
+
+  function uebernehmen(daten) {
+    groups = daten.gruppen;
+    lists = daten.listen;
+    if (typeof daten.naechsteId === "number") uid = daten.naechsteId;
+    if (daten.ansicht && daten.ansicht.eingeklappteGruppen) {
+      state.collapsedGroups = daten.ansicht.eingeklappteGruppen;
+    }
+  }
+
+  // Beim Start: gespeicherten Stand laden, sonst die Beispieldaten stehen
+  // lassen. Was schiefgeht, wird gemeldet und nicht stillschweigend
+  // verworfen - stille Datenverluste sind genau das, wovor conventions.md
+  // warnt.
+  var ladeMeldung = null;
+  var ladeRohtext = null;   // der unlesbare Stand, damit er rettbar bleibt
+
+  // WICHTIG - hier lag beim ersten Bauversuch der gefaehrlichste Fehler:
+  // Konnte der gespeicherte Stand nicht gelesen werden, lief die App
+  // trotzdem mit den Beispieldaten weiter UND speicherte munter weiter.
+  // Der naechste Schreibvorgang (spaetestens beim Schliessen des Fensters)
+  // hat den kaputten - aber vielleicht noch rettbaren - Stand ersatzlos
+  // ueberschrieben. Genau der stille Datenverlust, vor dem
+  // docs/conventions.md warnt.
+  //
+  // Deshalb gilt jetzt: Was nicht gelesen werden konnte, wird auch nicht
+  // ueberschrieben. Die App laeuft, speichert aber nichts, bis der Nutzer
+  // entschieden hat - er kann den kaputten Stand herunterladen oder neu
+  // anfangen.
+  function ladenBeimStart() {
+    if (!speicherVerfuegbar()) {
+      speicherGesperrt = true;
+      ladeMeldung = "Dieser Browser laesst kein Speichern zu (" + speicherFehler +
+                    "). Alles, was du eingibst, ist beim Neuladen weg.";
+      return;
+    }
+    var roh = null;
+    try { roh = window.localStorage.getItem(SPEICHER_SCHLUESSEL); } catch (e) {}
+    if (!roh) return;                       // erster Start: Beispieldaten
+    var daten = null;
+    try { daten = JSON.parse(roh); } catch (e) {
+      speicherGesperrt = true;
+      ladeRohtext = roh;
+      ladeMeldung = "Der gespeicherte Stand liess sich nicht lesen. Er wird " +
+                    "NICHT ueberschrieben - es wird gerade gar nichts gespeichert.";
+      return;
+    }
+    var m = migriere(daten);
+    if (m && m.zuNeu) {
+      speicherGesperrt = true;
+      ladeRohtext = roh;
+      ladeMeldung = "Der gespeicherte Stand stammt aus einer neueren Fassung " +
+                    "(Schema " + daten.schema + "). Er wird nicht angetastet.";
+      return;
+    }
+    if (!plausibel(m)) {
+      speicherGesperrt = true;
+      ladeRohtext = roh;
+      ladeMeldung = "Der gespeicherte Stand sah unvollstaendig aus. Er wird " +
+                    "NICHT ueberschrieben - es wird gerade gar nichts gespeichert.";
+      return;
+    }
+    uebernehmen(m);
+  }
+
+  // --- Export ---------------------------------------------------------
+  //
+  // Zwei Wege, je nachdem wo die Seite laeuft: In der Artifact-Ansicht ist
+  // ein gewoehnlicher <a download> wirkungslos, dort gibt es dafuer
+  // window.claude.downloads. Bei einer lokalen Datei ist es umgekehrt.
+  // Deshalb zur Laufzeit entscheiden statt eine Umgebung anzunehmen.
+  function dateiname() {
+    var d = new Date();
+    var p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return "unfold-" + d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + ".json";
+  }
+
+  function exportieren() {
+    var text = JSON.stringify(standErheben(), null, 2);
+    var name = dateiname();
+    if (window.claude && window.claude.downloads && window.claude.downloads.save) {
+      window.claude.downloads.save({ filename: name, data: text })
+        .catch(function (e) { fallbackDownload(name, text, e); });
+      return;
+    }
+    fallbackDownload(name, text, null);
+  }
+
+  function fallbackDownload(name, text, vorherigerFehler) {
+    try {
+      var blob = new Blob([text], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    } catch (e) {
+      window.prompt("Der Download geht hier nicht" +
+        (vorherigerFehler ? "" : "") + ". Text kopieren (Strg+C):", text);
+    }
+  }
+
+  // --- Import ---------------------------------------------------------
+  function importieren(datei) {
+    var leser = new FileReader();
+    leser.onload = function () {
+      var daten = null;
+      try { daten = JSON.parse(String(leser.result)); }
+      catch (e) { window.alert("Das ist keine lesbare Unfold-Datei."); return; }
+      var m = migriere(daten);
+      if (m && m.zuNeu) { window.alert("Diese Datei stammt aus einer neueren Fassung."); return; }
+      if (!plausibel(m)) { window.alert("In der Datei stehen keine brauchbaren Listen."); return; }
+      var anzahl = m.listen.length;
+      if (!window.confirm("Import ersetzt deinen jetzigen Stand durch " + anzahl +
+                          " Liste(n) aus der Datei.\n\nVorher exportieren, wenn du " +
+                          "den jetzigen Stand behalten willst.\n\nFortfahren?")) return;
+      uebernehmen(m);
+      state.panelStack = [];
+      state.currentListId = lists[0] ? lists[0].id : INBOX_ID;
+      speichernJetzt();
+      renderAll();
+    };
+    leser.readAsText(datei);
+  }
+
+  // --- Prototyp-Leiste -------------------------------------------------
+  //
+  // Bewusst NICHT in die Sidebar oder die untere Leiste eingebaut: Deren
+  // Gestaltung ist entschieden (docs/status.md, Abschnitt 3 - der Neuentwurf
+  // des unteren Bereichs wurde abgelehnt). Export und Import sind Geruest
+  // fuer den Prototyp, kein Teil des Entwurfs. Sie stehen deshalb sichtbar
+  // abgesetzt, damit die spaetere Flutter-App diese Warze nicht erbt.
+  function hinweisZeigen() {
+    var alt = document.getElementById("protoLeiste");
+    if (alt) alt.parentNode.removeChild(alt);
+    var box = document.createElement("div");
+    box.id = "protoLeiste";
+    var warnung = speicherGesperrt || ladeMeldung;
+    box.innerHTML =
+      '<div class="proto-text">' +
+        '<strong>Prototyp.</strong> ' +
+        (ladeMeldung ? '<span class="proto-warn">' + ladeMeldung + '</span> ' :
+          'Daten liegen nur in diesem Browser. <strong>Regelmaessig exportieren.</strong>') +
+      '</div>' +
+      '<div class="proto-knoepfe">' +
+        (ladeRohtext ? '<button type="button" id="protoRetten">Kaputten Stand sichern</button>' +
+                       '<button type="button" id="protoNeu">Neu anfangen</button>' : '') +
+        '<button type="button" id="protoExport">Exportieren</button>' +
+        '<button type="button" id="protoImport">Importieren</button>' +
+        '<input type="file" id="protoDatei" accept="application/json,.json" hidden>' +
+        (ladeRohtext ? '' : '<button type="button" id="protoZu" title="Ausblenden">&times;</button>') +
+      '</div>';
+    if (warnung) box.className = "warnt";
+    document.body.appendChild(box);
+    document.getElementById("protoExport").addEventListener("click", exportieren);
+
+    // Rettungsweg aus einem unlesbaren Stand. Ohne ihn bliebe dem Nutzer nur,
+    // die Browserdaten zu loeschen - also genau das zu tun, was er vermeiden
+    // wollte.
+    if (ladeRohtext) {
+      document.getElementById("protoRetten").addEventListener("click", function () {
+        fallbackDownload("unfold-kaputter-stand.txt", ladeRohtext, null);
+      });
+      document.getElementById("protoNeu").addEventListener("click", function () {
+        if (!window.confirm("Der unlesbare Stand wird endgueltig ueberschrieben.\n\n" +
+                            "Vorher «sichern» anklicken, wenn du ihn behalten willst.\n\nWirklich neu anfangen?")) return;
+        try {
+          window.localStorage.removeItem(SPEICHER_SCHLUESSEL);
+          window.localStorage.removeItem(SPEICHER_SICHERUNG);
+        } catch (e) {}
+        location.reload();
+      });
+    }
+    document.getElementById("protoImport").addEventListener("click", function () {
+      document.getElementById("protoDatei").click();
+    });
+    document.getElementById("protoDatei").addEventListener("change", function (e) {
+      if (e.target.files && e.target.files[0]) importieren(e.target.files[0]);
+      e.target.value = "";
+    });
+    // Bei einem kaputten Stand gibt es bewusst KEIN Ausblenden - die Warnung
+    // soll stehen bleiben, bis der Nutzer entschieden hat. Der Knopf fehlt
+    // dann im HTML, also darf hier nicht blind darauf zugegriffen werden.
+    var zuKnopf = document.getElementById("protoZu");
+    if (zuKnopf) {
+      zuKnopf.addEventListener("click", function () {
+        box.parentNode.removeChild(box);
+        try { window.localStorage.setItem(SPEICHER_HINWEIS, "1"); } catch (e) {}
+      });
+    }
+  }
+
+  // --- Verdrahtung -----------------------------------------------------
+  ladenBeimStart();
+
+  // Gespeicherte Darstellung gewinnt, sonst bleibt Dunkel der Standard
+  // (Festlegung 2026-08-13). Eine EIGENE Wahl des Nutzers zu behalten
+  // widerspricht dem nicht - der Standard gilt beim ersten Start.
+  (function () {
+    var gespeichert = null;
+    try {
+      var roh = window.localStorage.getItem(SPEICHER_SCHLUESSEL);
+      if (roh) { var d = JSON.parse(roh); gespeichert = d && d.ansicht && d.ansicht.darstellung; }
+    } catch (e) {}
+    document.documentElement.setAttribute("data-theme",
+      gespeichert === "light" ? "light" : "dark");
+  })();
+
+  // Nach jeder sichtbaren Aenderung sichern. Die drei Render-Funktionen
+  // decken alles ab, was Daten veraendert; Tippen im Editor aendert Text
+  // ohne Neuaufbau, deshalb zusaetzlich auf "input" horchen.
+  (function () {
+    var origSidebar = renderSidebar, origColumns = renderColumns;
+    renderSidebar = function () { origSidebar.apply(null, arguments); planeSpeichern(); };
+    renderColumns = function () { origColumns.apply(null, arguments); planeSpeichern(); };
+    document.addEventListener("input", planeSpeichern, true);
+    document.addEventListener("click", function (e) {
+      if (e.target.closest && e.target.closest("[data-set-theme]")) planeSpeichern();
+    }, true);
+    // Beim Verlassen nicht auf den Zeitgeber warten.
+    window.addEventListener("beforeunload", speichernJetzt);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") speichernJetzt();
+    });
+  })();
+
   renderAll();
+
+  var hinweisGesehen = false;
+  try { hinweisGesehen = window.localStorage.getItem(SPEICHER_HINWEIS) === "1"; } catch (e) {}
+  if (!hinweisGesehen || speicherGesperrt || ladeMeldung) hinweisZeigen();
 })();
 </script>

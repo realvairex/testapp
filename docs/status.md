@@ -136,10 +136,24 @@ Was fertig ist:
   Drag&Drop-Sortierung, Heute-Ansicht inkl. überfälliger Aufgaben,
   Fälligkeitsdaten, Textformatierung über Auswahl-Popover und
   `/`-Menü, Hell/Dunkel-Umschaltung.
+- 🆕 **Das Mockup ist seit 2026-08-13 im Alltag benutzbar.** Es speichert
+  im Browser (`localStorage`, Schlüssel `unfold.daten`), hat Export und
+  Import als JSON mit **Schema-Version 1** und eine abgesetzte
+  Prototyp-Leiste am oberen Rand. Zweck: echte Nutzung findet Fehler, die
+  kein Prüfskript findet. Geprüft von `test_speichern.js` (19
+  Zusicherungen, per `git stash` gegengeprüft).
+
+  ⚠️ **Drei Grenzen, die der Nutzer kennen muss:** Die Daten liegen in
+  **genau einem Browser** — anderer PC, anderer Stand; nur Export/Import
+  verbindet sie. Code-Änderungen kommen **nicht von selbst** an (Artifact
+  neu veröffentlichen bzw. Datei neu laden), die Daten überleben das aber.
+  Und weil eine neue Fassung damit auf **echte Daten** trifft, ist die
+  Schema-Version keine Formalie: Wer die Datenform ändert, schreibt die
+  Migration in `migriere()` mit.
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 61 Playwright-Skripte, davon **57 vom
+- **`design/mockups/tests/`** — 62 Playwright-Skripte, davon **58 vom
   Läufer gestartet** (`test_`, `measure_`, `verify_`; die vier `shot_`
   machen nur Bilder). Sie messen das Mockup in
   einem echten Browser nach. Gestartet werden sie mit
@@ -208,6 +222,15 @@ Der abgestimmte Plan, in dieser Reihenfolge:
    im Browser nicht bauen, muss also rein spezifiziert werden.
 
 2. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
+
+   ⚠️ **Abweichung vom 2026-08-13, bewusst:** Das Mockup hat eine
+   Datenschicht bekommen, damit der Nutzer es im Alltag benutzen kann. Das
+   arbeitet gegen das Einfrieren — die Begründung steht in
+   `docs/decisions.md`. **Folge für diesen Schritt:** „Einfrieren" heißt ab
+   jetzt *keine Gestaltungsänderungen mehr*, aber Fehlerbehebungen aus der
+   echten Nutzung bleiben erlaubt. Was dabei auffällt, gehört gesammelt —
+   es ist die wertvollste Quelle für `spec.md`, weil es aus der Benutzung
+   kommt und nicht aus dem Ansehen.
 
 3. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
    (Lint/Typecheck/Test bei jedem Push), Session-Start-Hook um
@@ -364,6 +387,7 @@ dieselbe Antwort noch einmal geben zu müssen.
 | Historische Einträge in `docs/decisions.md` | Werden **nicht überschrieben**. Korrekturen kommen als **Nachtrag darunter**, damit nachvollziehbar bleibt, was damals galt. Vom Nutzer bestätigt (2026-08-07). |
 | Git-Tags für Meilensteine | Technisch möglich (nachgewiesen 2026-08-06), aber **vorerst nicht genutzt**. `milestones.md` bleibt die Wahrheit. Tags erst ab echtem App-Code, **zusätzlich** zur Tabelle. |
 | Repo-lokale Commit-Identität | **Bleibt so**, obwohl sie einen Klon nicht überlebt. Nach jedem Klon einmal setzen — Schrittfolge in §0. |
+| Prototyp-Leiste (Export/Import) | Steht **außerhalb der App-Gestaltung**, oben abgesetzt. Nicht in die Sidebar oder deren untere Leiste einbauen — die ist entschieden, vier Neuentwürfe wurden abgelehnt. Die spätere Flutter-App soll diese Warze nicht erben. Sie darf **nichts zudecken**; `test_speichern.js` sichert das an drei Fenstergrößen zu |
 | Fremde Erweiterungen und Plugins | **Vorerst keine** (2026-08-13). Sechs wurden geprüft und keines übernommen — der Nutzer wollte sich zunächst nur informieren. Die Bewertung steht in **§7**, damit sie nicht neu recherchiert wird. Nicht ungefragt erneut vorschlagen; `claude-code-setup` ist der einzige, bei dem ein späterer Anlauf sich lohnt. |
 
 ## 4. Fallstricke, die schon einmal Zeit gekostet haben

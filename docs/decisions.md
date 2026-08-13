@@ -95,6 +95,7 @@ Nachschlagen also grob anspringen, nicht blind zaehlen.
 | 3748 | 2026-08-13 | Vier Wünsche, und was die Stimmigkeitsprüfung dabei ausgrub |
 | 3848 | 2026-08-13 | Sechs fremde Werkzeuge geprüft, keines übernommen |
 | 3923 | 2026-08-13 (abends) | Workflow beschleunigen, ohne Sicherheit abzubauen |
+| 4042 | 2026-08-13 (abends) | Datenschicht im Prototyp: das Mockup wird benutzbar |
 
 <!-- VERZEICHNIS:ENDE -->
 
@@ -4130,3 +4131,114 @@ Grundlast von ~23.900 Token rühren sie **nicht** an — die liegt in
 `spec.md` und `status.md`, und beide anzufassen war ausgeschlossen. Das
 ist die Konsequenz der Vorgabe, kein Einwand dagegen: **Risikofrei
 bekommt man die Wartezeit weg, nicht die Grundlast.**
+
+## 2026-08-13 (abends) — Datenschicht im Prototyp: das Mockup wird benutzbar
+
+Der Nutzer wollte die App im Alltag benutzen, um Fehler und Verbesserungen
+zu finden — ursprünglich als **.exe zum Herunterladen** gedacht.
+
+### Warum keine .exe
+
+Das Mockup ist eine HTML-Datei. Eine .exe daraus hieße, sie in eine
+Programmhülle (Electron/Tauri) zu packen — ein eigener Bauprozess für
+etwas, das laut `status.md` §2 eingefroren und durch die Flutter-App
+ersetzt wird. Dazu kommt: **Eine Windows-.exe lässt sich in der
+Web-Umgebung gar nicht bauen** (Linux-Container). `flutter build windows`
+liefert sie später ohnehin — dafür wurde Flutter gewählt.
+
+Der praktische Unterschied ist klein: Die HTML-Datei ist eine **einzige
+Datei ohne Installation**, Doppelklick genügt.
+
+### Gemessen, nicht vermutet
+
+| Frage | Ergebnis |
+|---|---|
+| Speichert das Mockup etwas? | **Nein** — 0 Treffer für `localStorage` in 229 KB |
+| Überlebt Speicher eine lokale Datei (`file://`)? | ja, auch über einen Browser-Neustart; alle `file://`-Seiten teilen sich in Chromium einen Speicher |
+| Überlebt Speicher in der Artifact-Ansicht? | **ja** (vom Nutzer an einer Testseite geprüft) |
+| Gibt es dort einen Download-Weg? | ja, aber nur mit der Fähigkeit `downloads`; ein `<a download>` ist wirkungslos |
+
+**Fehler in meiner eigenen Testseite:** Sie meldete grün für „kann dir eine
+Datei geben", prüfte aber nur, ob `window.claude.downloads` *existiert* —
+nicht, ob ein Aufruf durchgeht. Ohne deklarierte Fähigkeit wird er
+abgelehnt. Eine Messung, die mehr behauptet als sie prüft.
+
+### Entscheidung
+
+**Die Datenschicht kommt in den Prototyp**, obwohl das gegen das geplante
+Einfrieren arbeitet. Begründung: Echte Nutzung findet Fehler, die kein
+Prüfskript findet — schon beim Bauen kamen zwei zutage (siehe unten). Und
+das Format, das dabei exportiert wird, ist die **Vorlage für die
+Flutter-Datenschicht**, also keine Wegwerfarbeit.
+
+Die Regeln aus `conventions.md` gelten dabei vollständig, obwohl es „nur"
+ein Prototyp ist — die Daten liegen nur im Browser, ein Fehler hier ist
+unwiederbringlich:
+
+| Regel | Umsetzung |
+|---|---|
+| offenes Format | JSON, benannte Felder, von Hand lesbar |
+| Export | jederzeit; `window.claude.downloads` in der Artifact-Ansicht, `<a download>` lokal — zur **Laufzeit** entschieden, nicht angenommen |
+| Schema-Version | `schema: 1` in den Daten, Migrationspfad steht schon leer bereit |
+| atomares Schreiben | `setItem` ist je Schlüssel atomar; zusätzlich hält `unfold.daten.sicherung` den letzten guten Stand |
+
+**Nicht gespeichert wird die reine Ansicht** (offene Spalten, Kalender,
+Aufräum-Modus). Das ist kein Bestand, und ein halb offener Aufräum-Modus
+nach dem Neuladen wäre verwirrend.
+
+**Die Prototyp-Leiste steht bewusst außerhalb der App-Gestaltung.** Export
+und Import gehören nicht in die Sidebar — deren unterer Bereich ist
+entschieden, vier Neuentwürfe wurden abgelehnt (`status.md` §3). Die
+spätere Flutter-App soll diese Warze nicht erben.
+
+**Die gespeicherte Darstellung gewinnt über den Standard.** „Dunkel ist der
+Standard" (2026-08-13) gilt beim **ersten** Start; eine eigene Wahl des
+Nutzers zu behalten widerspricht dem nicht.
+
+### Drei Fehler beim Bauen — zwei davon hätte nur die Nutzung gefunden
+
+1. **Der gefährlichste: kaputte Daten wurden still überschrieben.** Ließ
+   sich der gespeicherte Stand nicht lesen, lief die App mit den
+   Beispieldaten weiter — **und speicherte weiter**. Spätestens beim
+   Schließen des Fensters war der kaputte, womöglich noch rettbare Stand
+   ersatzlos weg. Genau der stille Datenverlust, vor dem `conventions.md`
+   warnt. Jetzt gilt: Was nicht gelesen werden konnte, wird auch nicht
+   überschrieben; die App speichert gar nichts mehr, bis der Nutzer
+   entschieden hat, und bietet „Kaputten Stand sichern" und
+   „Neu anfangen" an.
+
+2. **Die Prototyp-Leiste deckte das Eingabefeld zu.** Sie stand unten
+   mittig; gemessen liegt das Schnell-Eingabefeld bei y=680, die Leiste
+   ab y=691. Aufgefallen ist es **nicht beim Ansehen**, sondern weil die
+   Prüfung das Feld nicht mehr anklicken konnte. Sie steht jetzt oben und
+   ist flach genug, dass sie auch bei 1100×700 nichts überdeckt —
+   nachgemessen an drei Fenstergrößen, die Zusicherung liegt im Test.
+
+3. **Ein Verdrahtungsfehler:** Bei kaputtem Stand wird der
+   Schließen-Knopf bewusst nicht gebaut, aber trotzdem verdrahtet →
+   `TypeError`. Vom Test gefunden.
+
+### Und zum dritten Mal an einem Tag: der Fehler lag in der Messung
+
+`test_speichern.js` meldete zunächst rot für „kaputter Stand wird nicht
+gelöscht". Ursache war **nicht** die App, sondern der Test: Er setzte den
+kaputten Wert per `evaluate` und lud dann neu — `page.reload()` löst
+`beforeunload` aus, das Speichern überschrieb den kaputten Wert, **bevor**
+der Ladepfad ihn je zu sehen bekam. Die Prüfung meldete rot für einen Weg,
+den sie nie betreten hatte. Gelöst über `addInitScript`, das vor dem
+Seitenskript läuft.
+
+Bemerkenswert: Der rote Punkt war trotzdem nützlich — beim Nachsehen fiel
+Fehler 1 auf, der ohne ihn unentdeckt geblieben wäre.
+
+### Grenzen, die der Nutzer kennen muss
+
+- **Die Daten liegen in genau einem Browser.** Anderer PC oder anderer
+  Browser = anderer Stand. Das gilt für den Artifact wie für die lokale
+  Datei. Nur Export/Import verbindet sie; echte Synchronisierung ist laut
+  `concept.md` nicht in v1.
+- **Änderungen am Code kommen nicht von selbst an.** Der Artifact muss neu
+  veröffentlicht werden, die lokale Datei neu heruntergeladen. Die *Daten*
+  überleben das — sie hängen am Browser, nicht an der Datei.
+- **Genau deshalb ist die Schema-Version keine Formalie:** Sobald eine neue
+  Fassung die Datenform ändert, trifft sie auf echte Daten des Nutzers.

@@ -102,8 +102,25 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Kein Aufblitzen bei gewöhnlichen Aktionen | `test_kein_flackern` |
 | Belastung (lange Namen, viele Aufgaben) | `test_states`, `test_stress` |
 | Geometrie von Icons und Knöpfen | `measure_center`, `measure_ref`, `verify_center`, `verify_icon` |
+| **Datenschicht des Prototyps** (Speichern, Export, Import, kaputter Stand) | `test_speichern` |
 | Welche Animation bei welcher Interaktion **tatsächlich** läuft | `measure_animationen` |
 | Wie die Marke aussieht und wie groß der Wimpel dabei wird | `shot_logo`, `shot_logo_groessen` |
+
+**`test_speichern.js` ist die einzige Prüfung, bei der ein Fehler echte
+Nutzerdaten kostet.** Das Mockup speichert seit 2026-08-13 im Browser; die
+Daten liegen **nur** dort. Zwei seiner Zusicherungen sind deshalb wichtiger
+als alle anderen: *„kaputter Stand wird NICHT überschrieben"* und *„auch
+nach einer Änderung unangetastet"*. Sie decken den Fehler ab, der beim
+Bauen tatsächlich drinsteckte — ein unlesbarer Stand wurde stillschweigend
+durch die Beispieldaten ersetzt. Wer hier rot sieht, prüft **zuerst**, ob
+Daten verloren gehen können, und erst danach alles andere.
+
+Zwei Fallen, die dieser Test selbst gestellt hat und die im Skript
+dokumentiert sind: `browser.newPage()` legt je Aufruf einen eigenen Kontext
+an (misst also die Isolierung des Testwerkzeugs, nicht den Browser — nötig
+ist `launchPersistentContext`), und ein kaputter Stand muss per
+`addInitScript` gesetzt werden, weil `page.reload()` über `beforeunload`
+erst noch speichert und den kaputten Wert damit selbst überschreibt.
 
 **`measure_animationen.js` beantwortet eine Frage, die sonst jedes Mal neu
 von Hand gestellt wird:** „Ich klicke auf X — blendet da etwas ein, oder
