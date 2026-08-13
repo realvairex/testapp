@@ -72,8 +72,15 @@ if [ -z "$filter" ] && [ "$erzwingen" -eq 0 ] && [ -f "$merkzettel" ]; then
     [ -n "${LAUF_BETROFFEN:-}" ] && echo "Betroffen:${LAUF_BETROFFEN}"
     echo
     echo "Weder Mockup noch Pruefskripte noch die Playwright-Version haben"
-    echo "sich geaendert - ein neuer Lauf wuerde dasselbe messen."
-    echo "Trotzdem messen:  bash scripts/run-mockup-tests.sh --neu"
+    echo "sich geaendert."
+    echo
+    echo "ACHTUNG - was das heisst und was nicht: Gemerkt ist, dass DERSELBE"
+    echo "CODE gemessen wurde. Nicht, dass ein neuer Lauf dasselbe ergaebe."
+    echo "Bei einem wackelnden Skript friert das Gedaechtnis eine Stichprobe"
+    echo "ein: test_4bugs traf am 2026-08-13 bei identischer Signatur einmal"
+    echo "56/1 und einmal 57/0 (siehe docs/status.md, Abschnitt 4)."
+    echo "Vor einem Meilenstein oder einer Freigabe deshalb:"
+    echo "  bash scripts/run-mockup-tests.sh --neu"
     exit "${LAUF_RC:-0}"
   fi
 fi
