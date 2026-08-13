@@ -629,8 +629,8 @@ Stärken: `400` normal · `500` medium · `600` betont · `700` fett.
 | `dur-base` | 200ms | Zustandswechsel |
 | `dur-slow` | 400ms | Panels, Sidebar |
 | Kurve | `cubic-bezier(0.32, 0.72, 0, 1)` → Flutter `Cubic(0.32, 0.72, 0.0, 1.0)` | überall dieselbe |
-| `ease-spring` | `cubic-bezier(0.34, 1.28, 0.52, 1)` → Flutter `Cubic(0.34, 1.28, 0.52, 1.0)` | etwas, das **ankommt**: Karteneinflug, Knopf-Quittung, Abschlussbild (2.8) |
-| `ease-lauf` | `cubic-bezier(0.85, 0, 0.35, 1)` → Flutter `Cubic(0.85, 0.0, 0.35, 1.0)` | etwas, das eine **Menge** anzeigt: Fortschrittsbalken, Zähler |
+| `ease-spring` | `cubic-bezier(0.34, 1.28, 0.52, 1)` → Flutter `Cubic(0.34, 1.28, 0.52, 1.0)` | etwas, das **ankommt**: Karteneinflug, Knopf-Quittung, **das einrastende Häkchen**, Abschlussbild (2.8) |
+| `ease-lauf` | `cubic-bezier(0.85, 0, 0.35, 1)` → Flutter `Cubic(0.85, 0.0, 0.35, 1.0)` | etwas, das eine **Menge oder eine feste Stelle** anzeigt: Fortschrittsbalken, Zähler, der gleitende Knopf des Darstellungs-Schalters |
 
 Alle Bewegungen animieren ausschließlich `transform`, nie Layout-Eigenschaften.
 
@@ -642,9 +642,17 @@ Alle Bewegungen animieren ausschließlich `transform`, nie Layout-Eigenschaften.
   wäre es Unruhe.
 - `ease-lauf` fängt langsam an, wird immer schneller und rastet ein. Sie
   schwingt bewusst **nicht** über, denn sie bewegt Dinge, die eine Menge
-  anzeigen: **Ein Fortschrittsbalken, der über seine Kerbe hinausschießt,
-  zeigt für einen Moment einen Fortschritt an, den es nicht gibt.** Das ist
-  nicht nur unruhig, es ist falsch.
+  oder eine feste Stelle anzeigen: **Ein Fortschrittsbalken, der über seine
+  Kerbe hinausschießt, zeigt für einen Moment einen Fortschritt an, den es
+  nicht gibt.** Das ist nicht nur unruhig, es ist falsch.
+
+  > **Am 2026-08-13 auf den Darstellungs-Schalter ausgeweitet** (Wunsch des
+  > Nutzers). Er trug vorher `ease`. Die Regel wird dadurch nicht weicher,
+  > sondern schärfer formuliert: Nicht „Menge" ist das Kriterium, sondern
+  > **ob etwas auf einem bestimmten Wert landen muss**. Der Knopf steht auf
+  > einem von zwei Feldern; ein Überschwinger ließe ihn kurz über das Feld
+  > hinausrutschen, auf dem er stehen bleiben soll. Dieselbe Begründung wie
+  > beim Balken, nur ohne Zahl.
 
 Hier stand bis zum 2026-08-11 „zweite Kurve, keine dritte". Die dritte kam
 dazu, weil der Überschwinger am Fortschrittsbalken auffiel — die Regel

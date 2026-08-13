@@ -139,15 +139,21 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 55 Playwright-Skripte, die das Mockup in
+- **`design/mockups/tests/`** — 56 Playwright-Skripte, die das Mockup in
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, nach dem
-  Palettenwechsel): 55 grün, 0 rot** — in diesem Lauf war auch
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, nach der
+  Stimmigkeitsprüfung): 56 grün, 0 rot** — in diesem Lauf war auch
   `test_4bugs` grün. Der ist und bleibt ein Wackelkandidat, der etwa jeden
   zweiten Lauf trifft (Abschnitt 4); ein grüner Lauf heißt dort nicht,
   dass er repariert wäre.
+
+  🆕 **`test_stimmigkeit.js` prüft die Skalen jetzt mechanisch** — Schrift,
+  Dauern, Bewegungskurven, Radien und das Verhältnis von Bild- zu
+  Wortmarke, an den gerenderten Elementen. Beim ersten Lauf fand es eine
+  dreizehnte Übergangsdauer, eine undokumentierte vierte Bewegungskurve
+  und neun Bewegungen auf der Browser-Vorgabe. Alle repariert.
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
   Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
@@ -155,7 +161,7 @@ Was fertig ist:
   Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
   Anfassen des Skripts die Erwartung nachziehen.
 
-  ⚠️ **Wichtige Einschränkung:** Nur **siebzehn** der 55 Skripte haben echte
+  ⚠️ **Wichtige Einschränkung:** Nur **achtzehn** der 56 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
   Themes" beruht auf einem **Ablesen** von `test_contrast`, nicht auf

@@ -49,10 +49,10 @@ NODE_PATH="$(npm root -g)" node design/mockups/tests/test_align.js
 
 ## Was die Skripte aussagen — und was nicht
 
-Nur **siebzehn** der 55 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
+Nur **achtzehn** der 56 Skripte haben echte Zusicherungen (`>>>`-Zeilen,
 `true` = in Ordnung): `test_4bugs`, `test_accum`, `test_aufraeumen`,
 `test_due_row`, `test_eingang`, `test_fortschritt`, `test_gaps`, `test_group_add_hover`, `test_kein_flackern`,
-`test_list_header`, `test_loeschen`, `test_theme_switch`, `test_typing`,
+`test_list_header`, `test_loeschen`, `test_stimmigkeit`, `test_theme_switch`, `test_typing`,
 `test_typing2`, `test_typing3`, `test_unteraufgabe`, `test_window_min`. Alle übrigen sind
 **Messskripte**: Sie
 drucken Zahlen, die ein Mensch beurteilen muss. Ein grüner Lauf heißt bei
@@ -76,6 +76,7 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Spalten, Animation, Scrollbalken | `test_anim`, `test_anim2`, `test_height`, `test_scrollbar`, `test_4cols`, `test_1panel_scroll*`, `test_no_rebuild`, `test_reopen_after_close`, `test_shot` |
 | Drag & Drop (auch der frühere Freeze) | `test_drag`, `test_drag2`, `test_pdrag`, `test_unified`, `test_sidebar_dnd`, `test_sidebar_weak`, `test_sidebar_fuzz`, `test_fuzz_all` |
 | Aufgabe in Aufgabe ziehen (Unteraufgabe), inkl. Kreisfall | `test_unteraufgabe` |
+| **Stimmigkeit der ganzen Oberfläche** (Skalen für Schrift, Dauer, Kurve, Radius; Marke) | `test_stimmigkeit` |
 | Editor / Blockmodell | `test_typing`, `test_typing2`, `test_typing3`, `test_3bugs`, `test_4bugs`, `test_gaps`, `test_gap0`, `test_caret`, `test_backspace`, `test_bs_exact`, `test_accum` |
 | Formatierung, Fälligkeit | `test_fmt`, `test_fmt2`, `test_due`, `test_regression` |
 | Ausrichtung, Icons, Kontrast | `test_align`, `test_measure`, `test_svg`, `test_contrast`, `test_addlist` |
@@ -117,3 +118,27 @@ Sie prüfen das **Mockup**, nicht das Produkt. Sobald der Flutter-Bau
 beginnt, sind sie Referenzmaterial („so war es gemeint gemessen"), aber
 kein Bestandteil der Test-Pipeline mehr — deren Zusicherungen gehören
 dann in Dart-Tests gegen `docs/spec.md`.
+
+## `test_stimmigkeit.js` — warum es das gibt
+
+Es beantwortet eine Frage, die schon einmal **von Hand** beantwortet
+wurde: „Ist die Oberfläche stimmig?" Das Ergebnis von damals — 12
+Schriftgrößen, 8 Radien, 13 Übergangsdauern — steht in `docs/spec.md` §3
+als Begründung für die Skalen. Nur war die Antwort nach der nächsten
+Änderung wieder wertlos.
+
+Geprüft wird an den **gerenderten** Elementen, nicht an den CSS-Tokens.
+Der Unterschied ist nicht theoretisch: Ein `<button>` ohne eigene
+`font-size` erbt 13,33px vom Browser, und die steht in keiner Skala.
+
+**Was es beim ersten Lauf fand (2026-08-13):** eine dreizehnte
+Übergangsdauer (250 ms am `body`), eine **vierte** Bewegungskurve am
+Kästchen (`cubic-bezier(0.34, 1.56, 0.64, 1)` — nirgends dokumentiert)
+und neun Bewegungen auf der Browser-Vorgabe statt auf der Hauskurve. Alle
+drei repariert.
+
+**Bewusst nur gezählt, nicht zugesichert:** Farb- und
+Deckkraft-Übergänge auf der Browser-Kurve (derzeit 119). Auf einer 120 ms
+langen Farbblende sieht niemand, welche Kurve läuft; an einer Bewegung
+sieht man es sofort. Die Zahl steht trotzdem im Protokoll — driftet sie
+stark, ist das ein Signal.

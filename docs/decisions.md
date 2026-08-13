@@ -3744,3 +3744,103 @@ mitbekommt, sieht aus wie ein kaputter Schalter.
 
 Voller Lauf **55 grün, 0 rot**. `test_unteraufgabe` steht jetzt bei 23
 Zusicherungen, `test_theme_switch` bei 10.
+
+## 2026-08-13 — Vier Wünsche, und was die Stimmigkeitsprüfung dabei ausgrub
+
+### Die neue Liste blendet ein wie die Zeilen beim Eingang
+
+Der Nutzer wollte für das „+" in der Sidebar „eine coole Animation, am
+besten so wie wenn man auf den Eingang drückt". Erst nachgemessen, was
+dort überhaupt passiert (`document.getAnimations()`):
+
+| Klick | läuft |
+|---|---|
+| auf den Eingang | **6×** `block-in`, 200 ms — die Aufgabenzeilen blenden ein |
+| auf das „+" | nur der Zähler rollt; die neue Sidebar-Zeile **poppt hin** |
+
+Also genau das gegeben, was beim Eingang das Gefühl macht: Die neue Zeile
+blendet mit **derselben** `block-in`-Bewegung ein. Keine eigene Kurve,
+keine eigene Dauer — es ist dieselbe Aussage („das ist gerade
+dazugekommen"), also sieht sie gleich aus.
+
+Gebaut über die **vorhandene** Mechanik (`data-neu-schluessel` +
+`einblendenNurNeu()`), nicht über eine zweite: Eine frisch angelegte Liste
+blendet ein, eine bestehende nie — auch nicht, wenn die Sidebar aus einem
+anderen Grund neu gebaut wird.
+
+### Der Darstellungs-Schalter läuft jetzt auf `ease-lauf`
+
+Wunsch des Nutzers: dieselbe Kurve wie der Fortschrittsbalken. Er trug
+vorher `ease`.
+
+**Die Regel wird dadurch nicht weicher, sondern schärfer.** Bisher stand
+in `spec.md` §3, `ease-lauf` sei für „etwas, das eine **Menge** anzeigt".
+Das eigentliche Kriterium ist aber, **ob etwas auf einem bestimmten Wert
+landen muss**: Der Knopf steht auf einem von zwei Feldern, und ein
+Überschwinger ließe ihn kurz über das Feld hinausrutschen, auf dem er
+stehen bleiben soll. Dieselbe Begründung wie beim Balken, nur ohne Zahl.
+Formulierung in der Spec entsprechend nachgezogen — Code und Dokument
+dürfen nicht auseinanderlaufen.
+
+### Die Wortmarke: gemessen, nicht geschätzt
+
+Der Nutzer war unsicher, ob „Unfold" neben dem Logo die richtige Größe
+hat. Gemessen: **15,5 px** (`fs-lg`, auf der Skala), Versalhöhe ~11,2 px
+gegen 21 px Bildmarke — Verhältnis **1,88**. Das liegt im Bereich, in dem
+sich Bild- und Wortmarke die Waage halten; keine der beiden trägt die
+Marke allein. **Kein Handlungsbedarf.**
+
+Die Messung ist jetzt eine Zusicherung, damit die Frage nicht bei jeder
+Logo-Änderung neu von Hand beantwortet werden muss — und genau die steht
+an: v2 hat ein anderes Seitenverhältnis, der Wimpel schrumpft dadurch von
+21 auf ~16 px.
+
+### `test_stimmigkeit.js` — und was es beim ersten Lauf fand
+
+Auf die Bitte „prüfe die gesamte Stimmigkeit und Kontinuität". Bewusst als
+**Skript**: Dieselbe Frage wurde schon einmal von Hand beantwortet, und
+das Ergebnis (12 Schriftgrößen, 8 Radien, 13 Dauern) steht in `spec.md` §3
+als Begründung für die Skalen — nur war die Antwort nach der nächsten
+Änderung wieder wertlos.
+
+Gemessen wird an den **gerenderten** Elementen. Drei Funde:
+
+1. **Eine dreizehnte Übergangsdauer:** 250 ms am `body` (Theme-Wechsel),
+   neben den drei Stufen 120/200/400. Genau der Wildwuchs, gegen den die
+   Skala angelegt wurde.
+2. **Eine vierte Bewegungskurve:** `cubic-bezier(0.34, 1.56, 0.64, 1)` am
+   Kästchen, nirgends dokumentiert — obwohl in `spec.md` §3 ausdrücklich
+   „drei Kurven, und keine vierte" steht. Ersetzt durch `ease-spring`.
+3. **Neun Bewegungen auf der Browser-Vorgabe `ease`** statt auf der
+   Hauskurve. Darunter — und das ist der peinlichste Teil — die Animation
+   `block-in` an der Aufgabenzeile, während *dieselbe* Animation an der
+   neuen Sidebar-Zeile die Hauskurve trug. Ein Bild, zwei Bewegungen.
+   Aufgefallen ist es erst dadurch, dass beide nebeneinander gemessen
+   wurden.
+
+**Bewusst nur gezählt, nicht zugesichert:** 119 Farb- und
+Deckkraft-Übergänge laufen weiter auf `ease`. Auf einer 120-ms-Farbblende
+sieht niemand, welche Kurve läuft; an einer Bewegung sieht man es sofort.
+Das wäre ein Suchen-und-Ersetzen über 56 Stellen für null sichtbare
+Wirkung. Die Zahl steht im Protokoll — driftet sie stark, ist das ein
+Signal.
+
+### Zum dritten Mal an einem Tag: eine Prüfung schrieb einen Zustand fest
+
+`test_aufraeumen` verlangte, dass `--ease-spring` **nur** auf
+`.tidy`-Selektoren vorkommt. Das galt zufällig, weil die Belohnungsschicht
+damals die einzige Stelle war. Als das Kästchen dazukam — die
+„Knopf-Quittung", die `spec.md` §3 ausdrücklich als Einsatzort nennt —
+meldete die Prüfung einen Fehler, **wo die Regel eingehalten wurde**.
+
+Damit ist es an einem Tag dreimal passiert:
+
+| Prüfung | schrieb fest | statt |
+|---|---|---|
+| `test_list_header` | den Hexwert des alten Taubenblaus | „der Punkt zeigt die gewählte Farbe" |
+| `test_aufraeumen` | die Liste der damaligen Fundstellen | „federnd nur, wo etwas ankommt" |
+| `verify_center` (offen) | die alte Achse der Gruppenzeile | die Ausrichtungsregel |
+
+**Das Muster:** Eine Prüfung, die einen *Zustand* festschreibt statt einer
+*Regel*, meldet einen Fehler genau dann, wenn eine Entscheidung umgesetzt
+wird. Sie schützt nicht, sie bremst. Gehört in `lernkurve.md`.

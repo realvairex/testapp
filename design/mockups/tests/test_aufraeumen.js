@@ -441,12 +441,28 @@ const balkenVerlauf = (page, auswahl) =>
     Array.from(document.styleSheets[0].cssRules).map((r) => r.cssText).join('\n'));
   console.log('>>> jeder Knopf gibt beim Drücken nach (:active, scale):',
     /\.tidy-btn:active[^{]*\{[^}]*scale\(0\.96\)/.test(css));
-  console.log('>>> die federnde Kurve bleibt auf die Belohnungsschicht begrenzt:',
-    (await page.evaluate(() => {
-      const rules = Array.from(document.styleSheets[0].cssRules)
-        .filter((r) => r.style && /--ease-spring/.test(r.cssText) && r.selectorText !== ':root');
-      return rules.map((r) => r.selectorText);
-    })).every((s) => /^\.tidy/.test(s)));
+  // Die federnde Kurve bleibt dort, wo etwas ANKOMMT (spec.md §3) - nicht
+  // an Spalten, Menüs oder Zeilen, wo sie nur Unruhe wäre.
+  //
+  // Hier stand bis 2026-08-13 `jeder Selektor beginnt mit .tidy`. Das war
+  // ein festgeschriebener ZUSTAND, keine Regel: Es galt zufällig, weil die
+  // Belohnungsschicht damals die einzige Stelle war. Als das Kästchen
+  // dazukam - die "Knopf-Quittung", die spec.md §3 ausdrücklich nennt -
+  // meldete die Prüfung einen Fehler, wo die Regel eingehalten wurde.
+  // Dasselbe Muster wie bei test_list_header (fester Hexwert) und dem
+  // offenen Faden bei verify_center.
+  //
+  // Wer diese Liste erweitert, muss den Eintrag als "etwas, das ankommt"
+  // begründen können. Alles andere gehört auf --ease.
+  const FEDERND_ERLAUBT = [/^\.tidy/, /^\.check-btn/];
+  const federndAuf = await page.evaluate(() =>
+    Array.from(document.styleSheets[0].cssRules)
+      .filter((r) => r.style && /--ease-spring/.test(r.cssText) && r.selectorText !== ':root')
+      .map((r) => r.selectorText));
+  const federndFremd = federndAuf.filter((s) => !FEDERND_ERLAUBT.some((re) => re.test(s)));
+  console.log('federnde Kurve steht auf:', JSON.stringify(federndAuf));
+  console.log('>>> die federnde Kurve bleibt auf Dinge begrenzt, die ankommen:',
+    federndFremd.length === 0, JSON.stringify(federndFremd));
 
   console.log('>>> keine Seitenfehler:', fehler.length === 0);
   if (fehler.length) console.log(fehler);

@@ -235,7 +235,10 @@
     color: var(--ink);
     font-family: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    /* Lag bis 2026-08-13 bei 0,25s - eine dreizehnte Dauer neben den drei
+       Stufen, genau die Art Wildwuchs, gegen die die Skala angelegt wurde.
+       Gefunden von test_stimmigkeit.js. */
+    transition: background-color var(--dur-base) var(--ease), color var(--dur-base) var(--ease);
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 
@@ -306,7 +309,7 @@
   .brand-logo { height: 21px; width: auto; display: block; }
   .brand-name { font-size: var(--fs-lg); font-weight: var(--fw-strong); letter-spacing: -0.01em; }
   .nav-label { font-size: var(--fs-xs); font-weight: var(--fw-strong); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); padding: 12px 10px 6px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: none; background: transparent; border-radius: var(--r-md); font-size: var(--fs-md); font-weight: var(--fw-medium); color: var(--ink); cursor: pointer; text-align: left; font-family: inherit; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease; }
+  .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: none; background: transparent; border-radius: var(--r-md); font-size: var(--fs-md); font-weight: var(--fw-medium); color: var(--ink); cursor: pointer; text-align: left; font-family: inherit; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) var(--ease); }
   .nav-item:hover { background: var(--nav-hover); }
   .nav-item:active { transform: scale(0.97); }
   .nav-item.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: var(--fw-strong); }
@@ -360,6 +363,15 @@
   .nav-item.drag-ghost { opacity: 0.35; }
 
   .nav-item-wrap { position: relative; }
+  /* Eine neu angelegte Liste kommt herein, statt dazustehen - DIESELBE
+     Bewegung wie ein neuer Block auf einer Seite (block-in). Es ist
+     dieselbe Aussage ("das ist gerade dazugekommen"), also sieht sie
+     gleich aus; eine eigene Kurve oder Dauer waere eine zweite Sprache
+     fuer denselben Satz. Der Nutzer wollte, dass sich das Anlegen so
+     anfuehlt wie das Oeffnen des Eingangs - dort blenden genau diese
+     block-in-Zeilen ein. */
+  .nav-item-wrap.ist-neu { animation: block-in var(--dur-base) var(--ease); }
+  @media (prefers-reduced-motion: reduce) { .nav-item-wrap.ist-neu { animation: none; } }
   .nav-item-wrap:hover .nav-count { opacity: 0; }
   /* The delete button replaces the count on hover, so the two must sit on
      exactly the same centre line - otherwise the icon appears to jump as
@@ -404,7 +416,7 @@
   .group-row:hover { background: var(--nav-hover); }
   .group-row:hover .nav-count { opacity: 0; }
   .group-chevron { width: 16px; height: 16px; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
-  .group-chevron svg { transition: transform var(--dur-fast) ease; }
+  .group-chevron svg { transition: transform var(--dur-fast) var(--ease); }
   .group-chevron.collapsed svg { transform: rotate(-90deg); }
   .group-title { flex: 1; min-width: 0; text-overflow: ellipsis; border: none; background: transparent; font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-strong); letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); padding: 2px; border-radius: var(--r-sm); }
   /* Der Name ist das groesste Ziel der Gruppenzeile - und war als einziges
@@ -424,7 +436,7 @@
      Grundlinie wie der grosse Listen-Knopf, statt neben dessen Mitte zu
      schweben. */
   .sidebar-bottom-actions { display: flex; justify-content: space-between; align-items: flex-end; padding: 10px 4px 2px; flex-shrink: 0; }
-  .icon-action-btn { width: 30px; height: 30px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease; }
+  .icon-action-btn { width: 30px; height: 30px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--chip-bg); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) ease; }
   .icon-action-btn:hover { background: var(--chip-hover); color: var(--ink); border-color: var(--ink-faint); }
   .icon-action-btn:active { transform: scale(0.92); }
   .icon-action-btn.primary { width: 42px; height: 42px; border-radius: var(--r-lg); background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -482,7 +494,7 @@
   .col-dot {
     width: 10px; height: 10px; border-radius: 50%; border: none; padding: 0;
     flex-shrink: 0; cursor: pointer; margin: 9px 2px 0 0;
-    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) ease;
   }
   .col-dot:hover { transform: scale(1.25); }
   .col-dot:active { transform: scale(0.9); }
@@ -498,7 +510,7 @@
   @media (prefers-reduced-motion: reduce) { .color-strip.ist-neu { animation: none; } }
   .color-swatch {
     width: 17px; height: 17px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
-    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) ease;
   }
   .color-swatch:hover { transform: scale(1.15); }
   /* Die gewählte Farbe trägt einen Ring aus der Grundfläche plus Kontur -
@@ -513,7 +525,7 @@
      browser's default 1px 6px padding, which was squeezing these 12px-wide
      icons down to 6-10px and making them look undersized next to the
      15px nav icons. */
-  .col-close { width: 22px; height: 22px; padding: 0; border-radius: var(--r-sm); border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease; }
+  .col-close { width: 22px; height: 22px; padding: 0; border-radius: var(--r-sm); border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) var(--ease); }
   .col-close svg { flex-shrink: 0; }
   .col-close:hover { background: var(--line-soft); color: var(--ink); }
   .col-close:active { transform: scale(0.9); }
@@ -536,7 +548,7 @@
   .quick-add input::placeholder { color: var(--ink-faint); }
 
   .editor-toolbar { display: flex; gap: 6px; margin: 0 16px; padding-top: 10px; border-top: 1px solid var(--line-soft); flex-shrink: 0; }
-  .insert-btn { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill); padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
+  .insert-btn { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: var(--fw-strong); color: var(--ink-faint); background: transparent; border: 1px dashed var(--line); border-radius: var(--r-pill); padding: 4px 10px 4px 8px; cursor: pointer; font-family: inherit; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease); }
   .insert-btn:hover { color: var(--ink-soft); border-color: var(--ink-faint); }
   .insert-btn:active { transform: scale(0.95); }
 
@@ -582,7 +594,12 @@
      "Refreshen" der Liste (2026-08-12). Die Klasse setzt
      einblendenNurNeu() nach jedem Aufbau. */
   .inline-embed { position: relative; margin: 0; padding-left: 16px; overflow: hidden; }
-  .inline-embed.ist-neu { animation: block-in var(--dur-base) ease; }
+  /* Bis 2026-08-13 lief diese Animation auf der Browser-Vorgabe `ease`,
+     waehrend dieselbe Animation an der Sidebar-Zeile die Hauskurve trug -
+     ein Bild, zwei Bewegungen. Aufgefallen ist es erst, als die
+     Sidebar-Zeile dazukam und test_stimmigkeit.js beide nebeneinander
+     gemessen hat. */
+  .inline-embed.ist-neu { animation: block-in var(--dur-base) var(--ease); }
   .inline-embed.drag-ghost { opacity: 0.4; }
   .inline-embed.drop-before { box-shadow: inset 0 2px 0 0 var(--accent); }
   .inline-embed.drop-after { box-shadow: inset 0 -2px 0 0 var(--accent); }
@@ -713,7 +730,7 @@
      .inline-embed hat overflow: hidden und wuerde ihn abschneiden. */
   .due-cal.row-cal { position: absolute; z-index: 45; }
 
-  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); margin-left: 2px; transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
+  .row-delete { opacity: 0; width: 22px; height: 22px; padding: 0; flex-shrink: 0; border: none; background: transparent; color: var(--ink-faint); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: var(--r-sm); margin-left: 2px; transition: opacity var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease); }
   .row-delete svg { flex-shrink: 0; }
   .inline-embed:hover .row-delete { opacity: 1; }
   .row-delete:hover { color: var(--urgent); background: var(--urgent-soft); }
@@ -721,14 +738,14 @@
 
   .page-editor.drag-over { background: var(--accent-soft); }
 
-  .task-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: var(--r-md); cursor: pointer; transition: background-color var(--dur-fast) ease, transform var(--dur-fast) ease; }
+  .task-row { display: flex; align-items: center; gap: 8px; padding: 6px 6px; border-radius: var(--r-md); cursor: pointer; transition: background-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease); }
   .task-row:hover { background: var(--line-soft); }
   .task-row:active { transform: scale(0.985); }
 
-  .check-btn { width: 17px; height: 17px; flex-shrink: 0; border-radius: var(--r-sm); border: 1.5px solid var(--ink-faint); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .check-btn { width: 17px; height: 17px; flex-shrink: 0; border-radius: var(--r-sm); border: 1.5px solid var(--ink-faint); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-spring); }
   .check-btn.done { background: var(--done); border-color: var(--done); color: var(--done-ink); }
   .check-btn:active { transform: scale(0.85); }
-  .check-btn svg { opacity: 0; transform: scale(0.4); transition: opacity var(--dur-fast) ease, transform var(--dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .check-btn svg { opacity: 0; transform: scale(0.4); transition: opacity var(--dur-fast) ease, transform var(--dur-slow) var(--ease-spring); }
   .check-btn.done svg { opacity: 1; transform: scale(1); }
 
   /* flex: 0 1 auto statt 1 - der Titel nimmt nur so viel Platz, wie sein
@@ -951,7 +968,14 @@
     width: calc((100% - 8px) / var(--seg-count, 2));
     background: var(--surface); border-radius: var(--r-sm);
     box-shadow: var(--el-1); pointer-events: none;
-    transition: transform var(--dur-base) var(--ease);
+    /* --ease-lauf statt --ease (Wunsch des Nutzers, 2026-08-13): dieselbe
+       Kurve wie der Fortschrittsbalken. Sie faengt langsam an, wird
+       schneller und rastet ein - und schwingt bewusst NICHT ueber. Genau
+       das will man hier: Der Knopf landet auf einer von zwei festen
+       Stellen. Ein Ueberschwinger liesse ihn kurz ueber das Feld
+       hinausrutschen, auf dem er stehen bleiben soll.
+       Dauer bleibt --dur-base; nur die Kurve wurde getauscht. */
+    transition: transform var(--dur-base) var(--ease-lauf);
   }
   @media (prefers-reduced-motion: reduce) { .theme-seg-thumb { transition: none; } }
   .theme-seg-btn { position: relative; z-index: 1; flex: 1; border: none; background: transparent; color: var(--ink-faint); font: inherit; font-size: var(--fs-sm); font-weight: var(--fw-medium); padding: 6px 4px; border-radius: var(--r-sm); cursor: pointer; transition: color var(--dur-fast) ease; }
@@ -3514,7 +3538,12 @@
   function listNavItem(l, indented, isLast) {
     var c = countAll(l.tasks);
     var active = state.view === "list" && state.currentListId === l.id;
-    return '<div class="nav-item-wrap' + (indented ? " in-group" : "") + (indented && isLast ? " last-in-group" : "") + '">' +
+    // data-neu-schluessel haengt diese Zeile an die vorhandene
+    // Einblend-Mechanik (einblendenNurNeu): Eine frisch angelegte Liste
+    // blendet ein, eine bestehende nie - auch nicht, wenn die Sidebar aus
+    // einem anderen Grund neu gebaut wird. Ohne das erschien die neue
+    // Zeile schlagartig, waehrend das Anlegen sonst nichts zu sehen gab.
+    return '<div class="nav-item-wrap' + (indented ? " in-group" : "") + (indented && isLast ? " last-in-group" : "") + '" data-neu-schluessel="liste:' + l.id + '">' +
       '<button class="nav-item' + (active ? " active" : "") + (indented ? " nav-item-indented" : "") + '" data-nav="list" data-list="' + l.id + '" data-drag-type="list" data-drag-id="' + l.id + '" type="button"><span class="nav-dot" style="background:' + l.color + '"></span><span class="nav-name">' + escapeHtml(l.name) + '</span><span class="nav-count">' + (c.total - c.done) + "</span></button>" +
       '<button class="nav-delete" data-delete-list="' + l.id + '" aria-label="Liste löschen" title="Liste löschen">' + svgTrash() + "</button>" +
       "</div>";
