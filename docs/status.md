@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-12
+Stand: 2026-08-13
 
 ---
 
@@ -143,9 +143,11 @@ Was fertig ist:
   einem echten Browser nachmessen. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, nach dem Ziehen
-  in Unteraufgaben): 54 grün, 1 rot** — das eine ist `test_4bugs`, der
-  bekannte Wackelkandidat, der etwa jeden zweiten Lauf trifft (Abschnitt 4).
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, nach dem
+  Palettenwechsel): 55 grün, 0 rot** — in diesem Lauf war auch
+  `test_4bugs` grün. Der ist und bleibt ein Wackelkandidat, der etwa jeden
+  zweiten Lauf trifft (Abschnitt 4); ein grüner Lauf heißt dort nicht,
+  dass er repariert wäre.
 
   ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
   Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
@@ -156,26 +158,30 @@ Was fertig ist:
   ⚠️ **Wichtige Einschränkung:** Nur **siebzehn** der 55 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,
   die ein Mensch beurteilt. Auch die Aussage „erfüllt WCAG AA in beiden
-  Themes" beruht auf einem einmaligen Ablesen von `test_contrast`, nicht
-  auf einer automatischen Prüfung. Bewusst nicht umgebaut, weil das
-  Mockup eingefroren wird (`docs/decisions.md`, 2026-08-07).
+  Themes" beruht auf einem **Ablesen** von `test_contrast`, nicht auf
+  einer automatischen Prüfung. Bewusst nicht umgebaut, weil das Mockup
+  eingefroren wird (`docs/decisions.md`, 2026-08-07). Zuletzt abgelesen am
+  2026-08-13 nach dem Palettenwechsel: **0 Durchgefallene in beiden
+  Modi** — wer die Farben anfasst, liest hier erneut nach.
 - Die Gestaltung ist einmal komplett durchnormalisiert (Schriftgrößen,
   Radien, Abstände, Dauern, Icon-Strichstärke) und erfüllt WCAG AA in
   beiden Themes — nachgemessen mit `test_contrast.js`.
 
 ## 2. Was als Nächstes dran ist
 
-> 🎨 **Beim Nutzer, davor:** Die Farbpalette **Koernig** liegt als
-> Vorschlag vor und ist **noch nicht übernommen** — das Mockup ist
-> unverändert. Angesehen wird sie mit
-> `NODE_PATH=node_modules node design/mockups/tests/shot_palette.js`
-> (schreibt vier Screenshots nach `out/` und misst die Kontraste mit).
-> Vier Farben kommen vom Nutzer, dazu sein Rot `#B43852`; die
-> Listenfamilie und rund ein Dutzend Hilfstöne sind **abgeleitet** und im
-> Skript als solche markiert. Entscheidet der Nutzer sich dafür, wandern
-> die Werte nach `spec.md` §3 und ins Mockup — beides zusammen, sonst
-> driften sie auseinander. Begründungen und offene Punkte:
-> `docs/decisions.md`, 2026-08-13.
+> 🎨 **Erledigt: Die Palette „Koernig" ist übernommen (2026-08-13).**
+> Fünf Farben vom Nutzer (Linen, Cotton, Tangerine, Black Hole, Rot
+> `#b43852`), rund ein Dutzend abgeleitete Töne — im Mockup und in
+> `spec.md` §3 als **abgl.** gekennzeichnet, damit später niemand einen
+> gerechneten Ton für eine Vorgabe hält. Alle **drei** Theme-Blöcke sind
+> umgestellt. Nachgemessen: voller Lauf 55 grün / 0 rot, `test_contrast`
+> 0 Durchgefallene in beiden Modi. Artifact neu veröffentlicht.
+> Begründungen und was dabei aufgefallen ist: `docs/decisions.md`.
+>
+> Andere Paletten ausprobieren geht weiter mit
+> `NODE_PATH=node_modules node design/mockups/tests/shot_palette.js` —
+> das Skript überschreibt die Tokens zur Laufzeit und misst Kontraste und
+> Farbabstände mit, ohne das Mockup anzufassen.
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 

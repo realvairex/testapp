@@ -72,13 +72,23 @@ const { chromium } = require('playwright');
   console.log('>>> gewählte Farbe trägt einen Ring, nicht nur Größe:', marke.schatten);
 
   // 4. Auswählen
+  //
+  // Geprüft wird, dass die GEWÄHLTE Farbe in der Sidebar ankommt - nicht,
+  // welche Farbe das ist. Hier stand bis 2026-08-13 der Hexwert des
+  // damaligen Taubenblaus fest verdrahtet; beim Wechsel auf die
+  // Koernig-Palette meldete das Skript daraufhin einen Fehler, obwohl der
+  // Mechanismus tadellos lief. Eine Prüfung, die bei jedem Farbwechsel rot
+  // wird, prüft die Farbe und nicht die Funktion. Jetzt wird der Punkt
+  // gegen das FELD verglichen, das angeklickt wurde.
+  const gewaehlt = await page.locator('.color-swatch').nth(3)
+    .evaluate((e) => getComputedStyle(e).backgroundColor);
   await page.locator('.color-swatch').nth(3).click();
   await page.waitForTimeout(350);
   const punktFarbe = await page.locator('.nav-item[data-drag-id="personal"] .nav-dot')
     .evaluate((e) => getComputedStyle(e).backgroundColor);
-  console.log('Sidebar-Punkt:', punktFarbe);
+  console.log('Sidebar-Punkt:', punktFarbe, '· angeklicktes Feld:', gewaehlt);
   console.log('>>> Auswahl setzt die Farbe auch in der Sidebar:',
-    punktFarbe === 'rgb(91, 113, 131)');
+    punktFarbe === gewaehlt);
   console.log('>>> Farbreihe schließt sich nach der Auswahl:',
     (await page.locator('.color-strip').count()) === 0);
 

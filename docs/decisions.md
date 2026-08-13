@@ -3623,3 +3623,53 @@ Beide gehören zum Muster „die Messung zuerst anzweifeln":
 Fensters) und `--surface-sunken` (Sidebar) tragen derzeit beide Recycled
 Cotton. Das Fenster trennt sich nur über seinen Schatten vom Grund. Es
 sieht ruhig aus, ist aber eine Entscheidung und kein Zwang.
+
+### Nachtrag, selber Tag: die Palette ist übernommen
+
+Oben stand „noch nicht entschieden". Der Nutzer hat sie nach dem Ansehen
+übernommen — die Werte stehen jetzt im Mockup **und** in `spec.md` §3,
+das Artifact ist neu veröffentlicht.
+
+**Der Anlass ist selbst eine Lehre.** Der Nutzer fragte: *„hast du die
+neuen farben schon implementiert? weil im artifact sind sie nicht zu
+sehen."* Die Vorschau war ausdrücklich als Vorschau angekündigt, aber die
+einzige Stelle, an der er das Mockup **ansieht**, ist das Artifact — und
+dort war nichts passiert. Wer eine Vorschau liefert, muss sagen, **wo sie
+zu sehen ist und wo nicht**; sonst sucht der Nutzer sie am gewohnten Ort.
+
+**Drei Theme-Blöcke, nicht zwei.** Farb-Tokens stehen in `:root`, in
+`:root[data-theme="dark"]` *und* in der
+`@media (prefers-color-scheme: dark)`-Rückfallebene. Alle drei sind
+umgestellt.
+
+> Dabei ist etwas aufgefallen: Die Rückfallebene trug ein **eigenes,
+> kühleres Dunkel** (`#17161c`/`#1e1d24` statt `#1f242e`/`#293241`) — ohne
+> Begründung, vermutlich Drift. Zwei Dunkelmodi, von denen man immer nur
+> einen sieht, sind genau die Lage, aus der ein Theme entsteht, das je
+> nach Systemeinstellung anders aussieht. Koernig hat **ein** Schwarz,
+> also gibt es jetzt **ein** Dunkel. Angefasst wurde es nur, weil die
+> Palette diese Zeilen ohnehin ersetzt hat.
+
+**Auch die Schatten trugen das alte Navy** (`rgba(41,50,65,…)` in `el-1`
+bis `el-3`). Auf Sandgrund fiel der Blaustich als Fremdton auf; jetzt
+schwarzbasiert.
+
+**Ein Prüfskript wurde durch den Wechsel rot** — und die Messung war
+schuld, nicht das Mockup: `test_list_header` verglich den Sidebar-Punkt
+mit dem **fest verdrahteten Hexwert** des alten Taubenblaus. Der
+Mechanismus lief tadellos. Repariert wurde die Messung, nicht die
+Zusicherung: Sie vergleicht den Punkt jetzt mit dem **angeklickten Feld**
+und übersteht damit jeden künftigen Farbwechsel.
+
+> Das ist derselbe Fehlertyp wie der offene Faden bei `verify_center`
+> (`status.md` §1): eine Prüfung, die einen Zustand festschreibt statt
+> einer Regel. Sie meldet dann einen Fehler, wo eine Entscheidung
+> umgesetzt wurde.
+
+**Nachgemessen nach dem Umbau:** voller Lauf **55 grün, 0 rot** (auch
+`test_4bugs`, der etwa jeden zweiten Lauf trifft). `test_contrast`: **0
+Durchgefallene in beiden Modi.**
+
+**Offen geblieben:** `paper` und `surface-sunken` tragen weiterhin
+denselben Ton (Recycled Cotton); das Fenster trennt sich nur über seinen
+Schatten vom Grund. Bewusst so übernommen, aber jederzeit änderbar.

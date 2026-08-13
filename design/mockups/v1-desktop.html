@@ -1,49 +1,58 @@
 <title>Unfold — Konzept-Mockup (Desktop)</title>
 <style>
   :root {
-    --paper: #faf7f1;
-    --surface: #ffffff;
-    --surface-sunken: #eae0cc;
-    --line: #ddd0af;
-    --line-soft: #ece3cc;
+    /* --- Palette "Koernig", uebernommen 2026-08-13 ---
+       Vier Farben kommen vom Nutzer: Sustainable Linen #faf3e1, Recycled
+       Cotton #f5e7c6, Electric Tangerine #ff6d1f, Black Hole #222222,
+       dazu sein Rot #b43852 fuer Ueberfaelliges. Alles Weitere ist
+       ABGELEITET und als solches gekennzeichnet - die App braucht rund
+       zwanzig Toene, nicht fuenf. Begruendungen: docs/decisions.md. */
+    --paper: #f5e7c6;             /* Recycled Cotton */
+    --surface: #faf3e1;           /* Sustainable Linen */
+    --surface-sunken: #f5e7c6;    /* Recycled Cotton */
+    --line: #e0ce9f;              /* ABGELEITET */
+    --line-soft: #efe0be;         /* ABGELEITET */
     /* Eigener Ton fuers Ueberfahren in der Sidebar. --line-soft liegt auf
-       dem Sandton der Sidebar praktisch unsichtbar (Kontrast 1,03). */
-    --nav-hover: #f2ecdf;
+       dem Sandton der Sidebar praktisch unsichtbar (Kontrast 1,03).
+       Hellt auf, nie ab - Regel aus docs/spec.md 3. */
+    --nav-hover: #faf3e1;
     /* Strukturlinien der Gruppen: --line ist darauf zu leise (1,17). */
-    --tree-line: #c4b189;
+    --tree-line: #cbb78a;         /* ABGELEITET */
     /* Flaeche kleiner Schaltflaechen in der Sidebar. --surface waere hier
-       reines Weiss und damit ein harter Sprung auf dem Sandton. */
-    --chip-bg: #f2ecdf;
-    --chip-hover: #fbf8f1;
-    --ink: #293241;
-    --ink-soft: #464d5b;
-    --ink-faint: #5c626b;
-    --accent: #ee6c4d;
-    /* Akzent fuer TEXT. --accent selbst ist als Textfarbe zu hell (2,3-3,0:1);
-       es bleibt Fuell-/Dekorfarbe, wo die 3:1-Schwelle fuer Nicht-Text gilt. */
-    --accent-strong: #b32f10;
-    --accent-ink: #ffffff;
-    --accent-soft: #fce7e0;
-    --accent-line: #f5bda9;
-    --urgent: #b83c36;
-    --urgent-soft: #fbeae8;
-    /* Erledigt trug bisher als einzige Stelle der App ein Gruen - ein
-       Fremdkoerper in einer Palette aus Orange, Sand und Navy, ausgerechnet
-       auf dem meistgesehenen Element. Jetzt Navy aus der Original-Palette:
-       ruhig, denn Erledigtes soll zuruecktreten, nicht rufen. */
-    /* Gedaempft statt volles Navy: Erledigtes soll zuruecktreten. Eine
-       dunkle Marke neben ausgegrautem Text zieht mehr Blick auf sich als
-       die offenen Aufgaben daneben. */
-    --done: #6f757e;
-    --done-ink: #ffffff;
-    /* Listenfarben als kuratierte Reihe aus derselben warmen Familie statt
-       zufaelliger Buntheit (vorher Petrol und Blauviolett). */
-    --list-inbox: #9c7f6b;
-    --list-personal: #6f8265;
-    --list-work: #c25a3a;
-    --list-groceries: #5b7183;
-    --list-5: #b8873a;
-    --shadow-window: 0 30px 70px -25px rgba(41, 50, 65, 0.35), 0 2px 8px rgba(41, 50, 65, 0.06);
+       der hellste Ton und damit ein harter Sprung auf dem Sandton. */
+    --chip-bg: #efe0be;           /* ABGELEITET */
+    --chip-hover: #faf3e1;
+    --ink: #222222;               /* Black Hole */
+    --ink-soft: #4a4a4a;          /* ABGELEITET */
+    /* ABGELEITET. Zuerst #6b6b6b - das riss AA am Sidebar-Zaehler
+       (4,35:1). Nachgezogen statt die Zusicherung entschaerft. */
+    --ink-faint: #656565;
+    --accent: #ff6d1f;            /* Electric Tangerine */
+    /* Akzent fuer TEXT. --accent selbst ist als Textfarbe zu hell (2,54:1);
+       es bleibt Fuell-/Dekorfarbe, wo die 3:1-Schwelle fuer Nicht-Text gilt.
+       ABGELEITET: 65% Helligkeit des Tangerine, Farbton gehalten. */
+    --accent-strong: #a64714;
+    --accent-ink: #faf3e1;
+    --accent-soft: #ffe3d2;       /* ABGELEITET */
+    --accent-line: #ffc4a3;       /* ABGELEITET */
+    --urgent: #b43852;            /* vom Nutzer */
+    --urgent-soft: #f8e2e6;       /* ABGELEITET */
+    /* Erledigtes soll zuruecktreten, nicht rufen: ein gedaempftes Grau auf
+       demselben Gewicht wie der durchgestrichene Text daneben. Eine dunkle
+       Marke zoege mehr Blick auf sich als die offenen Aufgaben. */
+    --done: #656565;              /* ABGELEITET */
+    --done-ink: #faf3e1;
+    /* Listenfarben, ABGELEITET (die Palette kennt keine). Erdtoene mit
+       genau einem kuehlen Anker. Zwei Zonen bleiben frei, weil sie belegt
+       sind: Orange traegt der Akzent, Rosenrot das Ueberfaellige. Petrol
+       und Blauviolett sind ausgeschlossen - die standen schon einmal hier
+       und wirkten als Fremdkoerper. */
+    --list-inbox: #9b7355;        /* Lehm */
+    --list-personal: #7d8a4e;     /* Olive */
+    --list-work: #c1902f;         /* Ocker */
+    --list-groceries: #5c7590;    /* Taubenblau */
+    --list-5: #4a7a5e;            /* Tanne */
+    --shadow-window: 0 30px 70px -25px rgba(34, 34, 34, 0.35), 0 2px 8px rgba(34, 34, 34, 0.06);
     --radius-window: 18px;
 
     /* --- Skalen. Vorher waren es 12 Schriftgroessen, 8 Radien, 18 Abstaende
@@ -93,9 +102,12 @@
     --ease-lauf: cubic-bezier(0.85, 0, 0.35, 1);
 
     /* Hoehen-Sprache: drei Ebenen statt beliebiger Schatten */
-    --el-1: 0 1px 2px rgba(41, 50, 65, 0.06);
-    --el-2: 0 18px 38px -14px rgba(41, 50, 65, 0.32);
-    --el-3: 0 40px 80px -24px rgba(41, 50, 65, 0.45);
+    /* Die Schatten trugen bis 2026-08-13 das Navy der alten Palette
+       (41,50,65). Mit Koernig gibt es kein Navy mehr - ein blaustichiger
+       Schatten unter einem Menue auf Sandgrund fiel als Fremdton auf. */
+    --el-1: 0 1px 2px rgba(34, 34, 34, 0.06);
+    --el-2: 0 18px 38px -14px rgba(34, 34, 34, 0.32);
+    --el-3: 0 40px 80px -24px rgba(34, 34, 34, 0.45);
     --col-w: 276px;
     /* Mindestbreite des App-Fensters: Sidebar (248px) plus eine Spalte in
        Mindestbreite (240px) plus Rahmen. Steht hier einmal, weil sie an
@@ -105,65 +117,78 @@
     color-scheme: light;
   }
 
+  /* Dunkelmodus der Koernig-Palette. Black Hole traegt die Flaechen,
+     Linen den Text. Bemerkenswert: Hier braucht es KEINEN zweiten
+     Akzentton - Tangerine traegt auf Schwarz als Text (5,65:1). Beim
+     Ueberfaelligen ist es umgekehrt: Das Rot des Nutzers traegt dort
+     nicht und wird aufgehellt. */
   :root[data-theme="dark"] {
-    --paper: #1f242e;
-    --surface: #293241;
-    --surface-sunken: #191d25;
-    --line: #3c4454;
-    --line-soft: #333a48;
-    --nav-hover: #333a48;
-    --tree-line: #4a5468;
-    --chip-bg: #293241;
-    --chip-hover: #3a4457;
-    --ink: #f2ede0;
-    --ink-soft: #b6aea0;
-    --ink-faint: #aca492;
-    --accent: #f38a6e;
-    --accent-strong: #f38a6e;  /* im Dunkelmodus bereits kontraststark genug */
-    --accent-ink: #1f242e;
-    --accent-soft: #3a281f;
-    --accent-line: #5c3d2e;
-    --urgent: #e1746b;
-    --urgent-soft: #3a2321;
-    --done: #8d97ab;
-    --done-ink: #1f242e;
-    --list-inbox: #bb9c86;
-    --list-personal: #8fa383;
-    --list-work: #e07d5c;
-    --list-groceries: #7d95aa;
-    --list-5: #d4a457;
+    --paper: #1a1a1a;          /* ABGELEITET aus Black Hole */
+    --surface: #222222;        /* Black Hole */
+    --surface-sunken: #141414; /* ABGELEITET */
+    --line: #3a3a3a;           /* ABGELEITET */
+    --line-soft: #2e2e2e;      /* ABGELEITET */
+    --nav-hover: #2e2e2e;      /* ABGELEITET */
+    --tree-line: #4a4a4a;      /* ABGELEITET */
+    --chip-bg: #222222;
+    --chip-hover: #333333;     /* ABGELEITET */
+    --ink: #faf3e1;            /* Sustainable Linen */
+    --ink-soft: #b8b0a0;       /* ABGELEITET */
+    --ink-faint: #a09a8c;      /* ABGELEITET */
+    --accent: #ff6d1f;
+    --accent-strong: #ff6d1f;  /* im Dunkelmodus bereits kontraststark genug */
+    --accent-ink: #222222;
+    --accent-soft: #3a2113;    /* ABGELEITET */
+    --accent-line: #5c3520;    /* ABGELEITET */
+    --urgent: #e2637e;         /* ABGELEITET: #b43852 traegt auf Schwarz nicht */
+    --urgent-soft: #3a1a22;    /* ABGELEITET */
+    --done: #8a8a8a;           /* ABGELEITET */
+    --done-ink: #1a1a1a;
+    --list-inbox: #bc9271;     /* Lehm */
+    --list-personal: #9ba968;  /* Olive */
+    --list-work: #ddae50;      /* Ocker */
+    --list-groceries: #7e97b4; /* Taubenblau */
+    --list-5: #6d9e82;         /* Tanne */
     --shadow-window: 0 30px 70px -25px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
     color-scheme: dark;
   }
 
   @media (prefers-color-scheme: dark) {
+    /* Rueckfallebene fuer "System dunkel", wenn kein data-theme gesetzt
+       ist. Sie traegt jetzt DIESELBEN Werte wie :root[data-theme="dark"].
+       Vorher wichen sie ab (#17161c/#1e1d24 statt #1f242e/#293241) - ein
+       zweites, etwas kuehleres Dunkel, fuer das es keine Begruendung gab.
+       Zwei Dunkelmodi zu pflegen, von denen man immer nur einen sieht, ist
+       genau die Lage, aus der ein Theme entsteht, das je nach
+       Systemeinstellung anders aussieht (status.md 4). Koernig hat ein
+       Schwarz, also gibt es hier ein Dunkel. */
     :root:not([data-theme="light"]) {
-      --paper: #17161c;
-      --surface: #1e1d24;
-      --surface-sunken: #1a191f;
-      --line: #322f3a;
-      --line-soft: #29272f;
-      --nav-hover: #302d38;
-      --tree-line: #454150;
-      --chip-bg: #262430;
-      --chip-hover: #363343;
-      --ink: #f2ede0;
-      --ink-soft: #b6aea0;
-      --ink-faint: #aca492;
-      --accent: #f38a6e;
-      --accent-strong: #f38a6e;
-      --accent-ink: #1f242e;
-      --accent-soft: #3a281f;
-      --accent-line: #5c3d2e;
-      --urgent: #e1746b;
-      --urgent-soft: #3a2321;
-      --done: #8d97ab;
-      --done-ink: #17161c;
-      --list-inbox: #bb9c86;
-      --list-personal: #8fa383;
-      --list-work: #e07d5c;
-      --list-groceries: #7d95aa;
-      --list-5: #d4a457;
+      --paper: #1a1a1a;
+      --surface: #222222;
+      --surface-sunken: #141414;
+      --line: #3a3a3a;
+      --line-soft: #2e2e2e;
+      --nav-hover: #2e2e2e;
+      --tree-line: #4a4a4a;
+      --chip-bg: #222222;
+      --chip-hover: #333333;
+      --ink: #faf3e1;
+      --ink-soft: #b8b0a0;
+      --ink-faint: #a09a8c;
+      --accent: #ff6d1f;
+      --accent-strong: #ff6d1f;
+      --accent-ink: #222222;
+      --accent-soft: #3a2113;
+      --accent-line: #5c3520;
+      --urgent: #e2637e;
+      --urgent-soft: #3a1a22;
+      --done: #8a8a8a;
+      --done-ink: #1a1a1a;
+      --list-inbox: #bc9271;
+      --list-personal: #9ba968;
+      --list-work: #ddae50;
+      --list-groceries: #7e97b4;
+      --list-5: #6d9e82;
       --shadow-window: 0 30px 70px -25px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
       color-scheme: dark;
     }

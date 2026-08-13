@@ -641,51 +641,87 @@ wo etwas ankommt; nie dort, wo etwas gemessen wird.**
 | `el-2` | schwebendes Menü (Fälligkeit, „/", Auswahl-Leiste) |
 | `el-3` | Overlay, App-Fenster |
 
+### Die Palette „Koernig" — ✅ ÜBERNOMMEN (2026-08-13)
+
+**Fünf Farben kommen vom Nutzer**, alles Übrige ist daraus abgeleitet und
+in dieser Spalte als **abgl.** gekennzeichnet. Der Unterschied ist
+wichtig: Eine vorgegebene Farbe wird nicht angetastet, eine abgeleitete
+darf nachgezogen werden, wenn eine Messung es verlangt.
+
+| | |
+|---|---|
+| Sustainable Linen | `#faf3e1` |
+| Recycled Cotton | `#f5e7c6` |
+| Electric Tangerine | `#ff6d1f` |
+| Black Hole | `#222222` |
+| Rot für Überfälliges | `#b43852` |
+
 ### Farben — Hell
-| Token | Wert | Verwendung |
-|---|---|---|
-| `paper` | `#faf7f1` | Hintergrund außerhalb des Fensters |
-| `surface` | `#ffffff` | Spaltenflächen |
-| `surface-sunken` | `#eae0cc` | Sidebar |
-| `nav-hover` | `#f2ecdf` | Zeile beim Überfahren — **hellt auf**, in beiden Modi |
-| `chip-bg` / `chip-hover` | `#f2ecdf` / `#fbf8f1` | kleine Schaltflächen |
-| `tree-line` | `#c4b189` | Verbindungslinien der Gruppen |
-| `line` | `#ddd0af` | Rahmen |
-| `line-soft` | `#ece3cc` | leichte Trenner |
-| `ink` | `#293241` | Haupttext |
-| `ink-soft` | `#464d5b` | Sekundärtext |
-| `ink-faint` | `#5c626b` | Zähler, Meta, Platzhalter |
-| `accent` | `#ee6c4d` | Flächen, Icons, Logo, Dekoration |
-| `accent-strong` | `#b32f10` | **Akzentfarbe für Text** |
-| `accent-soft` | `#fce7e0` | Hintergrund aktiver Zustände |
-| `urgent` | `#b83c36` | überfällig / heute |
-| `done` / `done-ink` | `#6f757e` / `#ffffff` | Erledigt-Marke |
+| Token | Wert | | Verwendung |
+|---|---|---|---|
+| `paper` | `#f5e7c6` | | Hintergrund außerhalb des Fensters |
+| `surface` | `#faf3e1` | | Spaltenflächen |
+| `surface-sunken` | `#f5e7c6` | | Sidebar |
+| `nav-hover` | `#faf3e1` | | Zeile beim Überfahren — **hellt auf**, in beiden Modi |
+| `chip-bg` / `chip-hover` | `#efe0be` / `#faf3e1` | abgl. | kleine Schaltflächen |
+| `tree-line` | `#cbb78a` | abgl. | Verbindungslinien der Gruppen |
+| `line` | `#e0ce9f` | abgl. | Rahmen |
+| `line-soft` | `#efe0be` | abgl. | leichte Trenner |
+| `ink` | `#222222` | | Haupttext |
+| `ink-soft` | `#4a4a4a` | abgl. | Sekundärtext |
+| `ink-faint` | `#656565` | abgl. | Zähler, Meta, Platzhalter |
+| `accent` | `#ff6d1f` | | Flächen, Icons, Logo, Dekoration |
+| `accent-strong` | `#a64714` | abgl. | **Akzentfarbe für Text** |
+| `accent-soft` | `#ffe3d2` | abgl. | Hintergrund aktiver Zustände |
+| `urgent` | `#b43852` | | überfällig / heute |
+| `done` / `done-ink` | `#656565` / `#faf3e1` | abgl. | Erledigt-Marke |
 
 ### Farben — Dunkel
-| Token | Wert |
-|---|---|
-| `paper` | `#1f242e` |
-| `surface` | `#293241` |
-| `surface-sunken` | `#191d25` |
-| `nav-hover` | `#333a48` |
-| `chip-bg` / `chip-hover` | `#293241` / `#3a4457` |
-| `tree-line` | `#4a5468` |
-| `ink` / `ink-soft` / `ink-faint` | `#f2ede0` / `#b6aea0` / `#aca492` |
-| `accent` / `accent-strong` | `#f38a6e` |
-| `accent-soft` | `#3a281f` |
-| `done` / `done-ink` | `#8d97ab` / `#1f242e` |
+| Token | Wert | |
+|---|---|---|
+| `paper` | `#1a1a1a` | abgl. |
+| `surface` | `#222222` | |
+| `surface-sunken` | `#141414` | abgl. |
+| `nav-hover` | `#2e2e2e` | abgl. |
+| `chip-bg` / `chip-hover` | `#222222` / `#333333` | abgl. |
+| `tree-line` | `#4a4a4a` | abgl. |
+| `ink` / `ink-soft` / `ink-faint` | `#faf3e1` / `#b8b0a0` / `#a09a8c` | abgl. |
+| `accent` / `accent-strong` | `#ff6d1f` | |
+| `accent-soft` | `#3a2113` | abgl. |
+| `urgent` | `#e2637e` | abgl. |
+| `done` / `done-ink` | `#8a8a8a` / `#1a1a1a` | abgl. |
+
+> **Der zweite Akzentton ist nur im Hellen nötig, der zweite Warnton nur
+> im Dunklen.** Electric Tangerine trägt als Text auf Linen 2,54:1 und
+> braucht deshalb `accent-strong`; auf Black Hole trägt es mit 5,65:1
+> selbst. Beim Rot ist es genau umgekehrt. Das ist keine Unregelmäßigkeit,
+> sondern dieselbe Regel zweimal angewandt: **Ein Ton, der als Fläche
+> richtig ist, ist als Text noch lange nicht geprüft.**
 
 ### Listenfarben
-Eine **kurierte Reihe aus derselben warmen Familie** — vorher waren Petrol
-und Blauviolett dabei, die neben Orange/Sand/Navy als Fremdkörper wirkten.
+Die Palette selbst kennt keine — sie sind **abgeleitet**. Erdtöne mit
+genau **einem** kühlen Anker (Taubenblau), in der Helligkeit angeglichen,
+damit kein Punkt lauter ruft als die anderen.
+
+Zwei Zonen bleiben frei, weil sie belegt sind: **Orange** trägt der
+Akzent, **Rosenrot** das Überfällige. Eine Listenfarbe dort wäre eine
+zweite Bedeutung in derselben Farbe.
+
+**Petrol und Blauviolett bleiben ausgeschlossen** — sie standen schon
+einmal in dieser Reihe und wirkten als Fremdkörper.
 
 | Hell | Dunkel | |
 |---|---|---|
-| `#9c7f6b` | `#bb9c86` | Lehm |
-| `#6f8265` | `#8fa383` | Salbei |
-| `#c25a3a` | `#e07d5c` | Terrakotta |
-| `#5b7183` | `#7d95aa` | Taubenblau |
-| `#b8873a` | `#d4a457` | Ocker |
+| `#9b7355` | `#bc9271` | Lehm |
+| `#7d8a4e` | `#9ba968` | Olive |
+| `#c1902f` | `#ddae50` | Ocker |
+| `#5c7590` | `#7e97b4` | Taubenblau |
+| `#4a7a5e` | `#6d9e82` | Tanne |
+
+Unterscheidbarkeit ist **gerechnet, nicht behauptet**: CIELAB-Abstand
+(CIE76) aller Paare, auch gegen Akzent und Warnton. Engstes Paar **23,2**
+(Olive/Tanne) — deutlich über den ~10, ab denen es auf kleiner Fläche
+unsicher wird. Nachzurechnen mit `design/mockups/tests/shot_palette.js`.
 
 ### Icons
 Alle Icons werden mit **derselben effektiven Strichstärke von 1,25px**
@@ -703,9 +739,12 @@ vorher zwischen 1,03px und 1,62px, was aussah wie Icons aus mehreren Sätzen.
 Ecken und Enden durchgängig gerundet (`stroke-linecap`/`-linejoin: round`).
 
 ### Regeln
-- **`accent` ist als Textfarbe zu hell** (2,3–3,0:1). Für Text immer
-  `accent-strong`. Alle Textfarben erfüllen WCAG AA (4,5:1) in beiden Modi —
-  an den real gerenderten Elementen nachgemessen, nicht nur gerechnet.
+- **`accent` ist im hellen Modus als Textfarbe zu hell** (2,54:1 auf
+  `surface`). Für Text dort immer `accent-strong`; im dunklen Modus trägt
+  `accent` selbst. Alle Textfarben erfüllen WCAG AA (4,5:1) in beiden Modi
+  — an den real gerenderten Elementen nachgemessen, nicht nur gerechnet
+  (`test_contrast.js`, zuletzt 2026-08-13 nach dem Palettenwechsel: 0
+  Durchgefallene in beiden Modi).
 - **Hover hellt immer auf**, in beiden Modi. Nie abdunkeln.
 - **Farbe ist nie der einzige Träger einer Information.** Die
   Überfällig-Markierung trägt zusätzlich einen Rahmen.
