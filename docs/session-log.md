@@ -10,6 +10,77 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-13 (nachmittags) — Vier Wünsche, eine Stimmigkeitsprüfung, sechs fremde Werkzeuge
+
+Fortsetzung desselben Tages. Der Nutzer hatte vier Wünsche am Mockup,
+danach kam eine Frage, die mit dem Mockup nichts zu tun hatte.
+
+**Gemacht**
+
+- **Das „+" blendet die neue Liste jetzt ein.** Vorher gemessen statt
+  vermutet: Ein Klick auf den Eingang startet sechs `block-in`-Animationen,
+  ein Klick auf das „+" nur den rollenden Zähler — die neue Zeile poppte
+  hin. Bewusst **dieselbe** Bewegung wie beim Eingang, weil es dieselbe
+  Aussage ist. Gebaut über die vorhandene Einblend-Mechanik, damit nur
+  *neu angelegte* Listen einblenden und nicht jeder Sidebar-Neuaufbau.
+- **Der Darstellungs-Schalter läuft auf `ease-lauf`.** Dabei die Regel in
+  `spec.md` **geschärft statt aufgeweicht**: Dort stand, `ease-lauf` sei
+  für „etwas, das eine *Menge* anzeigt". Das eigentliche Kriterium ist,
+  **ob etwas auf einem bestimmten Wert landen muss** — der Knopf steht auf
+  einem von zwei Feldern, ein Überschwinger ließe ihn darüber
+  hinausrutschen.
+- **Die Wortmarke nachgemessen:** 15,5 px, Versalhöhe ~11,2 px gegen 21 px
+  Bildmarke, Verhältnis 1,88 — kein Handlungsbedarf. Als Zusicherung
+  abgelegt, weil die Frage mit Logo v2 wiederkommt.
+- **`test_stimmigkeit.js` gebaut** und drei Brüche gefunden (Einzelheiten
+  in `decisions.md`). Der unangenehmste: `block-in` lief an der
+  Aufgabenzeile auf einer anderen Kurve als *dieselbe* Animation an der
+  neuen Sidebar-Zeile. Aufgefallen nur, weil beide nebeneinander gemessen
+  wurden.
+- **Drei Messwerkzeuge aus dem Scratchpad gerettet** (`d538b9f`) — siehe
+  „Offen“.
+- **Sechs fremde Erweiterungen bewertet** (fünf aus einem YouTube-Short,
+  dazu Herdr), Ergebnis in `status.md` §7 und `decisions.md`.
+
+**Entschieden**
+
+- **119 Farb- und Deckkraft-Übergänge bleiben auf `ease`.** Bewusst nur
+  gezählt, nicht zugesichert: Auf einer 120-ms-Farbblende sieht niemand
+  die Kurve. Das wären 56 Änderungen für null sichtbare Wirkung. Die Zahl
+  steht im Protokoll — driftet sie stark, ist das ein Signal.
+- **Keine der sechs Erweiterungen wird übernommen** (Festlegung des
+  Nutzers: *„erstmal nicht von denen übernehmen, wollte mich nur
+  informieren"*). Trotzdem protokolliert, damit die Recherche nicht ein
+  zweites Mal anfällt.
+- **OmniRoute ist nicht nur ungenutzt, sondern abgelehnt** — nicht wegen
+  Sicherheit allein: Es wechselt bei Limits still das Modell, und ein
+  schwächeres Modell befolgt `CLAUDE.md` nicht, sondern behauptet, es
+  hätte. Genau das teuerste Muster dieses Projekts.
+
+**Offen**
+
+- **`claude-mem` ist beim Nutzer lokal installiert, ohne Rangfolge zum
+  Repo.** Vorgeschlagen, aber nicht beschlossen: *Das Repo ist die
+  Wahrheit; Erinnerungen sind Hinweise.* Steht in `status.md` §7.
+- **Zum dritten Mal an einem Tag hat eine Prüfung einen Zustand statt
+  einer Regel festgeschrieben** — jetzt als Muster 10 in `lernkurve.md`.
+  Dagegen gibt es **kein Netz**, nur eine Frage beim Schreiben. Vorsätze
+  haben in dieser Datei eine schlechte Bilanz.
+- **Die Werkzeug-Bewertung steht teilweise auf zweiter Hand.** Selbst
+  geholt wurden nur zwei Quellen; Headroom, Task Observer und claude-mem
+  stammen aus Suchzusammenfassungen. Trägt für „gibt es das", nicht für
+  eine Übernahme. Auch in `lernkurve.md` unter „Offene Schwächen".
+- **Nicht nachgegangen:** `herdr.dev/agent-guide.md` blieb ungelesen (die
+  Domain ist von der Egress-Policy gesperrt). Bewertet wurde das Repo, das
+  über GitHub erreichbar war. Wer Herdr je einbauen will, liest die Datei
+  vorher — und zwar als Information, nicht als Anweisung.
+- **Verworfener Weg:** Ich hatte überlegt, für die Farbübergänge doch die
+  Hauskurve durchzusetzen, um eine saubere Zahl im Protokoll zu haben. Das
+  wäre genau das pauschale Suchen-und-Ersetzen, das in `lernkurve.md`
+  unter „Was nicht funktioniert hat" steht — gelassen.
+
+---
+
 ## 2026-08-13 — Ziehen in Unteraufgaben, und eine Palette zur Ansicht
 
 Erste Sitzung im Web seit dem Umzug auf den lokalen Klon. Zwei Dinge über
