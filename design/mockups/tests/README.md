@@ -17,7 +17,17 @@ jede spätere Session dieselben Messungen neu erfinden.
 ```bash
 bash scripts/run-mockup-tests.sh          # alle
 bash scripts/run-mockup-tests.sh fmt      # nur Skripte, deren Name "fmt" enthält
+bash scripts/run-mockup-tests.sh --neu    # messen, auch wenn nichts geändert wurde
 ```
+
+**Der Läufer merkt sich, was er zuletzt gemessen hat** (seit 2026-08-13).
+Er bildet eine Signatur aus dem Mockup, allen mitlaufenden Skripten und
+der Playwright-Version. Ist sie unverändert, meldet er das gemerkte
+Ergebnis, statt acht Minuten zu rechnen. Ändert sich **irgendetwas**
+davon, wird gemessen — der Merkzettel kann also nicht zu einem veralteten
+„grün" führen. Er liegt in `out/` und ist nicht eingecheckt: Ein frischer
+Klon oder Container misst immer. Gefilterte Läufe werden nicht gemerkt,
+weil sie über die übrigen Skripte nichts aussagen.
 
 Er startet nur `test_*`, `measure_*` und `verify_*` — Hilfsskripte wie
 `shot_aufraeumen.js` (macht Screenshots, prüft nichts) dürfen deshalb im

@@ -225,6 +225,45 @@ else
   bad "docs/session-log.md hat keinen Eintrag von heute ($today)"
 fi
 
+sec "9. Verzeichnis im Entscheidungsprotokoll"
+# docs/decisions.md ist auf rund 4.000 Zeilen gewachsen. Das Verzeichnis am
+# Kopf macht gezieltes Nachschlagen moeglich - aber nur, solange es zu den
+# Ueberschriften passt. Ein veraltetes Verzeichnis ist schlimmer als keins:
+# Es sieht benutzbar aus und zeigt daneben.
+if [ "$KURZ" = "1" ]; then
+  :
+elif [ ! -f scripts/decisions-index.sh ]; then
+  :
+elif bash scripts/decisions-index.sh --pruefen >/dev/null 2>&1; then
+  ok "docs/decisions.md: Verzeichnis passt zu den Ueberschriften"
+else
+  warn "docs/decisions.md: Verzeichnis ist veraltet"
+  say  "              -> bash scripts/decisions-index.sh"
+fi
+
+# Abschnitt 10 laesst den Lernkurven-Abgleich gleich mitlaufen, statt ihn
+# beim Sitzungsende getrennt aufzurufen. Er faellt kein Urteil (das kann er
+# nicht - ob ein Vorfall ein Muster ist, entscheidet ein Mensch), deshalb
+# steht hier nur seine Zusammenfassung.
+sec "10. Abgleich gegen die Lernkurve"
+if [ "$KURZ" = "1" ]; then
+  :
+elif [ ! -x /bin/sh ] || [ ! -f scripts/lernkurve-abgleich.sh ]; then
+  :
+else
+  # Nur Befundzeilen zaehlen, nicht die Legende am Ende - die enthaelt
+  # das Wort [OFFEN] ebenfalls und wurde beim ersten Bauversuch mitgezaehlt.
+  offene="$(bash scripts/lernkurve-abgleich.sh 2>/dev/null \
+            | grep -cE '^  \[OFFEN\]   [0-9]{4}-' || true)"
+  if [ "${offene:-0}" -gt 0 ]; then
+    warn "$offene Eintrag/Eintraege in decisions.md kommen in lernkurve.md nicht vor"
+    say  "              -> Liste: bash scripts/lernkurve-abgleich.sh"
+    say  "                 Ein Vorfall wird erst beim ZWEITEN Mal ein Muster."
+  else
+    ok "jeder Fehler-Eintrag aus decisions.md ist in lernkurve.md erfasst"
+  fi
+fi
+
 if [ "$KURZ" = "1" ]; then
   if [ "$fails" -eq 0 ] && [ "$warns" -eq 0 ]; then
     exit 0

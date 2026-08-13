@@ -3,6 +3,7 @@
 #
 #   bash scripts/run-mockup-tests.sh          # alle
 #   bash scripts/run-mockup-tests.sh test_fmt # nur passende
+#   bash scripts/run-mockup-tests.sh --neu    # messen, auch wenn unveraendert
 #
 # Warum es dieses Skript gibt: In docs/status.md stand "alle 40 laufen
 # gruen" - eine geerbte Behauptung, die niemand nachpruefen konnte, ohne
@@ -29,6 +30,8 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit 1
 export NODE_PATH="${NODE_PATH:-$(npm root -g 2>/dev/null)}"
 
 filter="${1:-}"
+erzwingen=0
+[ "$filter" = "--neu" ] && { erzwingen=1; filter=""; }
 outdir="design/mockups/tests/out"
 mkdir -p "$outdir"
 
@@ -36,6 +39,44 @@ pw_version="$(node -e 'try{console.log(require("playwright/package.json").versio
 echo "=== Mockup-Pruefung - $(date '+%Y-%m-%d %H:%M') ==="
 echo "Playwright: $pw_version   (erwartet: siehe design/mockups/tests/README.md)"
 echo
+
+# --- Gedaechtnis: schon gemessen? -------------------------------------
+#
+# Der Lauf dauert rund acht Minuten. Am 2026-08-13 lief er zweimal ueber
+# denselben unveraenderten Stand - acht verschenkte Minuten. Der Vorsatz
+# "nicht zweimal messen" ist genau die Sorte Regel, die laut
+# docs/lernkurve.md nicht traegt; deshalb steht hier Mechanik.
+#
+# Die Signatur deckt alles ab, was das Ergebnis beeinflussen kann: das
+# Mockup, jedes mitlaufende Skript und die Playwright-Version. Aendert
+# sich irgendetwas davon, faellt die Signatur anders aus und es wird
+# gemessen. Der Merkzettel liegt in out/ und ist nicht eingecheckt - ein
+# frischer Klon oder Container misst also immer.
+#
+# Nur vollstaendige Laeufe werden gemerkt: Ein gefilterter Lauf sagt
+# nichts ueber die uebrigen Skripte aus.
+merkzettel="$outdir/.letzter-lauf"
+signatur="$( { cat design/mockups/v1-desktop.html \
+                   design/mockups/tests/test_*.js \
+                   design/mockups/tests/measure_*.js \
+                   design/mockups/tests/verify_*.js 2>/dev/null
+               echo "$pw_version"; } | sha256sum | cut -d' ' -f1)"
+
+if [ -z "$filter" ] && [ "$erzwingen" -eq 0 ] && [ -f "$merkzettel" ]; then
+  # shellcheck disable=SC1090
+  . "$merkzettel"
+  if [ "${LAUF_SIGNATUR:-}" = "$signatur" ]; then
+    echo "=== Ergebnis (nicht neu gemessen) ==="
+    echo "Stand unveraendert seit dem Lauf vom ${LAUF_DATUM:-?}."
+    echo "gruen: ${LAUF_GRUEN:-?}   rot: ${LAUF_ROT:-?}   abgestuerzt: ${LAUF_ABSTURZ:-?}"
+    [ -n "${LAUF_BETROFFEN:-}" ] && echo "Betroffen:${LAUF_BETROFFEN}"
+    echo
+    echo "Weder Mockup noch Pruefskripte noch die Playwright-Version haben"
+    echo "sich geaendert - ein neuer Lauf wuerde dasselbe messen."
+    echo "Trotzdem messen:  bash scripts/run-mockup-tests.sh --neu"
+    exit "${LAUF_RC:-0}"
+  fi
+fi
 
 green=0; red=0; crash=0
 red_names=""
@@ -92,7 +133,25 @@ done
 echo
 echo "=== Ergebnis ==="
 echo "gruen: $green   rot: $red   abgestuerzt: $crash"
-if [ "$red" -eq 0 ] && [ "$crash" -eq 0 ]; then
+
+rc=0
+[ "$red" -eq 0 ] && [ "$crash" -eq 0 ] || rc=1
+
+# Nur vollstaendige Laeufe merken - ein gefilterter Lauf sagt nichts
+# ueber die uebrigen Skripte aus.
+if [ -z "$filter" ]; then
+  {
+    echo "LAUF_SIGNATUR=$signatur"
+    echo "LAUF_DATUM='$(date '+%Y-%m-%d %H:%M')'"
+    echo "LAUF_GRUEN=$green"
+    echo "LAUF_ROT=$red"
+    echo "LAUF_ABSTURZ=$crash"
+    echo "LAUF_BETROFFEN='$red_names'"
+    echo "LAUF_RC=$rc"
+  } > "$merkzettel"
+fi
+
+if [ "$rc" -eq 0 ]; then
   echo "Alle Pruefskripte bestanden (Playwright $pw_version)."
   echo "Vollstaendige Ausgaben: $outdir/"
   exit 0

@@ -191,3 +191,5 @@ Rückkehrpunkt vor dieser Entscheidung: Commit `3891fed`, siehe
 - `design/mockups/tests/` — Playwright-Prüfskripte zum Mockup (eigene README)
 - `scripts/run-mockup-tests.sh` — lässt alle Prüfskripte laufen, mit Urteil
 - `scripts/session-check.sh` — Abschlussprüfung beim Sitzungswechsel
+- `scripts/decisions-index.sh` — erzeugt das Verzeichnis am Kopf von
+  `docs/decisions.md` neu (Auslöser: nach jedem neuen Eintrag dort)

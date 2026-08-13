@@ -1,0 +1,26 @@
+# Eintraege aus docs/decisions.md, die der Abgleich als "fehlt in
+# lernkurve.md" meldet, obwohl bewusst entschieden wurde, dass sie dort
+# NICHT hingehoeren. Ohne diese Liste meldet die Pruefung bei jedem Lauf
+# dieselbe, laengst getroffene Entscheidung - und ein Waechter, der immer
+# piept, wird nach zwei Tagen ignoriert.
+#
+# Format: die Ueberschrift des Eintrags (Teilstring genuegt), eine je
+# Zeile. Zeilen mit # sind Kommentare.
+#
+# WICHTIG: Hier gehoert nur hinein, was KEIN Fehler war oder ein
+# EINMALIGER Vorfall blieb. Ein Fehler, der ein zweites Mal auftritt,
+# gehoert in die Lernkurve - nicht hierher.
+
+# --- keine Fehler, sondern gewoehnliche Entscheidungen ---
+# Der Abgleich sucht nach Stichworten und trifft dabei auch Eintraege,
+# in denen "Problem", "Fehler" o.ae. nur im Fliesstext vorkommen.
+Sharing/Kollaboration: nicht in v1
+Tech-Stack-Richtung (vorläufig
+Sechs fremde Werkzeuge geprüft
+
+# --- einmalige Vorfaelle vom 2026-08-05, spaeter als Muster erfasst ---
+# Beide Fehler kamen spaeter in anderer Gestalt wieder; erfasst sind sie
+# dort, wo das Muster steht (Muster 2 bzw. der Eintrag vom 2026-08-12
+# "Das Refreshen war eine Animation, nicht der Neuaufbau").
+Spurious Scrollbar bei genau 3 Spalten
+"Refresh"-Flackern von Aufgaben/Text

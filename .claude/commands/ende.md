@@ -28,9 +28,19 @@ Arbeite dann das Folgende der Reihe nach ab:
    nicht noch einmal vorschlägt.
 4. **`docs/decisions.md` nachziehen.** Jede in dieser Session getroffene
    Entscheidung mit Kontext, abgewogenen Optionen und Begründung — nicht
-   nur dem Ergebnis.
+   nur dem Ergebnis. **Danach `bash scripts/decisions-index.sh`** — das
+   Verzeichnis am Kopf der Datei wird erzeugt, nicht gepflegt. Ein
+   veraltetes Verzeichnis ist schlimmer als keins: Es sieht benutzbar aus
+   und zeigt daneben. `session-check.sh` Abschnitt 9 meldet es.
 5. **`docs/lernkurve.md` fortschreiben — aber nur beim zweiten Mal.**
-   **Führe zuerst `bash scripts/lernkurve-abgleich.sh` aus.** Es listet,
+   **Die Liste steht schon da:** `session-check.sh` lässt den Abgleich seit
+   2026-08-13 in Abschnitt 10 mitlaufen. Meldet er dort einen Punkt, hol
+   dir die Einzelheiten mit `bash scripts/lernkurve-abgleich.sh`. Was
+   bewusst *nicht* in die Lernkurve gehört, wird in
+   `scripts/lernkurve-ignore.txt` eingetragen — sonst meldet die Prüfung
+   bei jedem Lauf dieselbe, längst getroffene Entscheidung.
+
+   Zum Abgleichsskript: Es listet,
    was im Bestand steht und in der Lernkurve fehlt. Der Grund für dieses
    Skript: Beim Anlegen der Lernkurve habe ich aus dem *Gespräch* gesammelt
    statt aus dem *Repo* und dabei ein Muster übersehen, das seit Tagen in

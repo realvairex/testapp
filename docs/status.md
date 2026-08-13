@@ -218,6 +218,25 @@ Der abgestimmte Plan, in dieser Reihenfolge:
 Auf der Merkliste, bewusst zurückgestellt: Befehlspalette ⌘K
 (`spec.md` §4.6), Teilen von Listen, Spracheingabe.
 
+### Merkliste: Workflow beschleunigen (2026-08-13)
+
+Gemessen und bewertet, Begründung in `docs/decisions.md`. **Erledigt:**
+Der Läufer merkt sich den gemessenen Stand (spart ~8 min je Doppellauf),
+`decisions.md` hat ein Verzeichnis, der Lernkurven-Abgleich läuft in
+`session-check.sh` mit, Antworten kürzer.
+
+**Offen, bewusst zurückgestellt** — nicht erneut vorschlagen, ohne diese
+Abwägung zu kennen:
+
+| | Ertrag | Warum zurückgestellt |
+|---|---|---|
+| **Schnellspur** — nur die 18 Skripte mit echten Zusicherungen laufen lassen | −7 min je Lauf | Die 39 übrigen beurteilen nichts, **stürzen aber ab**, wenn etwas grob kaputt ist. Risiko begrenzt, nicht null. Dazu: Die Suite wird beim Flutter-Umstieg zu Referenzmaterial — 30 min Bau in etwas mit Ablaufdatum |
+| **`spec.md` gezielt statt vollständig lesen** | **−12.500 Token je Sitzungsstart** | Größter Hebel und einziger Punkt mit echtem Schadenspotenzial. **Nur machen mit:** (1) Verzeichnis am Kopf von `spec.md`, damit man sieht, was man *nicht* gelesen hat, (2) §1 Datenmodell bleibt Pflicht, (3) „zuletzt geändert"-Kopf |
+
+**Der Punkt mit der längsten Nutzungsdauer ist `spec.md`**, nicht die
+Schnellspur: `spec.md` wächst im Flutter-Bau weiter, die Mockup-Suite
+läuft aus. Wenn nur eines von beidem gemacht wird, dann das.
+
 **Kleiner offener Punkt am Prüfskript (2026-08-13):**
 `scripts/session-check.sh` erkennt in `session-log.md` nur den geklebten
 Fall (`---## …`), nicht den **Setext-Fall** — eine Textzeile direkt über

@@ -43,8 +43,22 @@ grep -n '^## ' docs/decisions.md \
   | grep -iE 'fehler|lehre|messung|nicht |korrektur|uebersehen|übersehen|falsch|behoben|Nachtrag' \
   | while IFS= read -r zeile; do
       datum=$(echo "$zeile" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
-      titel=$(echo "$zeile" | sed 's/^[0-9]*:## //' | cut -c1-72)
-      if [ -z "$datum" ]; then
+      voll=$(echo "$zeile" | sed 's/^[0-9]*:## //')
+      titel=$(echo "$voll" | cut -c1-72)
+      # Bewusst als "gehoert nicht in die Lernkurve" entschieden? Dann nicht
+      # jedes Mal erneut fragen. Ohne das meldete der Abgleich vier
+      # Eintraege bei jedem Lauf - darunter zwei, die gar keine Fehler sind.
+      ign="scripts/lernkurve-ignore.txt"
+      uebergehen=0
+      if [ -f "$ign" ]; then
+        while IFS= read -r muster; do
+          case "$muster" in ''|'#'*) continue;; esac
+          case "$voll" in *"$muster"*) uebergehen=1; break;; esac
+        done < "$ign"
+      fi
+      if [ "$uebergehen" = "1" ]; then
+        printf "  [bewusst] %s\n" "$titel"
+      elif [ -z "$datum" ]; then
         printf "  [?]      %s\n" "$titel"
       elif grep -q "$datum" docs/lernkurve.md; then
         printf "  [erfasst] %s\n" "$titel"

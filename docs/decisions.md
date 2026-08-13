@@ -5,6 +5,98 @@ Einträge unten angehängt. Jeder Eintrag: Kontext, abgewogene Optionen,
 Entscheidung, Begründung.
 
 ---
+<!-- VERZEICHNIS:ANFANG - erzeugt von scripts/decisions-index.sh, nicht von Hand aendern -->
+
+## Verzeichnis
+
+Erzeugt von `scripts/decisions-index.sh`. Die Zeilennummern
+beziehen sich auf diese Datei **ohne** das Verzeichnis - beim
+Nachschlagen also grob anspringen, nicht blind zaehlen.
+
+| Zeile | Datum | Thema |
+|---|---|---|
+| 9 | 2026-08-05 | Dokumentationsstandard für das Projekt |
+| 31 | 2026-08-05 | Sharing/Kollaboration: nicht in v1, aber Datenmodell vorbereiten |
+| 56 | 2026-08-05 | Tech-Stack-Richtung (vorläufig, noch nicht final bestätigt) |
+| 85 | 2026-08-05 | Feature-Scope v1 |
+| 103 | 2026-08-05 | Entwicklungs-Konventionen (Backup, CI, Tests, Secrets, Reviews) |
+| 130 | 2026-08-05 | Versionierung: Git-Tags statt Alpha/Beta-System |
+| 171 | 2026-08-05 | Name: Unfold |
+| 185 | 2026-08-05 | Panel-Architektur überarbeitet: Seiten statt Baumliste, Mehrspalten-Drilldown |
+| 224 | 2026-08-05 | Akzentfarbe: warmes Orange statt Violett-Blau |
+| 239 | 2026-08-05 | Durchgängige, ruhige Animationen (Apple-artiges Gefühl) |
+| 258 | 2026-08-05 | "Word-Seite"-Konzept überarbeitet: echtes Freitext-Dokument statt fester Block-Liste |
+| 297 | 2026-08-05 | Push-Animation: Ursache für "Standbild"/"spawnt nur" gefunden und App-Shell auf Flex umgebaut |
+| 368 | 2026-08-05 | Spurious Scrollbar bei genau 3 Spalten behoben (wirkte wie "Höhen-Skalierung") |
+| 403 | 2026-08-05 | Scrollbar flackerte bei jeder Panel-Animation (auch beim allerersten Panel) |
+| 441 | 2026-08-05 | "Refresh"-Flackern von Aufgaben/Text beim Schließen eines Panels behoben |
+| 474 | 2026-08-05 | Aufgaben-Verschieben: Umstieg von nativem HTML5-Drag&Drop auf Pointer-Events |
+| 534 | 2026-08-05 | Bewertung des Sidebar-Drag&Drop: funktioniert, ist aber mittelfristig eine Sackgasse |
+| 583 | 2026-08-05 | Vereinheitlichung: ein gemeinsamer Pointer-Sortierer für Sidebar und Aufgaben |
+| 651 | 2026-08-06 | Editor-Datenmodell: Seite ist eine geordnete Block-Liste (Absatz ist ein Block) |
+| 714 | 2026-08-06 | Superlists Editor nicht direkt übernehmbar; Kandidaten für die echte App |
+| 747 | 2026-08-06 | Tech-Stack festgelegt: Flutter, mit super_editor als Editor-Fundament |
+| 802 | 2026-08-06 | Umgang mit Abhängigkeiten und Schutz der Nutzerdaten |
+| 847 | 2026-08-06 | Weitere Schutzmaßnahmen für die echte App |
+| 891 | 2026-08-06 | Unterer Sidebar-Bereich: vier Entwürfe, alle verworfen |
+| 928 | 2026-08-06 | Prüfskripte gehören ins Repo, nicht ins Scratchpad |
+| 967 | 2026-08-06 | Sitzungswechsel ohne Informationsverlust |
+| 1030 | 2026-08-06 | Wie verhindert wird, dass Arbeit außerhalb des Repos versandet |
+| 1102 | 2026-08-06 | Hauptstand nach `main`, Arbeit auf einem lokalen Klon |
+| 1153 | 2026-08-06 | Hook-Prüfung: weiterhin offen, mit bekannter Ursache |
+| 1176 | 2026-08-06 | Umgebungsannahmen nachgezogen: Hook geprüft, Tags geprüft |
+| 1224 | 2026-08-07 | Portabilität: was ein Klon nicht mitbringt |
+| 1276 | 2026-08-07 | Die Abschlussprüfung fragte nie, ob der Stand ankommt |
+| 1324 | 2026-08-07 | §4.5 vor §4.6 sortiert (Nummern unverändert) |
+| 1388 | 2026-08-07 | „Alle 40 laufen grün" nachgeprüft statt geerbt |
+| 1441 | 2026-08-07 | Playwright auf 1.56.1 festgenagelt |
+| 1464 | 2026-08-07 | CI bewusst zurückgestellt, nicht vergessen |
+| 1496 | 2026-08-07 | `test_4bugs` bleibt rot: Reparatur wäre verlorene Zeit |
+| 1558 | 2026-08-07 | „+" an der Gruppe hebt sich nur über das Icon hervor |
+| 1592 | 2026-08-07 | Darstellungs-Schalter mit gleitendem Knopf |
+| 1724 | 2026-08-07 | Fälligkeit: eine dauerhafte Zeile statt eines Menüs |
+| 1767 | 2026-08-07 | Kein Titelmenü: Overlays sind die letzte Wahl |
+| 1855 | 2026-08-07 | Eigener Kalender, im Fluss statt als Fenster |
+| 1958 | 2026-08-07 | Das Fenster hört auf zu schrumpfen, die Seite scrollt |
+| 2003 | 2026-08-07 | Fälligkeits-Pille steht neben dem Titel, nicht am Zeilenende |
+| 2052 | 2026-08-07 | Löschknopf steht im Fluss hinter dem Inhalt |
+| 2109 | 2026-08-07 | Der Eingang: erfassen und einsortieren werden getrennt |
+| 2191 | 2026-08-07 | Rückmeldung beim Ziehen: die Geste sichtbar machen |
+| 2242 | 2026-08-07 | Datum an der Zeile: ein Steuerelement statt dreier |
+| 2273 | 2026-08-07 | Nachwehen des Eingangs: stille Löcher in der Prüfung |
+| 2301 | 2026-08-08 | Das Artifact gehört in die Abschlussprozedur |
+| 2329 | 2026-08-08 | Löschregeln: Kaskade nach unten, abgesichert durch den Papierkorb |
+| 2406 | 2026-08-08 | Gruppen verschieben: vorhanden, aber der Zeiger log |
+| 2441 | 2026-08-08 | Rückgängig steht dort, wo gelöscht wurde |
+| 2484 | 2026-08-08 | Gruppe löschen fragt nach, und die Spaltenregel steht an einer Stelle |
+| 2509 | 2026-08-08 | „Overlays vermeiden" ist ab jetzt Design-Richtung |
+| 2544 | 2026-08-11 | Aufräum-Modus: entschieden und gebaut |
+| 2628 | 2026-08-11 | Unteraufgaben im Eingang bleiben erlaubt |
+| 2646 | 2026-08-11 (nachmittags) | Aufräum-Modus: vier Korrekturen nach der ersten Sicht |
+| 2730 | 2026-08-11 (abends) | Erledigt und Löschen sind im Eingang dasselbe |
+| 2760 | 2026-08-11 (abends) | Drei Bewegungskurven statt zwei |
+| 2789 | 2026-08-11 (abends) | „Später" bewegt sich wie das Einsortieren |
+| 2808 | 2026-08-11 (abends) | Drei kleinere Ergänzungen, vom Nutzer bestätigt |
+| 2820 | 2026-08-11 (abends) | Zwei Fehler, die in der MESSUNG lagen |
+| 2843 | 2026-08-11 (abends) | „Erledigt" steht unten am Rand, nicht als vierte Rubrik |
+| 2885 | 2026-08-11 (abends) | Fortschritt sieht überall gleich aus |
+| 2915 | 2026-08-11 (abends) | Das „Aufblitzen" der Listen: gemessen, nicht repariert |
+| 2945 | 2026-08-12 | Das „Refreshen" war eine Animation, nicht der Neuaufbau |
+| 3003 | 2026-08-12 | „Besser, aber noch nicht ganz clean": Scrollstand und Cursor |
+| 3053 | 2026-08-12 | CLAUDE.md gegen zwei fremde Vorlagen geprüft |
+| 3150 | 2026-08-12 (Nachtrag) | Ich habe aus einer Zusammenfassung geschlussfolgert |
+| 3245 | 2026-08-12 | „Steht in der Datei" ist noch nicht „implementiert" |
+| 3291 | 2026-08-12 | `docs/lernkurve.md`: aus Einzelfällen Muster machen |
+| 3357 | 2026-08-12 | Grundsatz: „Alles gehört ins Netz" |
+| 3395 | 2026-08-12 | Zwei weitere Muster, gefunden durch das eigene Abgleich-Skript |
+| 3443 | 2026-08-13 | Aufgaben in andere Aufgaben ziehen |
+| 3536 | 2026-08-13 | Eine neue Farbpalette, geprüft statt übernommen |
+| 3677 | 2026-08-13 | Drei Nachbesserungen nach dem Ansehen |
+| 3748 | 2026-08-13 | Vier Wünsche, und was die Stimmigkeitsprüfung dabei ausgrub |
+| 3848 | 2026-08-13 | Sechs fremde Werkzeuge geprüft, keines übernommen |
+| 3923 | 2026-08-13 (abends) | Workflow beschleunigen, ohne Sicherheit abzubauen |
+
+<!-- VERZEICHNIS:ENDE -->
 
 ## 2026-08-05 — Dokumentationsstandard für das Projekt
 
@@ -3919,3 +4011,122 @@ nicht beschlossen: *Das Repo ist die Wahrheit; Erinnerungen sind Hinweise,
 und ein Widerspruch wird gemeldet.* Ebenfalls offen: Das Plugin legt
 seinen Speicher außerhalb des Repos ab — er ist damit weder gesichert
 noch zwischen Geräten geteilt.
+
+## 2026-08-13 (abends) — Workflow beschleunigen, ohne Sicherheit abzubauen
+
+Der Nutzer meldete, die Arbeit sei langsamer geworden: *„mittlerweile
+dauert es länger da wir so viele sicherheits mechanismen eingebaut
+haben"*. Statt zu meinen, wurde gemessen.
+
+### Wo die Zeit und die Tokens wirklich hingehen
+
+| Posten | Zeit | Token |
+|---|---|---|
+| voller Mockup-Lauf | ~8 min | ~1.100 (davon gelesen: ~200) |
+| `docs/spec.md`, bei jedem Start vollständig | — | **~12.500** |
+| `docs/status.md`, bei jedem Start vollständig | — | **~8.800** |
+| `CLAUDE.md` | — | ~2.600 |
+| `scripts/session-check.sh` | < 1 s | — |
+| Fast-Forward nach `main` | Sekunden | — |
+| `docs/decisions.md` (nur bei Bedarf) | — | ~50.700 |
+
+**Der wichtigste Befund:** Die eigentlichen Sicherheitsnetze sind *nicht*
+das Teure. `session-check.sh` und der Fast-Forward kosten zusammen
+Sekunden. Teuer sind zwei Dinge, die eher angesammeltes **Material** als
+Sicherheit sind — die Größe der Prüf-Suite und die Menge an
+Pflichtlektüre (zusammen ~23.900 Token, bevor überhaupt gearbeitet wird).
+
+**Zeit und Tokens sind fast gegenläufig:** Der 8-Minuten-Lauf schreibt
+seine Ausgaben nach `out/`, kostet also kaum Tokens. Die Pflichtlektüre
+kostet keine Wartezeit, aber die gesamte Grundlast. Wer nur auf eine der
+beiden Zahlen schaut, optimiert das Falsche.
+
+### Entscheidung des Nutzers
+
+Sechs Vorschläge lagen vor. Vorgabe: *„was kein risiko bewirkt"* — und
+dann: die schnellen jetzt, der Rest auf eine Merkliste. Umgesetzt wurden
+**A, B, C, D**; **#1 und #2** stehen in `docs/status.md` §2 als Merkliste.
+**#4** (`ende unfold` nach Sitzungsgröße skalieren) wurde **verworfen**:
+höchster Aufwand, kleinster Ertrag, und es hätte neue Mechanik geschaffen,
+die selbst gepflegt werden muss — genau das, worüber die Frage entstand.
+
+**Der Leitgedanke aller vier umgesetzten Punkte: Struktur statt
+Streichen.** Keine Prüfung wurde entfernt, keine Zusicherung entschärft,
+kein Dokument gekürzt. Es wird gemerkt, verzeichnet und zusammengelegt.
+
+### A — der Läufer merkt sich, was er gemessen hat
+
+`run-mockup-tests.sh` bildet eine Signatur aus Mockup, allen mitlaufenden
+Skripten und der Playwright-Version. Ist sie identisch mit dem letzten
+vollständigen Lauf, meldet er das gemerkte Ergebnis statt acht Minuten zu
+rechnen. `--neu` erzwingt die Messung.
+
+**Warum das die Sicherheit erhöht statt sie zu senken:** Der Anlass war
+mein eigener Fehler — am selben Tag lief die Suite zweimal über denselben
+unveränderten Stand. Der naheliegende Vorschlag war ein Vorsatz („nicht
+zweimal messen"). `docs/lernkurve.md` zeigt, dass Vorsätze hier eine
+schlechte Bilanz haben; deshalb Mechanik. Ändert sich irgendetwas, fällt
+die Signatur anders aus und es wird gemessen. Der Merkzettel liegt in
+`out/` und ist nicht eingecheckt — ein frischer Container misst immer.
+
+**Bewusst nur vollständige Läufe:** Ein gefilterter Lauf sagt nichts über
+die übrigen Skripte aus und wird deshalb nicht gemerkt.
+
+### B — Verzeichnis am Kopf von `docs/decisions.md`
+
+79 Einträge, ~3.900 Zeilen, kein Weg zu einer bestimmten Entscheidung
+außer Suchen. `scripts/decisions-index.sh` erzeugt ein Verzeichnis
+(Zeile · Datum · Thema). **Reine Ergänzung — kein Zeichen wird entfernt**,
+nachgewiesen: Block entfernen ergibt die Datei wieder byteweise identisch.
+
+**Zwei Fehler beim Bauen, beide beim Ansehen gefunden:**
+
+1. Die erste Fassung setzte die Leerzeilen *außerhalb* der Marken und
+   versuchte, sie beim Entfernen zu erraten. Folge: Die Datei wuchs bei
+   jedem Lauf um eine Leerzeile, **alle Zeilennummern verschoben sich**,
+   und `--pruefen` meldete unmittelbar nach einem Lauf „veraltet". Gelöst
+   nicht durch klügeres Raten, sondern durch eine einfachere Form: Der
+   Block trägt seine Leerzeilen **innerhalb** der Marken, damit ist
+   Entfernen exakt die Umkehrung des Schreibens.
+2. Der Zähler in `session-check.sh` traf auch die **Legendenzeile** des
+   Abgleichsskripts, die das Wort `[OFFEN]` enthält — er meldete fünf
+   statt vier. Dieselbe Familie wie die Messfehler in Muster 2: Der Fehler
+   lag in der Messung, nicht im Gemessenen.
+
+### C — Abgleich läuft in `session-check.sh` mit
+
+Neue Abschnitte 9 (Verzeichnis aktuell?) und 10 (Lernkurven-Abgleich).
+Ein Aufruf weniger beim Sitzungsende.
+
+**Dabei fiel ein Fehler auf, der ohne Zusammenlegung unbemerkt geblieben
+wäre:** Der Abgleich meldete dauerhaft vier Einträge als „fehlt in der
+Lernkurve" — zwei davon sind gar keine Fehler, sondern gewöhnliche
+Entscheidungen, die nur zufällig ein Stichwort enthalten. Solange man das
+Skript von Hand aufrief, las man darüber hinweg. Als Abschnitt einer
+Prüfung wäre daraus ein Wächter geworden, der bei jedem Lauf piept — und
+das Skript warnt in seinen eigenen Kommentaren davor. Deshalb
+`scripts/lernkurve-ignore.txt` (gleiche Bauart wie
+`scratchpad-ignore.txt`): Was bewusst nicht in die Lernkurve gehört, wird
+einmal eingetragen und nicht wieder gefragt.
+
+### D — kürzere Antworten
+
+Kostet in jedem Zug Tokens, ist sofort umkehrbar, braucht keinen Bau.
+Festgelegt auf Wunsch des Nutzers.
+
+### Was bewusst NICHT gemacht wurde
+
+| | Warum |
+|---|---|
+| **#1 Schnellspur** (nur die 18 Skripte mit Zusicherungen) | Die 39 übrigen melden nichts von selbst, **stürzen aber ab**, wenn etwas grob kaputt ist. Man erführe es erst beim vollen Lauf. Risiko begrenzt, aber nicht null — und die Suite läuft mit dem Flutter-Umstieg ohnehin aus |
+| **#2 `spec.md` gezielt lesen** | Größter Token-Hebel (~12.500) und der einzige Punkt mit echtem Schadenspotenzial: Hier wird an einer ungelesenen Festlegung vorbeigebaut. Nur sinnvoll **nach** einem Verzeichnis in `spec.md` und mit §1 Datenmodell als Pflichtteil |
+| **#3 `status.md` schlank halten** | Verschobenes Wissen ist einen Schritt weiter weg. Als Regel beim Sitzungsende sinnvoll, als Aufräumaktion nicht |
+| **#4 `ende unfold` skalieren** | Verworfen, siehe oben |
+
+### Ehrlich zur Bilanz
+
+A–D sparen zusammen **~8 Minuten und ~1.500 Token pro Sitzung**. Die
+Grundlast von ~23.900 Token rühren sie **nicht** an — die liegt in
+`spec.md` und `status.md`, und beide anzufassen war ausgeschlossen. Das
+ist die Konsequenz der Vorgabe, kein Einwand dagegen: **Risikofrei
+bekommt man die Wartezeit weg, nicht die Grundlast.**
