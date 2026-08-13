@@ -145,11 +145,13 @@ Was fertig ist:
   einem echten Browser nach. Gestartet werden sie mit
   **`bash scripts/run-mockup-tests.sh`** (fällt ein Urteil, statt nur
   Zahlen zu drucken). Stand 2026-08-07 mit **Playwright 1.56.1**
-  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, nach der
-  Stimmigkeitsprüfung): 56 grün, 0 rot** — in diesem Lauf war auch
-  `test_4bugs` grün. Der ist und bleibt ein Wackelkandidat, der etwa jeden
-  zweiten Lauf trifft (Abschnitt 4); ein grüner Lauf heißt dort nicht,
-  dass er repariert wäre.
+  nachgemessen. **Letzter vollständiger Lauf (2026-08-13, beim
+  Sitzungsende): 56 grün, 1 rot, 0 abgestürzt** — rot war `test_4bugs`
+  mit `BUG3`, also genau der Wackelkandidat aus Abschnitt 4, der etwa
+  jeden zweiten Lauf trifft. Im Lauf davor (nach der Stimmigkeitsprüfung)
+  war er grün: 56 grün, 0 rot. **Beides ist derselbe Stand** — bei diesem
+  Skript sagt weder grün noch rot etwas über eine Änderung aus. Wer hier
+  rot sieht, prüft zuerst, ob es `BUG3` ist; wenn ja, ist nichts kaputt.
 
   🆕 **Drei Messwerkzeuge sind am 2026-08-13 aus dem Scratchpad ins Repo
   gekommen** (`d538b9f`): `measure_animationen.js` liest unmittelbar nach
