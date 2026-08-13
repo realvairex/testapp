@@ -45,6 +45,16 @@ lauffähigen Version:
   Task-Verschachtelung, Fortschrittsberechnung, Datumsfilter) hat Priorität.
 - **Code-Review selbstständig durchführen** (Code-Qualität, Sicherheit),
   bevor ein Feature als fertig gilt.
+- **Zusicherungen prüfen Regeln, nicht Zustände.** Der Test beim
+  Schreiben: *Wenn der Nutzer morgen eine erlaubte Entscheidung ändert —
+  meldet die Prüfung dann rot?* Wenn ja, ist ein **Zustand**
+  festgeschrieben (der heutige Farbwert, die heutige Liste der
+  Fundstellen, die heutige Achse), und die Prüfung meldet künftig genau
+  dann einen Fehler, wenn korrekt gearbeitet wurde. Zugesichert wird die
+  **Beziehung** („der Punkt trägt dieselbe Farbe wie die Liste"), nicht
+  der Wert. Das ist am 2026-08-13 dreimal an einem Tag schiefgegangen;
+  Belege in `docs/lernkurve.md`, Muster 10. Ein mechanisches Netz dagegen
+  gibt es nicht — nur diese Frage.
 
 ## Ab dem ersten Flutter-Code
 
