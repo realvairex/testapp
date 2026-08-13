@@ -61,6 +61,41 @@ const zeige = (l, v) => console.log('>>> ' + l + ': ' + v);
   zeige('Inhalt bleibt waehrend der ganzen Bewegung unverzerrt (< 1%)', abweichung < 0.01);
   console.log('    groesste Verzerrung:', (abweichung * 100).toFixed(2) + '%');
 
+  // --- Dasselbe beim SCHLIESSEN -----------------------------------------
+  //
+  // animatePanelsClosing baut ihren Plan getrennt auf. Beim ersten Fix
+  // wurde nur das Oeffnen versorgt - der Nutzer meldete danach: "beim
+  // Schliessen haben wir dasselbe Problem". Deshalb steht die Zusicherung
+  // fuer beide Richtungen hier, nicht nur fuer eine.
+  await page.waitForTimeout(700);
+  const zu = await page.evaluate(async () => {
+    const proben = []; let laufend = true;
+    const t0 = performance.now();
+    (function tick(t) {
+      if (!laufend) return;
+      const c = document.querySelector('.column[data-col-key="list:inbox"]');
+      const i = c && c.querySelector('.col-inner');
+      if (c && i) {
+        const a = new DOMMatrix(getComputedStyle(c).transform).a;
+        const b = new DOMMatrix(getComputedStyle(i).transform).a;
+        proben.push({ aussen: a, produkt: a * b });
+      }
+      requestAnimationFrame(tick);
+    })(t0);
+    const x = document.querySelector('.column[data-col-index="1"] .col-close');
+    if (x) x.click();
+    await new Promise(r => setTimeout(r, 600));
+    laufend = false;
+    return proben;
+  });
+
+  zeige('Schliessen: die Bewegung wurde aufgezeichnet', zu.length > 20);
+  zeige('Schliessen: die ueberlebende Spalte wird skaliert',
+        Math.max(...zu.map(p => Math.abs(p.aussen - 1))) > 0.2);
+  const abwZu = Math.max(...zu.map(p => Math.abs(p.produkt - 1)));
+  zeige('Schliessen: Inhalt bleibt unverzerrt (< 1%)', abwZu < 0.01);
+  console.log('    groesste Verzerrung beim Schliessen:', (abwZu * 100).toFixed(2) + '%');
+
   zeige('keine JS-Fehler', fehler.length === 0);
   if (fehler.length) console.log('   ', fehler.slice(0, 3).join(' | '));
   await b.close();

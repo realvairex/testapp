@@ -4472,6 +4472,21 @@ nichts messen und trotzdem grün melden.
 
 Gegengeprüft: ohne den Fix meldet sie 12,46 %.
 
+### Nachtrag am selben Tag: dasselbe beim Schließen
+
+Der Nutzer meldete direkt danach: *„beim Schließen haben wir dasselbe
+Problem."* Er hatte recht — `animatePanelsClosing` baut ihren Plan
+**getrennt** auf und bekam den Zahlenwert nicht mit, fiel also auf den
+alten Zwei-Punkt-Übergang zurück. Gemessen: **12,46 %** beim Schließen,
+während das Öffnen schon bei 0,01 % lag.
+
+**Die Lehre daraus ist die eigentliche:** Der Fix hing an einem Feld, das
+an **zwei** Stellen gesetzt werden muss. Wer nur die eine repariert, hat
+eine Hälfte des Verhaltens korrigiert und die andere unberührt gelassen —
+und beide sehen im Code für sich genommen richtig aus. Die Prüfung deckt
+deshalb jetzt **beide Richtungen** ab; vorher hätte sie den zweiten Fall
+nie bemerkt.
+
 ### Offen
 
 Der Nutzer meldete zusätzlich: *„die Sidebar springt raus statt raus zu

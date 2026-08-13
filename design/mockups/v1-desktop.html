@@ -3588,7 +3588,13 @@
           fromCol: "translateX(" + deltaXs + "px) scaleX(" + scaleRatioS + ")",
           toCol: "translateX(0) scaleX(1)",
           fromInner: "scaleX(" + (1 / scaleRatioS) + ")",
-          toInner: "scaleX(1)"
+          toInner: "scaleX(1)",
+          // Dasselbe wie beim Oeffnen: Ohne den Zahlenwert faellt runFlip
+          // auf den Zwei-Punkt-Uebergang zurueck, und der hebt die aeussere
+          // Skalierung nur an den Enden auf. Beim Schliessen waechst die
+          // ueberlebende Spalte wieder auf - der Fehler ist derselbe, nur
+          // in die andere Richtung. Vom Nutzer gemeldet, 2026-08-13.
+          scaleVon: scaleRatioS
         });
       }
     }
