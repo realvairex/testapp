@@ -414,7 +414,8 @@ dieselbe Antwort noch einmal geben zu müssen.
 | `docs/research-superlist.md` | Recherche zu Superlists Open-Source-Fundament |
 | `design/mockups/v1-desktop.html` | das Mockup |
 | `design/mockups/tests/` | Prüfskripte samt eigener README |
-| `design/assets/logo.svg` | das Logo |
+| `design/assets/logo.svg` | das **aktive** Logo (derzeit v2) |
+| `design/assets/README.md` | welche Logo-Fassung gilt, wo die anderen liegen, und die **zwei** Stellen zum Umschalten |
 
 **Rückkehrpunkt vor der Flutter-Entscheidung:** Commit `3891fed`
 (siehe `docs/milestones.md`).

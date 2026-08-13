@@ -79,8 +79,16 @@ const { chromium } = require('playwright');
   console.log('>>> Umschalten auf "Morgen" ändert das Datum:',
     (await page.locator('.column').last().locator('.due-chip-label span').innerText()) !== textHeute);
 
+  // Auf das ERGEBNIS warten, nicht auf die Uhr. Mit einer festen Pause war
+  // diese Zusicherung ein Wackelkandidat (am 2026-08-13 einmal rot, danach
+  // dreimal grün): Der Klick davor löst einen vollständigen Neuaufbau der
+  // Spalte aus, und trifft der ✕-Klick genau hinein, landet er auf einem
+  // Knoten, den es gleich nicht mehr gibt - folgenlos. Eine Pause, die
+  // "meistens reicht", macht aus einem Timing-Problem einen Zufallsfehler,
+  // den später jemand für einen echten hält.
   await page.locator('.column').last().locator('.due-chip-x').click();
-  await page.waitForTimeout(350);
+  await page.locator('.column').last().locator('.due-chip-x')
+    .waitFor({ state: 'detached', timeout: 3000 }).catch(() => {});
   console.log('>>> das ✕ entfernt die Fälligkeit:',
     (await page.locator('.column').last().locator('.due-chip-label span').innerText()) === 'Datum wählen');
 
