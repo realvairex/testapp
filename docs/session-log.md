@@ -69,17 +69,41 @@ Lehm, Olive, Ocker, Taubenblau, Tanne — Erdtöne mit einem kühlen Anker,
 schon einmal verworfen wurden. Unterscheidbarkeit über CIELAB gerechnet
 statt behauptet (engstes Paar 23,2).
 
+**Dann doch übernommen — und der Anlass ist die eigentliche Lehre.** Der
+Nutzer fragte: *„hast du die neuen farben schon implementiert? weil im
+artifact sind sie nicht zu sehen."* Die Vorschau war ausdrücklich als
+Vorschau angekündigt — aber die einzige Stelle, an der er das Mockup
+**ansieht**, ist das Artifact, und dort war nichts passiert. **Wer eine
+Vorschau liefert, muss sagen, wo sie zu sehen ist und wo nicht.** Sonst
+sucht der Nutzer sie am gewohnten Ort und findet den alten Stand.
+
+Der Einbau selbst brachte drei Funde:
+
+- Die `prefers-color-scheme`-Rückfallebene trug ein **eigenes, kühleres
+  Dunkel** ohne Begründung — zwei Dunkelmodi, von denen man immer nur
+  einen sieht. Koernig hat ein Schwarz, also gibt es jetzt ein Dunkel.
+- Die Schatten `el-1` bis `el-3` trugen noch das **alte Navy**; auf
+  Sandgrund fiel der Blaustich als Fremdton auf.
+- `test_list_header` wurde rot — und **die Messung war schuld**: Sie
+  verglich den Sidebar-Punkt mit dem fest verdrahteten Hexwert des alten
+  Taubenblaus. Repariert wurde die Messung, nicht die Zusicherung; sie
+  vergleicht jetzt gegen das angeklickte Feld. Derselbe Fehlertyp wie der
+  offene Faden bei `verify_center`: **eine Prüfung, die einen Zustand
+  festschreibt statt einer Regel**, meldet einen Fehler, wo eine
+  Entscheidung umgesetzt wurde.
+
+Nachgemessen: **55 grün, 0 rot**, `test_contrast` 0 Durchgefallene in
+beiden Modi. Artifact neu veröffentlicht.
+
 **Offen**
 
-- **Die Palette ist nicht entschieden.** Übernimmt der Nutzer sie, wandern
-  die Werte nach `spec.md` §3 **und** ins Mockup — beides zusammen.
 - **`--paper` und `--surface-sunken` tragen denselben Ton**; das Fenster
-  trennt sich nur über seinen Schatten vom Grund. Bewusst so, aber eine
-  Entscheidung.
+  trennt sich nur über seinen Schatten vom Grund. Bewusst so übernommen,
+  aber eine Entscheidung.
 - **„Daneben" über Spaltengrenzen** ist nicht gebaut, vermerkt in
   `spec.md` §2.4.
 - **Der Branch `claude/start-unfold-r00zcz`** wartet weiter auf Löschung
-  vom lokalen Klon aus.
+  vom lokalen Klon aus — im Web-Container geht es nicht.
 
 ## 2026-08-12 (nachmittags) — Die Arbeitsweise selbst überarbeitet
 
