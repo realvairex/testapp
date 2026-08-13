@@ -520,6 +520,14 @@ standen und jede Sitzung sie neu erfinden musste):
 |---|---|
 | Symbol (`favicon`) | 🗂️ |
 | Titel | steht im `<title>` der Datei — „Unfold — Konzept-Mockup (Desktop)" |
+| Fähigkeit | `capabilities: {"downloads": true}` |
+
+**Die Fähigkeit `downloads` ist nicht optional, seit das Mockup exportiert**
+(2026-08-13): Ohne sie wird `window.claude.downloads.save()` in der
+Artifact-Ansicht **abgelehnt**, und ein `<a download>` ist dort ohnehin
+wirkungslos — der Export scheitert dann **still**. Beim erneuten
+Veröffentlichen wird eine gespeicherte Deklaration mitgeführt, solange man
+`capabilities` **weglässt**; ein leeres Objekt `{}` löscht sie.
 
 Ein wechselndes Symbol liest sich wie eine andere Seite: Der Nutzer
 findet seinen Tab am Bild, nicht am Text.
