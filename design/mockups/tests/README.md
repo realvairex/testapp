@@ -106,6 +106,8 @@ Screenshots landen ebenfalls in `out/` (nicht im Git).
 | Sprung-Bewegung des Kästchens beim Ab- und Zurückhaken | `test_kaestchen` |
 | Kopfzeile der Eingang-Spalte springt nicht (Aufräumen-Knopf) | `test_kopf_stabil` |
 | Inhalt wird während der Spalten-Bewegung nicht verzerrt | `test_flip_sauber` |
+| Wie die Sidebar beim Einklappen wandert (**offener Faden**) | `measure_sidebar` |
+| Eine Bewegung Bild für Bild ansehen | `shot_bewegung` |
 | Welche Animation bei welcher Interaktion **tatsächlich** läuft | `measure_animationen` |
 | Wie die Marke aussieht und wie groß der Wimpel dabei wird | `shot_logo`, `shot_logo_groessen` |
 

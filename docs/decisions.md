@@ -99,6 +99,7 @@ Nachschlagen also grob anspringen, nicht blind zaehlen.
 | 4153 | 2026-08-13 (abends) | Das Kästchen springt beim Umschalten |
 | 4242 | 2026-08-13 (abends) | „Alles unter dem Titel rutscht nach unten" |
 | 4309 | 2026-08-13 (abends) | „Es ist nicht dieselbe Animation" — und der Nutzer hatte recht |
+| 4402 | 2026-08-14 | Der Setext-Fallstrick bekommt endlich sein Netz |
 
 <!-- VERZEICHNIS:ENDE -->
 
@@ -4494,3 +4495,41 @@ pushen."* Gemessen wandert sie in 24 Zwischenschritten über 400 ms — sie
 springt also nicht. Sie legt aber **78 % des Weges in den ersten 133 ms**
 zurück, weil `--ease` stark vorn lastig ist. Ob das gemeint ist, ist noch
 nicht geklärt; nachgefragt.
+
+## 2026-08-14 — Der Setext-Fallstrick bekommt endlich sein Netz
+
+Beim Schreiben des Sitzungsprotokolls ist mir **derselbe Fehler wie am
+Vortag** unterlaufen: ein neuer Eintrag ohne Leerzeile vor dem `---`,
+wodurch Markdown die letzte Textzeile still zur Überschrift macht.
+
+**Das Unangenehme daran ist nicht der Fehler, sondern sein Datum.** Ich
+hatte ihn am 2026-08-13 selbst in `docs/lernkurve.md` als Muster 8,
+Fall 4 eingetragen — und dort ausdrücklich vermerkt, dass
+`session-check.sh` genau diesen Fall *nicht* erkennt. Einen Tag später,
+beim Einfügen an derselben Stelle in derselben Datei, ist er wieder
+passiert.
+
+**Damit ist die Frage beantwortet, ob hier ein Vorsatz reicht: nein.**
+Die Gegenmaßnahme („nach jeder Textersetzung die Stelle ansehen") hat
+beide Male funktioniert — gefunden habe ich es jeweils beim Nachsehen.
+Die *Vermeidung* hat nicht funktioniert, obwohl ich beim Einfügen sogar
+an den Vortag gedacht habe.
+
+**Gebaut statt noch einmal aufgeschrieben:** `session-check.sh`
+Abschnitt 8 meldet jetzt jede Textzeile, die direkt über einem `---`
+klebt, samt Zeilennummer. Gegengeprüft in beide Richtungen — mit
+Leerzeile still, ohne Leerzeile meldet es die Stelle.
+
+Der Punkt stand seit dem 2026-08-13 als „kleiner offener Punkt" in
+`docs/status.md` §2. **Er hat sich in der Zwischenzeit selbst bewiesen.**
+Das ist die eigentliche Lehre: Ein offener Punkt, dessen Kosten man kennt
+und der eine Zeile Arbeit ist, gehört erledigt und nicht notiert.
+
+### Nachtrag zum Datum
+
+Diese Sitzung lief über Mitternacht. Die Einträge tragen das Datum des
+**Arbeitstages** (2026-08-13), nicht das der Uhr — deshalb meldete
+`session-check.sh` Abschnitt 5 zunächst „kein Eintrag von heute". Das ist
+kein Fehler der Prüfung: Sie fragt nach dem Kalendertag, und der hatte
+gewechselt. Wer das nächste Mal über Mitternacht arbeitet, weiß jetzt,
+woher die Meldung kommt.

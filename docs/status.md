@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-13
+Stand: 2026-08-14
 
 ---
 
@@ -153,7 +153,7 @@ Was fertig ist:
 - **`docs/spec.md`** — die Umsetzungsvorlage für den Flutter-Bau.
   Datenmodell, Verhaltensregeln, Design-Tokens. **Das ist die Wahrheit,
   nicht das Mockup.**
-- **`design/mockups/tests/`** — 65 Playwright-Skripte, davon **61 vom
+- **`design/mockups/tests/`** — 67 Playwright-Skripte, davon **62 vom
   Läufer gestartet** (`test_`, `measure_`, `verify_`; die vier `shot_`
   machen nur Bilder). Sie messen das Mockup in
   einem echten Browser nach. Gestartet werden sie mit
@@ -260,13 +260,43 @@ Abwägung zu kennen:
 Schnellspur: `spec.md` wächst im Flutter-Bau weiter, die Mockup-Suite
 läuft aus. Wenn nur eines von beidem gemacht wird, dann das.
 
-**Kleiner offener Punkt am Prüfskript (2026-08-13):**
-`scripts/session-check.sh` erkennt in `session-log.md` nur den geklebten
-Fall (`---## …`), nicht den **Setext-Fall** — eine Textzeile direkt über
-einem `---` wird von Markdown selbst zur Überschrift. Genau das ist beim
-Schreiben dieses Eintrags passiert und fiel nur beim Ansehen auf
-(`docs/lernkurve.md`, Muster 8). Eine Zeile im Skript wäre das Netz;
-lohnt sich beim nächsten Anfassen der Prüfung.
+### ⚠️ Offener Faden: „die Sidebar springt raus statt raus zu pushen"
+
+**Vom Nutzer gemeldet (2026-08-13), noch nicht geklärt.** Er hat die
+Rückfrage nicht mehr beantwortet, bevor die Sitzung endete.
+
+Gemessen mit `design/mockups/tests/measure_sidebar.js`: Die Sidebar
+wandert beim Einklappen in **24 Zwischenschritten über 400 ms** — sie
+springt technisch also nicht. Auffällig ist die Verteilung: **78 % des
+Weges liegen in den ersten 133 ms**, weil `--ease`
+(`cubic-bezier(0.32, 0.72, 0, 1)`) stark vorn lastig ist. Das kann sich
+wie „schnipp, dann zäh" anfühlen.
+
+**Was vor einer Reparatur geklärt sein muss** — sonst wird breit gesucht
+statt gezielt gemessen (`CLAUDE.md`, Regel 6):
+
+1. Beim **Einklappen** (2. Unterpanel öffnen) oder beim
+   **Wiederauftauchen** (Panels schließen)?
+2. Springt die **Sidebar selbst** — oder der **Inhalt daneben**, weil er
+   ihr nicht folgt?
+
+`measure_sidebar.js` zeigt beides nebeneinander (Position der Sidebar und
+Breite ihres Platzhalters) und ist der Ausgangspunkt für die nächste
+Runde.
+
+⚠️ **Vorsicht bei der naheliegenden Lösung:** `--ease` hängt an **jeder**
+Bewegung im Mockup. Wer sie ändert, um die Sidebar zu beruhigen, baut
+alles andere mit um — und der Nutzer hat die zweite Panel-Bewegung
+ausdrücklich als „perfekt" bezeichnet, die auf derselben Kurve läuft.
+
+**✅ Erledigt am 2026-08-14:** `scripts/session-check.sh` Abschnitt 8
+erkennt jetzt auch den **Setext-Fall** — eine Textzeile direkt über einem
+`---`, die Markdown still zur Überschrift macht. Der Punkt stand hier
+seit dem 2026-08-13 als „lohnt sich beim nächsten Anfassen" und hat sich
+in der Zwischenzeit **selbst bewiesen**: Derselbe Fehler passierte am
+Folgetag noch einmal, in derselben Datei (`docs/lernkurve.md`, Muster 8,
+Fall 5). Lehre: Ein offener Punkt, dessen Kosten man kennt und der eine
+Zeile Arbeit ist, gehört erledigt und nicht notiert.
 
 Aufgeschoben bis zum echten App-Code: `prefers-reduced-motion` wieder
 einbauen (im Mockup absichtlich deaktiviert, damit die Animationen

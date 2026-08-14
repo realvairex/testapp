@@ -24,3 +24,40 @@ repro_*.js
 variants.js
 bottom_options.js
 combine.js
+
+# Einmalige Diagnose-Skripte vom 2026-08-13/14. Sie haben ihren Zweck
+# erfuellt; was dauerhaft gebraucht wird, liegt als Pruefung im Repo:
+#   Verzerrung der Spalten-Bewegung -> test_flip_sauber.js
+#   Kopfzeile springt beim Abhaken   -> test_kopf_stabil.js
+#   Kaestchen-Bewegung               -> test_kaestchen.js
+#   Speichern/Export/Import          -> test_speichern.js
+#   Bewegung Bild fuer Bild ansehen  -> shot_bewegung.js
+verzerrung.js
+ruckel*.js
+sprung*.js
+anim_diff.js
+platz*.js
+kurve.js
+dbg.js
+filetest.js
+bilder.js
+einbau.js
+test_speichern.js
+lauf*.txt
+lauf*.md
+ohne.md
+decisions-vorher.md
+speichertest.html
+lokal*.html
+
+# Bereits unter richtigem Namen im Repo (2026-08-13):
+#   anim.js    -> measure_animationen.js
+#   logo.js    -> shot_logo.js
+#   logogr.js  -> shot_logo_groessen.js
+#   sidebar.js -> measure_sidebar.js
+anim.js
+logo.js
+logogr.js
+sidebar.js
+# Einmalige Bilder fuers Artifact, Inhalt laengst geliefert.
+s2.js

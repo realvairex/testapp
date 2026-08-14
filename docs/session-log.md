@@ -10,6 +10,78 @@ eingefordert. Neueste Sitzung oben.
 
 ---
 
+## 2026-08-14 (Nacht) — Der Prototyp wird benutzbar, und die Nutzung findet Fehler
+
+Fortsetzung des 2026-08-13 über Mitternacht hinaus; die Einträge in
+`decisions.md` tragen deshalb das Datum des Arbeitstages, nicht das der
+Uhr.
+
+**Gemacht**
+
+- **Workflow beschleunigt, ohne eine Prüfung abzubauen** (A–D): Der Läufer
+  merkt sich den gemessenen Stand (8 min → 0 s bei unverändertem Code),
+  `decisions.md` hat ein erzeugtes Verzeichnis, der Lernkurven-Abgleich
+  läuft in `session-check.sh` mit.
+- **Sechs fremde Erweiterungen bewertet**, keine übernommen — Bewertung in
+  `status.md` §7, damit sie nicht neu recherchiert wird.
+- **Datenschicht im Mockup**: `localStorage`, Export/Import als JSON mit
+  Schema-Version 1, Sicherung des letzten guten Standes. Damit ist der
+  Prototyp alltagstauglich — das war der Zweck.
+- **Vier Fehler behoben**, drei davon aus echter Nutzung (siehe unten).
+
+**Entschieden**
+
+- **Keine .exe aus dem Mockup.** Eine Programmhülle um etwas, das der
+  Flutter-Bau ersetzt — und im Linux-Container gar nicht baubar. Die eine
+  HTML-Datei ohne Installation leistet dasselbe.
+- **Die Datenschicht kommt in den Prototyp**, obwohl das gegen das
+  geplante Einfrieren arbeitet. „Einfrieren" heißt ab jetzt *keine
+  Gestaltungsänderungen mehr*; Fehlerbehebungen aus der Nutzung bleiben
+  erlaubt.
+- **Das Kästchen springt in beide Richtungen** (Wunsch des Nutzers),
+  entgegen der Regel, dass Federndes nur dorthin gehört, wo etwas
+  ankommt. Begründung: Es ist die Quittung auf einen *Druck*, nicht die
+  Belohnung für ein Ergebnis — deshalb auch `--ease` statt `--ease-spring`.
+- **Die Sternchen am „Erledigt"-Knopf wurden verworfen** — vom Nutzer
+  selbst, nach der Analyse. Gründe in `decisions.md` (beschnittener
+  Bereich, vorhandene Belohnung, „kein Konfetti").
+
+**Offen**
+
+- **„Die Sidebar springt raus statt raus zu pushen"** — die Rückfrage kam
+  nicht mehr an. Vollständig in `status.md` beschrieben, samt der zwei
+  Fragen, die vor einer Reparatur geklärt sein müssen, und der Warnung,
+  dass `--ease` an *allen* Bewegungen hängt.
+- **`claude-mem` ist beim Nutzer installiert, ohne Rangfolge zum Repo.**
+- **Die Werkzeug-Bewertung steht teils auf zweiter Hand** (nur zwei
+  Quellen selbst gelesen).
+
+**Was ein Commit nicht zeigt**
+
+- **Zwei Fehlspuren beim Panel-Ruckeln.** Zuerst maß ich ein wirklich
+  ausgelassenes Bild (33,3 ms) und hielt es für die Ursache. Der Nutzer
+  stellte klar: *„visuell nicht so clean"* — und später: *„ich habe das
+  Gefühl, dass es nicht dieselbe Animation ist."* **Der zweite Satz war
+  wörtlich die Lösung.** Es *sind* zwei Animationen, und in einer steckte
+  ein Rechenfehler. Lehre: Wenn der Nutzer ein Gefühl beschreibt, ist die
+  wörtliche Lesart oft die richtige Spur — meine erste Messung war korrekt
+  und trotzdem am Thema vorbei.
+- **Die Halbreparatur.** Ich habe die Verzerrung beim Öffnen behoben,
+  gemessen, grün gemeldet — und `animatePanelsClosing` nicht einmal
+  angesehen. Der Nutzer fand es sofort. Das Feld musste an *zwei* Stellen
+  gesetzt werden, und beide sahen für sich richtig aus.
+- **Verworfen:** die Hauskurve `--ease` zu ändern, um die Sidebar zu
+  beruhigen. Sie hängt an jeder Bewegung, und der Nutzer nannte die
+  zweite Panel-Bewegung auf derselben Kurve „perfekt".
+- **Vermutung, nicht geprüft:** Das ausgelassene Bild beim ersten Panel
+  (14,6 ms synchrone Arbeit im Klick) ließe sich vermutlich durch ein
+  zweites `requestAnimationFrame` in `runFlip` entschärfen. Nicht
+  angefasst, weil es nicht das war, was der Nutzer sah — und weil ein
+  Eingriff in die zentrale Bewegungssteuerung ohne konkrete Meldung
+  Risiko ohne Anlass wäre.
+
+---
+
 ## 2026-08-13 (nachmittags) — Vier Wünsche, eine Stimmigkeitsprüfung, sechs fremde Werkzeuge
 
 Fortsetzung desselben Tages. Der Nutzer hatte vier Wünsche am Mockup,

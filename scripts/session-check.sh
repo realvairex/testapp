@@ -225,6 +225,27 @@ else
   bad "docs/session-log.md hat keinen Eintrag von heute ($today)"
 fi
 
+# Markdown macht aus einer Textzeile UEBER einem "---" eine Ueberschrift
+# (Setext). Beim Einfuegen eines neuen Eintrags passiert das leicht: Der
+# Trennstrich klebt an der letzten Zeile des Absatzes, und die wird still
+# zur Ueberschrift - im Rohtext sieht alles richtig aus.
+#
+# Diese Zeile gibt es, weil derselbe Fehler an zwei aufeinanderfolgenden
+# Tagen in DERSELBEN Datei passiert ist (docs/lernkurve.md, Muster 8, Faelle
+# 4 und 5) - beim zweiten Mal, obwohl er am Vortag von mir selbst dort
+# eingetragen worden war. Ein Vorsatz reicht hier nachweislich nicht.
+if [ "$KURZ" = "0" ]; then
+  klebt="$(awk 'prev != "" && $0 == "---" { print NR-1 ": " prev } { prev = $0 }' \
+           docs/session-log.md 2>/dev/null | head -3)"
+  if [ -n "$klebt" ]; then
+    warn "docs/session-log.md: Text klebt direkt ueber einem '---'"
+    say  "              -> Markdown macht daraus eine Ueberschrift. Leerzeile einfuegen:"
+    printf '%s\n' "$klebt" | sed 's/^/                 Zeile /'
+  else
+    ok "docs/session-log.md: kein Text klebt an einem Trennstrich"
+  fi
+fi
+
 sec "9. Verzeichnis im Entscheidungsprotokoll"
 # docs/decisions.md ist auf rund 4.000 Zeilen gewachsen. Das Verzeichnis am
 # Kopf macht gezieltes Nachschlagen moeglich - aber nur, solange es zu den

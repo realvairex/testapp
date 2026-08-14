@@ -154,7 +154,7 @@ nicht (das Skript läuft ohne Netz), deshalb eine bewusste Frage.
 > ich nur die Fehler aus dem *laufenden* Chat gesammelt, statt die
 > vorhandene Doku systematisch durchzugehen.
 
-### 8. Textersetzung per Skript, ohne das Ergebnis anzusehen — 4 Vorfälle · zuletzt 2026-08-13
+### 8. Textersetzung per Skript, ohne das Ergebnis anzusehen — 5 Vorfälle · zuletzt 2026-08-14
 
 | Datum | Gestalt | Wer fand es |
 |---|---|---|
@@ -162,6 +162,7 @@ nicht (das Skript läuft ohne Netz), deshalb eine bewusste Frage.
 | 2026-08-12 | `lernkurve.md`: Muster 6 landete hinter „Was nicht funktioniert hat" statt bei den Mustern | ich (beim Nachlesen) |
 | 2026-08-12 | `ende.md`: doppelter Halbsatz („Alles Übrige… Alles, was in der Luft hängt…") | ich (beim `ende unfold`) |
 | 2026-08-13 | `session-log.md`: neuer Eintrag ohne Leerzeile vor dem `---` eingefügt → die letzte Textzeile wurde dadurch selbst zur Überschrift (Setext) | ich (beim Ansehen der Stelle) |
+| 2026-08-14 | **Derselbe Fehler, dieselbe Datei, ein Tag später** — trotz eigenem Eintrag von gestern | ich (beim Ansehen der Stelle) |
 
 **Der Kern:** Ein `python3 -c "…replace(…)"` meldet keinen Fehler, wenn das
 Ergebnis unsinnig ist — nur wenn das Suchmuster gar nicht passt. Die
@@ -176,6 +177,19 @@ Zeile und hätte alle drei Fälle gefunden.
 Bemerkenswert: Dreimal fiel es **mir** auf, einmal dem Prüfskript. Wo eine
 mechanische Prüfung existiert, greift sie — deshalb ist der Ausbau der
 Prüfungen wirksamer als der Vorsatz, sorgfältiger zu sein.
+
+**Der fünfte Fall (2026-08-14) ist der unangenehmste der Reihe:** Ich habe
+denselben Fehler in **derselben Datei** wiederholt, einen Tag nachdem ich
+ihn hier selbst eingetragen hatte — und beim Einfügen sogar an ihn gedacht.
+Gefunden hat ihn wieder nur das Ansehen der Stelle, nicht die Erinnerung.
+
+**Damit ist die Frage entschieden, ob hier ein Vorsatz reicht: nein.** Die
+Gegenmaßnahme („nach jeder Textersetzung die Stelle ansehen") wirkt
+zuverlässig, die Vermeidung nicht. Was fehlt, ist eine Zeile in
+`session-check.sh`, die den Setext-Fall erkennt — sie steht seit dem
+2026-08-13 als kleiner offener Punkt in `docs/status.md` §2 und hätte
+diesen Vorfall verhindert. **Ein offener Punkt, der sich in der Zwischenzeit
+selbst bewiesen hat.**
 
 **Der vierte Fall (2026-08-13) ist der Beleg, dass die Gegenmaßnahme
 wirkt** — und zugleich, dass sie den Fehler nicht *verhindert*. Ich hatte
