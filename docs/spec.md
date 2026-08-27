@@ -827,18 +827,39 @@ Ecken und Enden durchgängig gerundet (`stroke-linecap`/`-linejoin: round`).
 
 Diese Punkte müssen **vor** dem Flutter-Bau entschieden werden.
 
-### 4.1 Globales Tastenkürzel für Quick Capture
+### 4.1 Globales Tastenkürzel für Quick Capture — 🕓 ZURÜCKGESTELLT (2026-08-27)
+
 Quick Capture ist Kernprinzip („unter einer Sekunde"). Eingelöst wird es
 erst durch ein **systemweites Kürzel**, das ein kleines Eingabefeld
-öffnet, ohne die App zu wechseln. Das braucht eine systemnahe Komponente
-(Hintergrundprozess, Autostart, Kürzel-Registrierung) und lässt sich
-schlecht nachrüsten.
-**Teilweise beantwortet (2026-08-07):** Die erfasste Aufgabe landet im
-**Eingang** (§2.0) — ohne Listenauswahl. Eine Auswahl beim Erfassen
-widerspricht dem ganzen Gedanken: Sie erzwingt genau die Entscheidung,
-die der Eingang aufschieben soll.
+öffnet, ohne die App zu wechseln.
 
-**Weiterhin zu klären:** Welches Kürzel?
+**Beantwortet (2026-08-07):** Die erfasste Aufgabe landet im **Eingang**
+(§2.0) — ohne Listenauswahl. Eine Auswahl beim Erfassen widerspricht dem
+ganzen Gedanken: Sie erzwingt genau die Entscheidung, die der Eingang
+aufschieben soll.
+
+**Zurückgestellt (2026-08-27, Festlegung des Nutzers):** Die **Tastenwahl**
+selbst kommt erst mit dem Flutter-Bau. Sie ist spät bindbar und lässt sich
+dann sogar besser treffen, weil man sie auf der Zielplattform ausprobieren
+kann. Vorgelegte Kandidaten und Kollisionsanalyse: `decisions.md`,
+2026-08-27. Ebenso zurückgestellt: die Enter-Belegung im gemeinsamen
+Erfassungs-/Suchfenster (§4.6).
+
+> ⚠️ **Spät bindbar ist die Taste, nicht die Architektur.** Ein globales
+> Kürzel braucht eine systemnahe Komponente — Hintergrundprozess,
+> Autostart, Kürzel-Registrierung — und die entscheidet sich beim
+> **Aufsetzen des Flutter-Projekts**, nicht beim Festlegen der Taste. Ob
+> die App weiterläuft, wenn das Fenster zu ist, muss dort mitgedacht
+> werden; nachträglich ist es ein Umbau. Deshalb steht „App läuft im
+> Hintergrund weiter (Tray/Autostart)" als Anforderung im Plan-Schritt
+> „Flutter-Umstieg beginnen", siehe `docs/status.md` §2.
+
+**Mit der Tastenwahl zusammen zu entscheiden:** Was geschieht, wenn die
+Registrierung **fehlschlägt**, weil ein anderes Programm das Kürzel schon
+hält? Bei globalen Kürzeln ist das der Normalfall. Daraus folgt
+unabhängig von der Taste: Das Kürzel muss **änderbar** sein, und die App
+muss beim Start **sichtbar melden**, wenn sie es nicht bekommen hat —
+sonst drückt man es, nichts geschieht, und man erfährt nie warum.
 
 ### 4.2 Datum und Zeitzonen — ✅ ENTSCHIEDEN (2026-08-06)
 

@@ -231,11 +231,23 @@ Was fertig ist:
 
 Der abgestimmte Plan, in dieser Reihenfolge:
 
-1. **Globales Tastenkürzel für Quick Capture** (`spec.md` §4.1) — nur noch
-   „welches Kürzel?"; das Ziel ist seit 2026-08-07 der Eingang. Lässt sich
-   im Browser nicht bauen, muss also rein spezifiziert werden.
+> 🕓 **Zurückgestellt: Das Quick-Capture-Kürzel** (`spec.md` §4.1,
+> 2026-08-27). War Schritt 1 und ist auf Wunsch des Nutzers nach hinten
+> gerückt: *„ich will die Kürzel erstmal weglassen, das kommt dann später
+> bei Flutter dazu."* Die Tastenwahl ist spät bindbar und auf der
+> Zielplattform sogar besser zu treffen — die vorgelegte
+> Kollisionsanalyse stand ausdrücklich auf zweiter Hand, weil sich
+> globale Kürzel in einem Linux-Container nicht messen lassen. Kandidaten
+> und Begründung: `docs/decisions.md`, 2026-08-27.
+>
+> ⚠️ **Was dabei NICHT mit zurückgestellt ist:** Spät bindbar ist die
+> Taste, nicht die Architektur. Ein globales Kürzel braucht einen
+> Hintergrundprozess mit Autostart — das entscheidet sich beim Aufsetzen
+> des Flutter-Projekts („Flutter-Umstieg beginnen", unten), nicht bei der
+> Tastenwahl.
+> Deshalb steht es dort jetzt als Anforderung.
 
-2. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
+1. **Spec vervollständigen, Mockup einfrieren** (`spec.md` §4.5).
 
    ⚠️ **Abweichung vom 2026-08-13, bewusst:** Das Mockup hat eine
    Datenschicht bekommen, damit der Nutzer es im Alltag benutzen kann. Das
@@ -246,11 +258,17 @@ Der abgestimmte Plan, in dieser Reihenfolge:
    es ist die wertvollste Quelle für `spec.md`, weil es aus der Benutzung
    kommt und nicht aus dem Ansehen.
 
-3. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
+2. **Flutter-Umstieg beginnen:** Projekt aufsetzen, CI-Pipeline
    (Lint/Typecheck/Test bei jedem Push), Session-Start-Hook um
    Build-/Test-Befehle erweitern — und **die Datenschicht zuerst**
    (Speicherformat, Schema-Version, atomares Schreiben, Export), bevor
    Oberfläche entsteht.
+
+   ⚠️ **Dabei mitdenken: Die App muss im Hintergrund weiterlaufen können**
+   (Tray/Autostart), auch wenn das Fenster zu ist. Das ist die
+   Voraussetzung für das zurückgestellte Quick-Capture-Kürzel (§4.1) und
+   die einzige Stelle, an der die Zurückstellung etwas kosten würde:
+   nachträglich ist es ein Umbau, jetzt ist es eine Zeile im Plan.
 
 Auf der Merkliste, bewusst zurückgestellt: Befehlspalette ⌘K
 (`spec.md` §4.6), Teilen von Listen, Spracheingabe.

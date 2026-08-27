@@ -100,6 +100,7 @@ Nachschlagen also grob anspringen, nicht blind zaehlen.
 | 4242 | 2026-08-13 (abends) | „Alles unter dem Titel rutscht nach unten" |
 | 4309 | 2026-08-13 (abends) | „Es ist nicht dieselbe Animation" — und der Nutzer hatte recht |
 | 4402 | 2026-08-14 | Der Setext-Fallstrick bekommt endlich sein Netz |
+| 4442 | 2026-08-27 | Quick-Capture-Kürzel: zurückgestellt bis Flutter |
 
 <!-- VERZEICHNIS:ENDE -->
 
@@ -4533,3 +4534,65 @@ Diese Sitzung lief über Mitternacht. Die Einträge tragen das Datum des
 kein Fehler der Prüfung: Sie fragt nach dem Kalendertag, und der hatte
 gewechselt. Wer das nächste Mal über Mitternacht arbeitet, weiß jetzt,
 woher die Meldung kommt.
+
+---
+
+## 2026-08-27 — Quick-Capture-Kürzel: zurückgestellt bis Flutter
+
+**Kontext:** `spec.md` §4.1 war der erste Punkt des abgestimmten Plans und
+seit dem 2026-08-07 auf genau eine Frage eingedampft: *welches Kürzel?*
+Alles andere daran ist entschieden (die erfasste Aufgabe landet im
+Eingang, ohne Listenauswahl).
+
+**Vorgelegt wurden** drei Kandidaten samt Kollisionsanalyse:
+`⌘/Ctrl+Shift+Space` (empfohlen — auf keiner Plattform systemweit belegt,
+hält Abstand zur Launcher-Zone `⌘Space`/`⌥Space`/`⌃Space`),
+`⌘/Ctrl+Shift+N` (app-seitig stark belegt: Explorer, Chrome) und ein
+Doppeltipp auf `Ctrl`/`⌘` (kollisionsfrei, aber schlecht auffindbar).
+Ausgeschieden waren `⌘/Ctrl+Alt+Space` (`⌥⌘Space` ist auf macOS das
+Finder-Suchfenster) und `Alt+Space` (Fenstermenü auf Windows).
+
+**Entscheidung des Nutzers:** *„ich will die Kürzel erstmal weglassen, das
+kommt dann später bei Flutter dazu."* Ebenso zurückgestellt: die
+Enter-Belegung im gemeinsamen Erfassungs-/Suchfenster (§4.6).
+
+**Begründung, warum das trägt:** Die Tastenwahl ist spät bindbar. Sie
+lässt sich ohne Folgekosten treffen, wenn das Fenster existiert — und
+dann sogar besser, weil man sie auf der Zielplattform ausprobieren kann
+statt sie aus Kenntnis zu erschließen. Die vorgelegte Analyse stand
+ausdrücklich auf zweiter Hand: In einem Linux-Container lassen sich
+globale Kürzel auf Windows und macOS nicht messen.
+
+**Widerspruch, einmal vorgebracht und vom Nutzer bestätigt:** Nicht alles
+an §4.1 ist spät bindbar. Der Abschnitt sagt selbst, das Kürzel brauche
+eine systemnahe Komponente — Hintergrundprozess, Autostart,
+Kürzel-Registrierung — und lasse sich „schlecht nachrüsten". Spät bindbar
+ist die **Taste**, nicht die **Architektur**: Ob die App weiterläuft,
+wenn das Fenster zu ist, entscheidet sich beim Aufsetzen des
+Flutter-Projekts. Wird das dort vergessen, ist es später ein Umbau und
+kein nachgetragenes Kürzel.
+
+**Folge, damit der Einwand nicht bloß notiert ist:** „App läuft im
+Hintergrund weiter (Tray/Autostart)" steht ab jetzt als Anforderung im
+Plan-Schritt „Flutter-Umstieg beginnen", nicht mehr allein in §4.1.
+Damit kostet die Zurückstellung nichts.
+
+**Zweite Folge — der Plan rückt auf:** Mit §4.1 zurückgestellt ist
+`spec.md` in allem entschieden, was vor dem Bau zu entscheiden war. Damit
+ist „Spec vervollständigen, Mockup einfrieren" (§4.5) der nächste offene
+Punkt.
+
+> **Die Plan-Schritte werden dabei ab jetzt beim Namen genannt, nicht bei
+> der Nummer.** Beim Umstellen dieses Plans wurden drei Verweise auf
+> „Schritt 3" still falsch — genau der Fall aus `CLAUDE.md`, „wer etwas
+> entfernt, prüft, was daran hing". Ein Name überlebt die nächste
+> Umstellung, eine Nummer nicht.
+
+**Nebenbefund, beim Vorlegen entstanden und noch offen:** §4.1 sagt
+nicht, was geschieht, wenn die Registrierung des Kürzels **fehlschlägt**,
+weil ein anderes Programm es bereits hält. Das ist bei globalen Kürzeln
+der Normalfall, nicht der Randfall. Daraus folgt unabhängig von der
+Tastenwahl: Das Kürzel muss änderbar sein, und die App muss beim Start
+sichtbar melden, wenn sie es nicht bekommen hat — sonst drückt man es,
+nichts geschieht, und man erfährt nie warum. Gehört mit der Tastenwahl
+zusammen entschieden.
