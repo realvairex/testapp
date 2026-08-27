@@ -12,7 +12,7 @@ dran, und was darf nicht noch einmal vorgeschlagen werden.
 > Schreibweise, lies die zugehörige Datei unter `.claude/commands/` und
 > führe ihre Anweisung ohne Rückfrage aus.
 
-Stand: 2026-08-14
+Stand: 2026-08-27
 
 ---
 
@@ -181,11 +181,25 @@ Was fertig ist:
   dreizehnte Übergangsdauer, eine undokumentierte vierte Bewegungskurve
   und neun Bewegungen auf der Browser-Vorgabe. Alle repariert.
 
-  ⚠️ **Kleiner offener Faden:** `verify_center` meldet die beiden
-  Gruppenzeilen als „MISALIGNED". Das ist eine veraltete Erwartung, kein
-  Fehler: Seit die Gruppe zusätzlich einen „+"-Knopf trägt, sitzt ihr
-  Papierkorb bewusst nicht mehr auf der Achse der Zahl. Beim nächsten
-  Anfassen des Skripts die Erwartung nachziehen.
+  ✅ **Erledigt am 2026-08-27:** `verify_center` meldete die beiden
+  Gruppenzeilen als „MISALIGNED" — eine veraltete Erwartung, kein Fehler.
+  Das Skript griff mit `querySelector('.nav-delete')` den **ersten**
+  Aktionsknopf und maß den Papierkorb gegen die Achse des Zählers. Seit die
+  Gruppe einen „+"-Knopf trägt, sitzt dort aber der **letzte** Knopf: Der
+  Papierkorb steht bei 274, der „+" bei 298, der Zähler bei 298.
+  Die Erwartung ist jetzt so formuliert, wie die Regel wirklich lautet —
+  **der letzte Knopf einer Zeile trägt die Achse des Zählers, und jedes SVG
+  sitzt mittig in seinem eigenen Knopf.** Das gilt für Listenzeilen (ein
+  Knopf = zugleich der letzte) und Gruppenzeilen gleichermaßen, ohne
+  Sonderfall und ohne die feste Zahl 24 festzuschreiben.
+
+  > **Gegengeprüft, nicht behauptet:** Ein Skript, das immer „OK" sagt,
+  > prüft nichts. Mit einem absichtlich um 7 px verschobenen
+  > `.group-actions` und einem um 5 px verschobenen SVG meldet es beide
+  > Fehlerarten weiter rot. **Nebenbefund, nicht angefasst:** Der
+  > „+"-Knopf der Gruppe trägt ebenfalls die Klasse `nav-delete` — er
+  > löscht nichts. Verwirrend, aber im eingefrorenen Mockup keine
+  > Reparatur wert.
 
   ⚠️ **Wichtige Einschränkung:** Nur **achtzehn** der 56 Skripte haben echte
   Zusicherungen. Die übrigen sind **Messskripte** — sie drucken Zahlen,

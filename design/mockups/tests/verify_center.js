@@ -27,26 +27,42 @@ const { chromium } = require('playwright');
     const t = document.querySelector('.nav-item[data-nav="today"] .nav-count');
     res.todayGlyphCenter = glyphCenter(t);
 
-    document.querySelectorAll('.nav-item-wrap').forEach((w,i)=>{
-      const c=w.querySelector('.nav-count'), d=w.querySelector('.nav-delete');
+    // Eine Zeile kann mehrere Aktionsknoepfe tragen: Die Gruppenzeile hat seit
+    // dem "+"-Knopf zwei. Auf der Achse des Zaehlers sitzt deshalb der LETZTE
+    // Knopf, nicht der erste - der Papierkorb rueckt bei der Gruppe bewusst
+    // eine Stelle nach links (docs/status.md, Abschnitt 1).
+    function sammle(wrap, name) {
+      const c = wrap.querySelector('.nav-count');
+      const btns = [...wrap.querySelectorAll('.nav-delete')];
       // Der Eingang ist ein Ort und hat keinen Loeschknopf (spec.md 2.0) -
       // seine Zeile hat hier also nichts zu vermessen.
-      if (!c || !d) return;
-      res.rows.push({ row:'list'+i, glyph:glyphCenter(c), btn:ctr(d).x, svg:ctr(d.querySelector('svg')).x });
-    });
-    document.querySelectorAll('.group-row').forEach((w,i)=>{
-      const c=w.querySelector('.nav-count'), d=w.querySelector('.nav-delete');
-      // Der Eingang ist ein Ort und hat keinen Loeschknopf (spec.md 2.0) -
-      // seine Zeile hat hier also nichts zu vermessen.
-      if (!c || !d) return;
-      res.rows.push({ row:'group'+i, glyph:glyphCenter(c), btn:ctr(d).x, svg:ctr(d.querySelector('svg')).x });
-    });
+      if (!c || !btns.length) return;
+      res.rows.push({
+        row: name,
+        glyph: glyphCenter(c),
+        btns: btns.map(d => ({ btn: ctr(d).x, svg: ctr(d.querySelector('svg')).x })),
+      });
+    }
+    document.querySelectorAll('.nav-item-wrap').forEach((w,i)=> sammle(w, 'list'+i));
+    document.querySelectorAll('.group-row').forEach((w,i)=> sammle(w, 'group'+i));
+
     return res;
   });
   console.log('trash artwork centring in viewBox:', JSON.stringify(out.artwork));
   console.log('TODAY glyph center (reference):', out.todayGlyphCenter);
-  console.log('per row -> glyph / button / svg centers:');
-  out.rows.forEach(r => console.log('  ', r.row.padEnd(8), 'glyph', r.glyph, '| btn', r.btn, '| svg', r.svg,
-    (Math.abs(r.glyph-r.btn) < 0.6 && Math.abs(r.svg-r.btn) < 0.6) ? 'OK' : '<-- MISALIGNED'));
+  console.log('per row -> glyph / buttons (last one carries the axis):');
+  let schief = 0;
+  out.rows.forEach(r => {
+    const letzter = r.btns[r.btns.length-1];
+    // Der letzte Knopf traegt die Achse des Zaehlers ...
+    const aufAchse = Math.abs(r.glyph - letzter.btn) < 0.6;
+    // ... und jedes SVG sitzt mittig in SEINEM Knopf, nicht auf der Achse.
+    const svgMittig = r.btns.every(b => Math.abs(b.svg - b.btn) < 0.6);
+    if (!aufAchse || !svgMittig) schief++;
+    console.log('  ', r.row.padEnd(8), 'glyph', r.glyph,
+      '| btns', r.btns.map(b => b.btn + (Math.abs(b.svg-b.btn) < 0.6 ? '' : '(svg ' + b.svg + '!)')).join(' '),
+      aufAchse && svgMittig ? 'OK' : '<-- MISALIGNED');
+  });
+  console.log(schief === 0 ? 'ALLE ZEILEN OK' : schief + ' ZEILE(N) SCHIEF');
   await browser.close();
 })();
