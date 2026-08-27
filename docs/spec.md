@@ -1,6 +1,6 @@
 # Spezifikation: Unfold
 
-Stand: 2026-08-11 · **Status: in Arbeit**
+Stand: 2026-08-13 · **Status: in Arbeit**
 
 Dieses Dokument ist die **Vorlage für die Umsetzung in Flutter**. Es hält
 fest, was übertragbar ist: Datenmodell, Verhaltensregeln und
